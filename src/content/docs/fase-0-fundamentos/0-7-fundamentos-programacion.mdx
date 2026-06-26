@@ -325,7 +325,7 @@ Entregable: tu solución en `ejercicios/fase-0/fundamentos-programacion-inventar
 - [ ] Agregaste al menos un test propio.
 - [ ] Puedes explicar tu solución **sin notas**.
 
-Enunciado completo, starter y tests: [`ejercicios/fase-0/fundamentos-programacion-inventario/`](https://github.com/) (carpeta del repo).
+Enunciado completo, starter y tests: `ejercicios/fase-0/fundamentos-programacion-inventario/` (carpeta del repo).
 
 <Solucion title="Pista (ábrela solo si superaste el timebox)">
 Piensa en el **contrato** antes de programar (esto es spec-first, [0.8](/fase-0-fundamentos/)): ¿qué entra, qué sale, qué casos borde? Necesitas un `dict` acumulador inicializado **antes** del bucle. Para sumar "creando la clave si no existe", `dict.get(clave, 0)` te devuelve 0 cuando la categoría es nueva, así no necesitas un `if` para el primer gasto de cada categoría. Valida **antes** de acumular, no después. Esto es una pista, no la solución.

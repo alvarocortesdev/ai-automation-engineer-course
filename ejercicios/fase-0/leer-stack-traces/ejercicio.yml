@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/leer-stack-traces
+titulo: "Lee el stack trace (a mano)"
+fase: fase-0
+sub_unidad: "0.8"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Leer un stack trace de Python de abajo hacia arriba: identificar tipo de error, mensaje y frame donde reventó"
+  - "Distinguir el frame culpable (el de más abajo) del camino de llamadas (los de arriba)"
+  - "Razonar la causa raíz en términos del dato de entrada y proponer un fix mínimo dirigido"
+hilos_transversales: [observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación la hace el alumno ejecutando los casos, no hay suite

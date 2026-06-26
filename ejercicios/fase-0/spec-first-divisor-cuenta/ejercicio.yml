@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/spec-first-divisor-cuenta
+titulo: "Spec-first: divisor de cuenta"
+fase: fase-0
+sub_unidad: "0.8"
+ruta_critica: true
+modalidad: mixto          # escribe spec.md (a-mano) + implementa y testea código
+objetivos:
+  - "Escribir una mini-spec (entradas, salida, casos borde) ANTES de implementar la función"
+  - "Derivar tests y ramas de validación a partir de cada caso borde de la spec"
+  - "Implementar dividir_cuenta validando antes de dividir, con los tests en verde"
+hilos_transversales: [spec-driven, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

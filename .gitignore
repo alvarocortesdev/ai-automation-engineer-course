@@ -10,6 +10,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+# pero NO los .log que son fixtures de ejercicios (p. ej. acceso.log de 0.5)
+!ejercicios/**/*.log
+# Python (ejercicios y soluciones con tests)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
 # environment variables
 .env
 .env.*
