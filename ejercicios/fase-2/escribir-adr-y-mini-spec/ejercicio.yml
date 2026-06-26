@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/escribir-adr-y-mini-spec
+titulo: "Mini-spec + ADR de una decisión real"
+fase: fase-2
+sub_unidad: "2.13"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Escribir un mini-spec que resuelva la ambigüedad de una feature antes de codear: entradas con restricciones, salida con invariante, casos borde acordados y criterios de aceptación falsables"
+  - "Identificar la decisión técnica significativa que el spec destapa y registrarla en un ADR con contexto, 2-3 opciones consideradas (pro/contra), decisión justificada y consecuencias con gatillo de revisión"
+  - "Explicar por qué un ADR es inmutable (se supersede, no se edita) y cuándo el spec-first paga frente a cuándo es burocracia"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: la entrega son spec.md + ADR, no una suite

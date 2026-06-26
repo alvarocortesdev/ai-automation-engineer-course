@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/flujo-pr-commits-code-review
+titulo: "Reescribe el historial: Conventional Commits + PR + code review"
+fase: fase-2
+sub_unidad: "2.13"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Reescribir un historial de commits a Conventional Commits válidos (tipo, scope, imperativo) e identificar correctamente el cambio que rompe compatibilidad (BREAKING CHANGE)"
+  - "Escribir la descripción de un PR que comunique el por qué y el cómo probarlo, no solo el qué"
+  - "Dar un code review que comente el código (no a la persona), etiquete la intención de cada comentario, separe lo bloqueante de la preferencia, e identifique un bug real en el diff"
+hilos_transversales: [spec-driven, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de comunicación/razonamiento: la entrega son commits.md + pr.md + review.md

@@ -1,0 +1,49 @@
+# Starter de CI para el Capstone F2.
+#
+# Cópialo al repo de TU proyecto como  .github/workflows/ci.yml  (aquí no se
+# dispara: GitHub solo lee workflows que viven en .github/workflows/ del repo).
+#
+# Corre lint + tests en cada push y en cada pull request. El badge verde es parte
+# del entregable. La forma de usar uv es la canónica de la doc oficial:
+# https://docs.astral.sh/uv/guides/integration/github/
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        # setup-uv v8: las tags ya no se mueven; se fija el SHA + comentario de versión.
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Tests
+        run: uv run pytest -q
+
+  # TODO(estudiante): añade un job o paso de mutation testing y haz que FALLE si
+  # el mutation score baja del umbral que definas (y defiende ese umbral en un ADR).
+  # Ejemplo de arranque:
+  #
+  #   mutation:
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #       - uses: actions/checkout@v6
+  #       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+  #         with:
+  #           enable-cache: true
+  #       - run: uv sync --all-extras --dev
+  #       - run: uv run mutmut run
+  #       - run: uv run mutmut results   # revisa que no queden sobrevivientes no-equivalentes

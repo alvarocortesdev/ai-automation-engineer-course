@@ -1,0 +1,6 @@
+[
+  { "nombre": "Leche", "cantidad": 1, "vence": "2026-06-28" },
+  { "nombre": "Arroz", "cantidad": 5, "vence": "2026-06-20" },
+  { "nombre": "Huevos", "cantidad": 0 },
+  { "nombre": "Sal", "cantidad": 10, "vence": "2026-12-01" }
+]

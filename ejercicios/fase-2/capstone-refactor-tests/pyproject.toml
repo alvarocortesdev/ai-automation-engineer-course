@@ -1,0 +1,28 @@
+# Proyecto del Capstone F2. Define las herramientas que tu CI va a correr:
+# pytest (tests), ruff (lint), mutmut (mutation testing).
+# Docs: pytest https://docs.pytest.org/ · ruff https://docs.astral.sh/ruff/
+#       mutmut https://mutmut.readthedocs.io/
+[project]
+name = "capstone-despensa"
+version = "0.1.0"
+description = "Capstone Fase 2 — refactor + suite de tests medida por mutation score."
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=5",
+  "mutmut>=3",
+  "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 100
+
+# mutmut 3: QUÉ mutar y QUÉ tests usar para matar mutantes.
+# Cuando refactorices y muevas la lógica a un paquete, actualiza `source_paths`
+# para que apunte a tu núcleo puro (p. ej. ["src/despensa/"]).
+[tool.mutmut]
+source_paths = ["despensa.py"]
+pytest_add_cli_args_test_selection = ["tests/"]

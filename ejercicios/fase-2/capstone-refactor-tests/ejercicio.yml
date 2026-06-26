@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio (CAPSTONE)
+id: fase-2/capstone-refactor-tests
+titulo: "Capstone Fase 2 — Refactor + suite de tests"
+fase: fase-2
+sub_unidad: "2.P"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Refactorizar un módulo legado aplicando SOLID guiado por code smells, garantizando con una red de tests de caracterización que el comportamiento observable no cambia"
+  - "Diseñar una suite de tests cuya calidad se mide por mutation score y aserciones reales (no por coverage%), y justificar qué se testeó, qué no, y por qué"
+  - "Documentar el diseño en ARQUITECTURA.md (inglés) + ADRs y montar un pipeline de CI que corre lint + tests en cada push"
+hilos_transversales: [testing, spec-driven, observabilidad]
+primero_sin_ia:
+  novedad: repaso        # capstone de consolidación: Primero-Sin-IA de entrada
+  timebox_min: 480       # ~8 h de piso; el proyecto se reparte en 1–2 semanas
+definition_of_done: [1, 2, 8, 9]   # IDs del Definition of Done único (§B): spec+ADRs · tests+lint+mutation · demo+README inglés+write-up · Conventional Commits
+paths: {}
