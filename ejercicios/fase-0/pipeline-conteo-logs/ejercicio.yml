@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/pipeline-conteo-logs
+titulo: "Top 3 de IPs en un log"
+fase: fase-0
+sub_unidad: "0.5"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Componer un pipeline (awk/sort/uniq/head) que agregue y rankee datos de texto"
+  - "Predecir la salida de cada etapa del pipeline antes de ejecutar el todo"
+  - "Envolver el pipeline en un script bash que valide su argumento y use códigos de salida honestos"
+hilos_transversales: [testing, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

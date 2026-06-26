@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/notional-machine-trazado
+titulo: "Traza una inversión in-place con aliasing"
+fase: fase-0
+sub_unidad: "0.3"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Predecir la salida exacta de un programa con while, índices y mutación in-place, sin ejecutar"
+  - "Construir una tabla de estado (variable × paso) que justifique la predicción"
+  - "Explicar con el modelo nombres→objetos por qué original is resultado da True (aliasing)"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación la hace el alumno ejecutando, no hay suite

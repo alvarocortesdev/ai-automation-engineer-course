@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/backup-con-bash
+titulo: "Script de respaldo robusto"
+fase: fase-0
+sub_unidad: "0.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Escribir un script bash con shebang, set -euo pipefail y validación de argumentos"
+  - "Separar stdout (dato útil) de stderr (diagnóstico) y devolver códigos de salida honestos"
+  - "Usar una variable de entorno (BACKUP_DIR) para configurar comportamiento sin tocar el código"
+hilos_transversales: [observabilidad, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

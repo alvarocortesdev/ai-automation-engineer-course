@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/notional-machine-parsons
+titulo: "Parsons: ordena la función promedio"
+fase: fase-0
+sub_unidad: "0.3"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Reordenar las líneas de una función pequeña (con indentación) hasta que su comportamiento sea correcto"
+  - "Justificar el orden por dependencias de datos y de control, no por estética"
+  - "Verificar con tests que la función cumple su contrato, incluido el caso borde de lista vacía"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 25
+definition_of_done: []
+paths: {}   # tests en tests/ por convención; solución de referencia en .ai/soluciones/fase-0/notional-machine-parsons.md

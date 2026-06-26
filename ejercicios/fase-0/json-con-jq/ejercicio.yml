@@ -1,0 +1,16 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/json-con-jq
+titulo: "Consulta JSON con jq"
+fase: fase-0
+sub_unidad: "0.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Filtrar y transformar JSON con jq usando select, and y sort_by"
+  - "Producir salida en crudo (jq -r) apta para encadenar en un pipeline"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths: {}

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/anatomia-de-una-url
+titulo: "Anatomía de una URL y su viaje"
+fase: fase-0
+sub_unidad: "0.4"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Descomponer una URL en esquema, host, puerto, ruta, query y fragmento, justificando el puerto efectivo"
+  - "Predecir el recorrido de la petición (DNS, IP, TCP, TLS, HTTP, render) en orden y sin ejecutar"
+  - "Identificar qué parte de la URL no viaja al servidor y explicar por qué"
+hilos_transversales: [costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es el razonamiento escrito, no hay suite

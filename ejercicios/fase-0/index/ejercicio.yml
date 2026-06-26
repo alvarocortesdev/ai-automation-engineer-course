@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/index
+titulo: "Diagnóstico de entrada y plan de Fase 0"
+fase: fase-0
+sub_unidad: "0.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar el punto de partida real por sub-unidad (0.1–0.8), distinguiendo 'lo sé hacer sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de estudio de Fase 0 con bloques semanales concretos y un ritual de active recall / spaced repetition"
+  - "Redactar un contrato Primero-Sin-IA con los cuatro pasos y una regla personal de cuándo abrir la IA"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

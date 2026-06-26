@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/http-con-curl
+titulo: "Inspecciona HTTP real con curl"
+fase: fase-0
+sub_unidad: "0.4"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Capturar respuestas HTTP reales con curl y clasificar el status code por familia (2xx/3xx/4xx/5xx)"
+  - "Leer headers para concluir tipo de contenido, redirección (location) y presencia de cifrado TLS"
+  - "Diagnosticar si un fallo es del cliente (4xx) o del servidor (5xx) a partir de la evidencia"
+hilos_transversales: [observabilidad, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # mixto: la "verificación" es la captura real + diagnóstico escrito, no una suite

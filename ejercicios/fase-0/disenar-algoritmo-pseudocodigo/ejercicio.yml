@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/disenar-algoritmo-pseudocodigo
+titulo: "Diseña un algoritmo preciso (y luego trázalo)"
+fase: fase-0
+sub_unidad: "0.2"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diseñar un algoritmo en pseudocódigo que resuelva un problema concreto sin pasos ambiguos"
+  - "Anticipar y manejar casos borde (carpeta vacía, empate) dentro del diseño"
+  - "Trazar a mano el propio algoritmo sobre datos de ejemplo para verificar el resultado"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es la traza del alumno, no una suite

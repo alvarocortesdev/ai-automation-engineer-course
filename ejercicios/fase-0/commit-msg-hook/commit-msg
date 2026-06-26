@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# commit-msg — valida que el mensaje de commit siga Conventional Commits.
+#
+# Git invoca este hook con UN argumento: la ruta del archivo temporal que
+# contiene el mensaje propuesto ($1). Si el script sale con código distinto
+# de 0, Git ABORTA el commit.
+#
+# Tu tarea: completar los TODO. No cambies la extracción de la cabecera.
+set -euo pipefail
+
+msg_file="$1"
+
+# Cabecera = primera línea no vacía que no empiece con '#'.
+# (awk lee el archivo directo: sin pipes frágiles ni problemas de SIGPIPE.)
+header="$(awk 'NF==0 {next} /^#/ {next} {print; exit}' "$msg_file")"
+
+# TODO 1: deja pasar (exit 0) los mensajes autogenerados por Git que empiezan
+#         con "Merge " o "Revert ". No deben validarse como Conventional Commits.
+
+# TODO 2: define el patrón Conventional Commits (regex ERE, anclado con ^...$):
+#         <type>[(scope)][!]: <descripción>
+#         tipos válidos: feat fix docs style refactor perf test build ci chore revert
+# pattern='...'
+
+# TODO 3: si "$header" cumple el patrón -> exit 0; si no, imprime ayuda a stderr
+#         (incluye el formato y ejemplos) y exit 1.
+
+echo "TODO: implementa la validación del mensaje de commit" >&2
+exit 1

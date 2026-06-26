@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/fundamentos-programacion-recursion-scope
+titulo: "Recursión y scope, trazados a mano"
+fase: fase-0
+sub_unidad: "0.7"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Predecir la salida de un programa con una función recursiva y otra con scope local, sin ejecutar"
+  - "Trazar la pila de llamadas de una función recursiva mostrando bajada y subida"
+  - "Explicar vía scope (LEGB) por qué una reasignación local no cambia la variable global"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación la hace el alumno ejecutando, no hay suite

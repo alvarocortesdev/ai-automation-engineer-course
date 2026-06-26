@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio (capstone de fase)
+id: fase-0/capstone-cli-sin-ia
+titulo: "Capstone Fase 0 — CLI sin IA"
+fase: fase-0
+sub_unidad: "0.P"
+ruta_critica: true
+modalidad: mixto                     # código (el CLI) + documentos (SPEC, ADR, README)
+objetivos:
+  - "Diseñar una herramienta pequeña partiendo de una mini-spec (entradas/salidas/casos borde) escrita antes de codear, y justificar la decisión técnica principal en un ADR"
+  - "Implementar un CLI que parsee argumentos, ejecute comandos, valide entradas y devuelva exit codes honestos con mensajes a stderr, 100% sin IA para razonar"
+  - "Entregar el proyecto al estándar mínimo del mercado: demo que corre, README usable, historial de Conventional Commits y un write-up de trade-offs"
+hilos_transversales: [spec-driven, observabilidad]
+primero_sin_ia:
+  novedad: repaso                    # integra toda la Fase 0: Primero-Sin-IA de entrada (con andamiaje del proceso)
+  timebox_min: 480                   # ~6-10 h repartidas en una semana; presupuesto orientativo, no corte
+definition_of_done: [1, 8, 9]        # puntos del DoD único (§B) que aplican en F0: spec+ADR / demo+README+trade-offs / Conventional Commits
+paths: {}                            # convención por defecto: README aquí, rúbrica y solución en sus rutas estándar

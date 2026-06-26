@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/fundamentos-programacion-inventario
+titulo: "Resumen de gastos por categoría"
+fase: fase-0
+sub_unidad: "0.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una función que recorra una lista y agregue datos en un dict, agrupando y sumando por clave"
+  - "Validar las entradas y lanzar ValueError ante datos inválidos (monto negativo, categoría vacía)"
+  - "Manejar el caso borde de la lista vacía sin reventar"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

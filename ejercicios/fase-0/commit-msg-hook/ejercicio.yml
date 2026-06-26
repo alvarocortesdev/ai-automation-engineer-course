@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/commit-msg-hook
+titulo: "Construye el hook commit-msg (Conventional Commits)"
+fase: fase-0
+sub_unidad: "0.6"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un hook commit-msg que acepte mensajes válidos de Conventional Commits y rechace los inválidos vía código de salida"
+  - "Construir una expresión regular ERE que codifique la spec de Conventional Commits (type, scope opcional, breaking change, descripción)"
+  - "Hacer pasar una suite de tests que define el contrato (TDD) y añadir un caso borde propio"
+hilos_transversales: [spec-driven, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}   # convención por defecto: README, tests/ y solución en sus rutas estándar

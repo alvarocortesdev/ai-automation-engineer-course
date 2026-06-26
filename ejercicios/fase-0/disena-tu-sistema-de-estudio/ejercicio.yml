@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/disena-tu-sistema-de-estudio
+titulo: "Diseña tu sistema de estudio"
+fase: fase-0
+sub_unidad: "0.1"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Aplicar la regla del Primero-Sin-IA escalándola por novedad: decidir, ante una tarea, si empezar por un worked example o ir directo al intento solo, y justificarlo"
+  - "Diseñar un sistema personal de estudio que integre active recall y spaced repetition como ritual, con drill diario y bloques de tiempo fijos"
+  - "Explicar por qué depender de la IA para pensar atrofia la autonomía, y distinguir usar la IA para aprender de usarla para evitar aprender"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: no hay suite automática

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/descomponer-problema-cotidiano
+titulo: "Descompón un problema cotidiano con las 4 herramientas"
+fase: fase-0
+sub_unidad: "0.2"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Descomponer un problema cotidiano en subproblemas pequeños e independientes, nombrando las dependencias"
+  - "Identificar un patrón repetido y abstraer explícitamente qué detalles se ignoran y por qué"
+  - "Diseñar un algoritmo en pasos numerados, sin ambigüedad, con al menos dos casos borde"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento: no hay suite automática
