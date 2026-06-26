@@ -1,0 +1,43 @@
+// schema.prisma — STARTER del ejercicio (Primero-Sin-IA).
+//
+// Completa los modelos a mano, sin IA. El `generator` y el `datasource` ya
+// están listos. Tu trabajo es modelar User, Post y Tag con sus campos,
+// relaciones (1:N usuario→posts, N:M posts↔tags) e índices.
+//
+// Verifica con:  npx prisma validate   (NO necesita una base corriendo)
+// Ordena con:    npx prisma format
+//
+// Pista de sintaxis (sin darte la solución):
+//   id        Int      @id @default(autoincrement())
+//   email     String   @unique
+//   campo     String?            // el ? = nullable (columna acepta NULL)
+//   relacion  Otro     @relation(fields: [otroId], references: [id])
+//   @@index([campoFk])           // índice sobre una columna
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// TODO(estudiante): modela User (email único, name opcional, sus posts, createdAt).
+model User {
+  id Int @id @default(autoincrement())
+  // ...completa...
+}
+
+// TODO(estudiante): modela Post (title, content opcional, published con default,
+// el autor como relación 1:N con su FK, las tags como N:M, createdAt, e índice sobre la FK).
+model Post {
+  id Int @id @default(autoincrement())
+  // ...completa...
+}
+
+// TODO(estudiante): modela Tag (name único, sus posts como N:M).
+model Tag {
+  id Int @id @default(autoincrement())
+  // ...completa...
+}

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/graphql-schema-y-n1
+titulo: "Diseña el schema y caza el N+1"
+fase: fase-3
+sub_unidad: "3.11"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Modelar un schema de GraphQL (types, relaciones con nullability, type Query) a partir de un escenario REST"
+  - "Escribir una query que pida exactamente los campos de una pantalla, demostrando el anti-over-fetching"
+  - "Diagnosticar el N+1 en los resolvers (dar el número 1+N) y explicar la cura DataLoader (batching IN + contrato de orden)"
+hilos_transversales: [costo-latencia, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño a-mano: el corrector evalúa schema.graphql + consulta.graphql + NOTAS.md contra la rúbrica

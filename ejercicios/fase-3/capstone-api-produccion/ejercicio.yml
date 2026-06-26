@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio (capstone de fase)
+id: fase-3/capstone-api-produccion
+titulo: "Capstone Fase 3 — API de producción"
+fase: fase-3
+sub_unidad: "3.P"
+ruta_critica: true
+modalidad: mixto                     # código (la API) + documentos (SPEC, ADR, README) + infra (migraciones, CI)
+objetivos:
+  - "Diseñar y construir una API REST de producción end-to-end: spec primero, ports & adapters, PostgreSQL + SQLAlchemy + migraciones Alembic, OpenAPI vivo y errores RFC 9457"
+  - "Aplicar seguridad como hábito: OAuth2 password flow + JWT y autorización por dueño/scope; mitigar Broken Access Control (IDOR), Injection y SSRF; rate limiting; secretos fuera del repo verificados con secret-scanning"
+  - "Hacer el sistema confiable y demostrable: idempotencia en endpoints sensibles, observabilidad (logs estructurados + correlation IDs), suite de tests medida por mutation score (no coverage%), README en inglés y write-up de trade-offs"
+hilos_transversales: [spec-driven, testing, seguridad, observabilidad, costo-latencia, ingles]
+primero_sin_ia:
+  novedad: repaso                    # integra toda la Fase 3: Primero-Sin-IA de entrada (con andamiaje del proceso, no del código)
+  timebox_min: 1200                  # ~15-25 h repartidas en 1-2 semanas; presupuesto orientativo, no corte
+definition_of_done: [1, 2, 3, 4, 8, 9]   # puntos del DoD único (§B) que aplican en F3 (5/6/7 = IA/agente/UI, llegan en F4 y F6)
+paths:
+  tests: ejercicios/fase-3/capstone-api-produccion/tests/

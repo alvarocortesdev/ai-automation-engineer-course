@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/disenar-pago-idempotente
+titulo: "Diseña un endpoint POST idempotente"
+fase: fase-3
+sub_unidad: "3.14"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Diseñar el esquema de una tabla de idempotency keys con un constraint que arbitre la carrera concurrente"
+  - "Describir el flujo INSERT-primero ante primer request, reintento terminado y dos requests concurrentes con la misma clave"
+  - "Justificar los status HTTP de cada caso (incluido 409 en-vuelo) y el trade-off fail-open vs fail-closed para un pago"
+hilos_transversales: [seguridad, spec-driven, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: la evaluación es del razonamiento, no hay suite

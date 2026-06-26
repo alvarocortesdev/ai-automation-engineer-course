@@ -1,0 +1,17 @@
+-- Salida de:  EXPLAIN ANALYZE  <la query de consulta.sql>
+-- Postgres no tiene ningún índice sobre la tabla `pedidos` aparte del de la PK (id).
+
+                                                  QUERY PLAN
+-----------------------------------------------------------------------------------------------------------
+ Limit  (cost=28461.20..28461.25 rows=20 width=40)
+        (actual time=312.044..312.049 rows=20 loops=1)
+   ->  Sort  (cost=28461.20..28499.95 rows=15500 width=40)
+              (actual time=312.042..312.045 rows=20 loops=1)
+         Sort Key: creado_en DESC
+         Sort Method: top-N heapsort  Memory: 27kB
+         ->  Seq Scan on pedidos  (cost=0.00..28048.00 rows=15500 width=40)
+                                  (actual time=0.018..305.114 rows=15211 loops=1)
+               Filter: (estado = 'pendiente'::text)
+               Rows Removed by Filter: 1484789
+ Planning Time: 0.121 ms
+ Execution Time: 312.087 ms

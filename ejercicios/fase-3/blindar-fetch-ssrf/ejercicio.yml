@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/blindar-fetch-ssrf
+titulo: "Blinda un fetch saliente contra SSRF"
+fase: fase-3
+sub_unidad: "3.13"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un guardia anti-SSRF que valida el esquema, resuelve el DNS y rechaza rangos de IP privados/loopback/link-local"
+  - "Revisar todas las IPs resueltas para defenderse de DNS rebinding y explicar por qué una lista negra de strings no basta"
+  - "Explicar por qué SSRF es crítico en un agente de IA que hace fetch de URLs influidas por el usuario"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: ejercicios/fase-3/blindar-fetch-ssrf/test_guardia_ssrf.py

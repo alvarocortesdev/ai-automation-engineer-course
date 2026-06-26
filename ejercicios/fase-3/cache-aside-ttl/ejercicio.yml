@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/cache-aside-ttl
+titulo: "Cache-aside con TTL e invalidación"
+fase: fase-3
+sub_unidad: "3.15"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar el patrón cache-aside (HIT/MISS) poblando la cache con TTL y sin tocar el repo en un HIT"
+  - "Invalidar la cache al escribir, escribiendo la fuente de verdad primero y borrando la entrada después"
+  - "Explicar el trade-off y el orden de las operaciones (por qué borrar y no actualizar; por qué DB primero)"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

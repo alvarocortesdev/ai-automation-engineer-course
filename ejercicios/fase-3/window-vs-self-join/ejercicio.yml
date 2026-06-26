@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/window-vs-self-join
+titulo: "Reemplaza el self-join: window functions sobre transacciones"
+fase: fase-3
+sub_unidad: "3.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Escribir una window function de agregación (SUM OVER) que calcule un saldo acumulado por grupo sin colapsar las filas"
+  - "Resolver 'la transacción más reciente de cada cuenta' con ROW_NUMBER() filtrado en una subquery/CTE"
+  - "Explicar por qué la versión window reemplaza al self-join O(n²): una pasada ordenada vs re-escaneo por fila"
+hilos_transversales: [costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # verificación manual contra los resultados esperados del README (requiere un PostgreSQL)

@@ -1,0 +1,516 @@
+---
+title: Autenticación y OAuth2 a fondo
+description: "Quién eres vs qué puedes hacer: hashing de contraseñas con Argon2/bcrypt (nunca en texto plano), sesiones vs tokens, anatomía de un JWT (header.payload.signature, firma, expiración, por qué NO guardar secretos dentro), OAuth2 a fondo (client credentials vs authorization code + PKCE, refresh tokens con rotación y scopes) y dónde guardar tokens en el cliente (cookie httpOnly vs localStorage y sus riesgos)."
+sidebar:
+  order: 12
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="intermedio" />
+
+Tu API ya recibe requests, valida la entrada y toca la base de datos. Pero hay una pregunta que no le has hecho a nadie todavía: **¿quién eres y qué tienes permitido hacer?** Un endpoint que cualquiera puede llamar para leer (o borrar) los datos de cualquier otro es un incidente de seguridad esperando a ocurrir. Esta sub-unidad es donde tu backend deja de ser un juguete: aprendes a guardar contraseñas sin que un leak de la base de datos te arruine, a emitir y validar **tokens** que prueban la identidad sin guardar estado, y a hablar el protocolo que usa medio internet para delegar acceso sin compartir contraseñas: **OAuth2**. Lo que aprendas aquí es el cimiento de toda app que tenga usuarios, y la diferencia entre un junior que "pega un login que funciona" y un semi-senior que entiende *por qué* funciona y dónde se rompe.
+
+:::tip[Si ya tocaste login, JWT o "Sign in with Google"]
+¿Ya implementaste un login, decodificaste un JWT en jwt.io, o configuraste "iniciar sesión con Google"? Úsalo como diagnóstico, no como excusa para saltar. La trampa del que "ya sabe auth" es confundir **autenticación** con **autorización**, creer que un JWT está *cifrado* (no lo está: es legible), guardar el token en `localStorage` "porque es lo fácil", o usar el flujo OAuth2 equivocado. Si puedes, sin notas: (1) explicar por qué un JWT NO debe llevar datos sensibles aunque "vaya firmado"; (2) decir qué flujo OAuth2 usa una SPA en el navegador y por qué **no** es client credentials; (3) explicar el trade-off de guardar el token en una cookie `httpOnly` vs en `localStorage` (pista: XSS vs CSRF). Si dudas en cualquiera, lee desde la sección 4. Si no, salta a los ejercicios (sección 7) y mídete.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Implementar autenticación segura**: hashear contraseñas con un algoritmo lento y salado (Argon2/bcrypt vía `pwdlib`, nunca texto plano ni MD5/SHA rápido), y emitir/validar un **JWT** en FastAPI, explicando por qué es la **firma** —no el cifrado— lo que protege el token.
+- **O2 — Explicar el trade-off entre flujos OAuth2** (`authorization code + PKCE` vs `client credentials`) y elegir el correcto según el tipo de cliente (público vs confidencial, con o sin un usuario humano presente).
+- **O3 — Decidir dónde guardar tokens en un cliente web** (cookie `httpOnly` vs `localStorage`) razonando el trade-off **XSS vs CSRF**, y diseñar rotación de **refresh tokens** con **scopes** de mínimo privilegio.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** todo backend con usuarios necesita autenticación, y "JWT y OAuth2" aparece literalmente en las ofertas. Pero el dinero real está en el matiz: la mayoría de los candidatos *usa* una librería de auth sin entender qué protege y qué no, y por eso filtran tokens, guardan contraseñas mal, o eligen el flujo OAuth2 equivocado. Un semi-senior que puede defender en una entrevista por qué un JWT no se cifra, cuándo usar PKCE, y por qué `localStorage` es un mal lugar para un refresh token, se separa del montón. Y cuando llegues a la Fase 6, **cada agente y cada servidor MCP** que toque sistemas externos va a autenticarse con OAuth2 client credentials: esto no es "web legacy", es la plumbing de los sistemas agénticos que quieres construir.
+
+Tres razones hacen de esta sub-unidad crítica:
+
+1. **Es la primera línea donde un error te cuesta caro de verdad.** Un bug de validación devuelve un 422. Un bug de auth filtra los datos de todos tus usuarios. Es el inicio formal del hilo de **seguridad** que aplicas hands-on en [`3.13`](/fase-3-backend/3-13-owasp-top10-web/) (Broken Access Control es el #1 de OWASP).
+2. **OAuth2 es el lenguaje de la delegación.** "Inicia sesión con Google", una integración que lee tu calendario, un agente que postea en tu nombre: todos delegan acceso vía OAuth2 sin compartir tu contraseña. En la Fase 7 vas a conectar sistemas externos, y ahí OAuth2 client credentials + manejo de tokens es un skill examinable concreto.
+3. **La auth es una dependencia, no un muro de ifs.** En FastAPI, el usuario autenticado llega a tu endpoint como un `Depends` más —igual que la paginación de [`3.8`](/fase-3-backend/3-8-backend-fastapi/)—. Entender esto cierra el círculo de la inyección de dependencias y mantiene tu lógica de negocio limpia de detalles de transporte.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección ensambla piezas que ya tienes. Reúsalas antes de seguir:
+
+- De [`3.8` FastAPI](/fase-3-backend/3-8-backend-fastapi/): la inyección de dependencias con `Depends`. La autenticación va a ser **una dependencia más** que inyectas en los endpoints protegidos.
+- De [`3.7` Diseño de APIs REST](/fase-3-backend/3-7-diseno-apis-rest/): los status codes. Aquí entran dos nuevos con significado preciso: **401 Unauthorized** ("no sé quién eres") y **403 Forbidden** ("sé quién eres, pero no puedes").
+- De [`3.9` Ports & adapters](/fase-3-backend/3-9-ports-adapters-hexagonal/): "el dominio no conoce el transporte". El servicio que decide *si un usuario puede* no debería saber qué es un header HTTP.
+- De [`1.4` pydantic](/fase-1-lenguajes/1-4-type-hints-mypy-pydantic/): los modelos que validan la entrada. Un token también es entrada no confiable: hay que validarlo.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="Un usuario autenticado (sabes que es 'ana') pide DELETE /facturas/77, pero esa factura es de otro usuario. ¿Qué status code corresponde y qué concepto estás aplicando?"
+  options={[
+    "401 Unauthorized: el token de ana no sirve para borrar facturas ajenas",
+    "403 Forbidden: ana SÍ está autenticada, pero no está autorizada a tocar ese recurso",
+    "404 Not Found: la factura no es suya, así que para ella no existe",
+  ]}
+  answer={1}
+  explanation="401 es 'no sé quién eres' (falta o falla la autenticación). 403 es 'sé quién eres, pero no puedes' (falla la autorización). Ana está autenticada, así que NO es 401. La opción 3 (404 para ocultar la existencia) es una técnica real contra enumeración, pero el concepto que se pregunta es la distinción auth-n vs auth-z: aquí es 403."
+/>
+
+## 4. Cómo se construye la auth, en voz alta
+
+Voy a razonar **paso a paso**, desde "¿qué es siquiera autenticar?" hasta un login real en FastAPI y los flujos de OAuth2. Sígueme: la idea es que veas *por qué* cada pieza existe.
+
+### 4.1 Autenticación vs autorización (no son lo mismo)
+
+Dos preguntas distintas, que la gente mezcla todo el tiempo:
+
+- **Autenticación (authn): ¿quién eres?** Probar tu identidad. Login con contraseña, un token, una huella.
+- **Autorización (authz): ¿qué puedes hacer?** Una vez que sé quién eres, decidir si tienes permiso para esta acción concreta.
+
+Analogía: el guardia del edificio revisa tu carnet en la entrada (autenticación). Que entres no significa que puedas abrir cualquier oficina: tu llave solo abre el piso 3 (autorización). Confundirlas lleva al bug más común de todos: autenticar bien pero **olvidar autorizar** ("ya inició sesión, entonces puede hacer todo"). Ese es el **Broken Access Control** que verás en [`3.13`](/fase-3-backend/3-13-owasp-top10-web/).
+
+### 4.2 Hashing de contraseñas: nunca, jamás, en texto plano
+
+Primera regla, sin excepciones: **no guardas contraseñas. Guardas el hash de la contraseña.** Un hash es una función de una sola vía: de la contraseña sacas el hash, pero del hash no puedes volver a la contraseña. Cuando el usuario hace login, hasheas lo que escribió y comparas hashes. Si tu base de datos se filtra (y algún día alguna se filtra), el atacante se lleva hashes inútiles, no las contraseñas.
+
+Pero no cualquier hash sirve. Dos detalles que separan hacerlo bien de hacerlo mal:
+
+- **Lento a propósito.** MD5 y SHA-256 son *rápidos* — diseñados para verificar archivos a millones por segundo. Eso es exactamente lo que **no** quieres: un atacante con tu base de datos probaría miles de millones de contraseñas por segundo. Usa un algoritmo **diseñado para ser lento y costoso en memoria**: **Argon2** (el recomendado hoy) o **bcrypt**. Tardar 100 ms por hash no te molesta a ti (un login), pero le destroza la economía al atacante.
+- **Con salt.** Un *salt* es un valor aleatorio único por contraseña que se mezcla antes de hashear. Sin salt, dos usuarios con la misma contraseña tienen el mismo hash, y un atacante precomputa tablas (rainbow tables) una vez y las reusa. Con salt, cada hash es único. Las librerías serias generan y guardan el salt por ti, dentro del propio string del hash.
+
+En Python, la herramienta vigente (2026) es **`pwdlib`**, que envuelve Argon2 con defaults sanos (reemplazó a `passlib`, que quedó sin mantención). La API es minúscula:
+
+```python
+from pwdlib import PasswordHash
+
+password_hash = PasswordHash.recommended()   # Argon2id con parámetros sensatos
+
+# Al registrar un usuario: guardas ESTO en la DB, nunca la contraseña.
+hash_guardado = password_hash.hash("contraseña-del-usuario")
+# -> "$argon2id$v=19$m=65536,t=3,p=4$...salt...$...hash..."  (el salt va incluido)
+
+# Al hacer login: comparas, no descifras.
+es_valida = password_hash.verify("lo-que-escribió", hash_guardado)   # True / False
+```
+
+Fíjate que el string resultante lleva dentro el algoritmo (`argon2id`), los parámetros de costo (`m`, `t`, `p`) y el salt. No necesitas guardar nada más.
+
+### 4.3 Sesiones vs tokens: dos formas de "recordar" que iniciaste sesión
+
+HTTP no tiene memoria: cada request es independiente. Si te autenticaste en un request, ¿cómo sabe el siguiente que sigues siendo tú? Dos enfoques:
+
+| | **Sesión (stateful)** | **Token / JWT (stateless)** |
+|---|---|---|
+| Dónde vive el estado | En el **servidor** (o Redis): un `session_id` apunta a tus datos | En el **token mismo**: el servidor no guarda nada |
+| Qué viaja al cliente | Un id opaco (en una cookie) | El token entero con tus claims, firmado |
+| Para invalidar | Borras la sesión en el servidor: instantáneo | No puedes "borrar" un JWT emitido; esperas a que expire (o llevas una denylist) |
+| Escala horizontal | Necesitas almacenamiento compartido (Redis) entre servidores | Cualquier servidor valida el token solo con la firma — escala fácil |
+| Caso típico | Apps web tradicionales, máxima capacidad de revocar | APIs, microservicios, móvil, sistemas distribuidos |
+
+No hay un ganador universal. El trade-off central: **el token stateless escala sin estado compartido, pero pierdes la revocación instantánea**. Por eso los JWT se emiten con **expiración corta** (minutos), y la "sesión larga" se maneja con refresh tokens (sección 4.9). Para este curso y el capstone usamos **tokens (JWT)**: es el estándar para APIs y el puente a los sistemas de IA.
+
+### 4.4 Anatomía de un JWT (esto es lo que más se malentiende)
+
+Un **JWT** (JSON Web Token) son tres bloques separados por puntos: `header.payload.signature`. Cada bloque es **base64url** (no cifrado, solo codificado). Un token real se ve así:
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmEiLCJyb2xlIjoidXNlciIsImV4cCI6MTcxOTQ1MDAwMH0.3Hd9...firma...
+```
+
+Si pegas las dos primeras partes en cualquier decodificador base64, salen JSON legibles:
+
+```json
+// header  -> qué algoritmo firma esto
+{ "alg": "HS256", "typ": "JWT" }
+
+// payload -> los "claims" (afirmaciones sobre quién eres)
+{ "sub": "ana", "role": "user", "exp": 1719450000 }
+```
+
+- **`header`**: el algoritmo de firma (`alg`) y el tipo. `HS256` = HMAC con SHA-256 (un secreto compartido). También existe `RS256` (par de claves pública/privada).
+- **`payload`**: los **claims**. `sub` (subject, quién es), `exp` (expiration, epoch en segundos), `iat` (issued at), `iss` (issuer), y los tuyos (`role`, `scopes`...).
+- **`signature`**: `HMAC_SHA256(base64url(header) + "." + base64url(payload), SECRET)`. Es lo único que un atacante no puede falsificar **sin tu secreto**.
+
+Aquí están las dos verdades que casi todos confunden:
+
+:::caution[Un JWT NO está cifrado: está FIRMADO]
+La firma garantiza **integridad** (nadie alteró el token) y **autenticidad** (lo emitió quien tiene el secreto). **No** garantiza confidencialidad: el payload es base64, **cualquiera lo lee**. Por eso **nunca pongas datos sensibles en el payload** — ni contraseñas, ni números de tarjeta, ni secretos. Pon lo mínimo para identificar (`sub`, `role`, `exp`). Si necesitas confidencialidad real, eso es JWE (cifrado), otra cosa.
+:::
+
+¿Y qué evita que un atacante cambie `"role": "user"` por `"role": "admin"`? Que al cambiar el payload, la firma deja de cuadrar. El servidor recalcula `HMAC(header.payload_modificado, SECRET)` y no coincide con la firma que llegó → token rechazado. **Sin el secreto, no puede generar una firma válida para su payload trucado.** Por eso el `SECRET_KEY` es lo más sensible de tu backend: quien lo tenga, puede firmar tokens de cualquier usuario.
+
+Y la **expiración** (`exp`) existe porque un token robado es válido hasta que expira y no puedes "apagarlo". Token de vida corta = ventana de daño pequeña.
+
+```mermaid
+flowchart LR
+    subgraph Emisión
+        L[Login OK] --> B[arma header + payload]
+        B --> F["firma = HMAC(header.payload, SECRET)"]
+        F --> T[token: header.payload.firma]
+    end
+    subgraph Validación
+        T2[token entrante] --> V["recalcula HMAC con SECRET"]
+        V --> C{¿firma coincide?}
+        C -->|no| X[401: rechazado]
+        C -->|sí| E{¿exp ya pasó?}
+        E -->|sí| X
+        E -->|no| OK[claims confiables]
+    end
+```
+
+:::caution[El ataque del `alg: none`]
+Históricamente, librerías mal hechas leían el `alg` del header para decidir cómo verificar. Un atacante enviaba un header con `"alg": "none"` y **sin firma**, y la librería lo aceptaba como "no requiere firma". Regla de oro: **tú fijas el algoritmo permitido al validar; nunca dejas que el token elija**. Por eso al decodificar siempre pasas `algorithms=["HS256"]` explícito y rechazas cualquier otro. Lo vas a implementar a mano en el ejercicio 1.
+:::
+
+### 4.5 Login real en FastAPI: contraseña + JWT
+
+Ahora juntamos las piezas. FastAPI trae `OAuth2PasswordBearer` (extrae el token del header `Authorization: Bearer ...`) y `OAuth2PasswordRequestForm` (recibe usuario/contraseña). Para los JWT usamos la librería **PyJWT** (`import jwt`). Este es el patrón canónico, verificado contra la documentación oficial de FastAPI (2026):
+
+```python
+from datetime import datetime, timedelta, timezone
+from typing import Annotated
+
+import jwt
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
+from pydantic import BaseModel
+
+# En producción: un secreto largo y aleatorio, leído de una variable de entorno.
+# NUNCA hardcodeado en el código ni commiteado (eso es 3.13: secrets management).
+SECRET_KEY = "...lee esto de tu config/entorno..."
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+password_hash = PasswordHash.recommended()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+app = FastAPI()
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+def crear_access_token(data: dict, expira_en: timedelta) -> str:
+    to_encode = data.copy()
+    to_encode["exp"] = datetime.now(timezone.utc) + expira_en
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+@app.post("/token")
+async def login(form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+    usuario = autenticar_usuario(form.username, form.password)   # busca + verify_password
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario o contraseña incorrectos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    token = crear_access_token(
+        data={"sub": usuario.username},
+        expira_en=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    return Token(access_token=token, token_type="bearer")
+
+
+async def usuario_actual(token: Annotated[str, Depends(oauth2_scheme)]):
+    credenciales_invalidas = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No se pudo validar la credencial",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # alg PINNEADO
+        username = payload.get("sub")
+        if username is None:
+            raise credenciales_invalidas
+    except InvalidTokenError:   # firma mala, expirado, malformado: todo cae aquí
+        raise credenciales_invalidas
+    usuario = buscar_usuario(username)
+    if usuario is None:
+        raise credenciales_invalidas
+    return usuario
+
+
+# Cualquier endpoint protegido recibe el usuario como UNA DEPENDENCIA más:
+@app.get("/yo")
+async def leer_perfil(usuario: Annotated[dict, Depends(usuario_actual)]):
+    return usuario
+```
+
+Tres cosas que valen oro aquí:
+
+1. **`jwt.decode(..., algorithms=[ALGORITHM])`** rechaza el ataque `alg: none` y la confusión de algoritmos. La librería valida la firma *y* el `exp` automáticamente; si algo falla, lanza `InvalidTokenError`.
+2. **La auth es un `Depends`.** `Depends(usuario_actual)` es exactamente el patrón de [`3.8`](/fase-3-backend/3-8-backend-fastapi/): el endpoint recibe el usuario ya validado, sin un muro de ifs. Y como es una dependencia, en los tests la sustituyes con `dependency_overrides`.
+3. **Mitigación de timing attack.** En `autenticar_usuario`, si el usuario *no existe*, igual ejecuta un `verify_password` contra un hash dummy. Si no lo hicieras, un usuario inexistente respondería más rápido que uno con contraseña mala, y un atacante podría enumerar qué usuarios existen midiendo el tiempo.
+
+### 4.6 OAuth2 a fondo: los cuatro roles
+
+Hasta aquí, tu app autentica a sus propios usuarios. Pero, ¿cómo dejas que **otra aplicación** acceda a datos del usuario sin que el usuario le entregue su contraseña? Ese es el problema que resuelve **OAuth2**: un **framework de autorización delegada**. Cuatro roles:
+
+- **Resource Owner**: el usuario, dueño de los datos.
+- **Client**: la app que quiere acceder en nombre del usuario (tu SPA, una app móvil, un servicio).
+- **Authorization Server**: quien autentica al usuario y emite tokens (Google, Auth0, Keycloak, o el tuyo).
+- **Resource Server**: la API que guarda los datos y acepta tokens (tu backend FastAPI).
+
+Punto clave que casi todos confunden: **OAuth2 es autorización (delegar acceso), no autenticación de login.** "Inicia sesión con Google" en realidad es **OpenID Connect (OIDC)**, una capa de identidad *encima* de OAuth2 que añade un `id_token` (un JWT que dice quién es el usuario). OAuth2 te da un `access_token` para *acceder a recursos*; OIDC te da además identidad.
+
+Hay dos flujos que tienes que dominar. La pregunta que decide cuál usar: **¿hay un usuario humano dando consentimiento, o es máquina-a-máquina? ¿El cliente puede guardar un secreto?**
+
+### 4.7 Authorization Code + PKCE (cuando hay un usuario)
+
+Es el flujo para apps con un usuario humano: web (SPA), móvil, server-side. El usuario se autentica en el authorization server (no en tu app: tu app **nunca ve la contraseña**), aprueba los permisos, y tu app recibe un **código de autorización** que canjea por tokens.
+
+**PKCE** (Proof Key for Code Exchange, RFC 7636) es la pieza que lo hace seguro para **clientes públicos** — los que no pueden guardar un secreto: una SPA (su código está en el navegador, a la vista) o una app móvil (alguien puede descompilarla). Funciona así: el cliente inventa un secreto efímero por cada login (`code_verifier`), manda solo su **hash** (`code_challenge = base64url(SHA256(code_verifier))`) al pedir el código, y al canjear el código presenta el `code_verifier` original. El authorization server verifica que el hash cuadre. Así, aunque un atacante intercepte el código de autorización, **no puede canjearlo** porque no tiene el `code_verifier`.
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant C as Cliente (SPA / móvil)
+    participant A as Authorization Server
+    participant R as Resource Server (tu API)
+    C->>C: genera code_verifier aleatorio
+    C->>C: code_challenge = base64url(SHA256(code_verifier))
+    C->>A: /authorize (code_challenge, method=S256, scopes)
+    A->>U: pantalla de login + consentimiento
+    U->>A: se autentica y aprueba los scopes
+    A->>C: redirect con authorization code (corto, un solo uso)
+    C->>A: /token (code + code_verifier)
+    A->>A: ¿SHA256(code_verifier) == code_challenge?
+    A->>C: access_token (+ refresh_token)
+    C->>R: GET /recurso (Authorization: Bearer access_token)
+    R->>C: 200 + datos
+```
+
+En 2026 esto es el estándar. El antiguo **Implicit Flow** (que devolvía el token directo en la URL) está **deprecado** por OAuth 2.1 — si ves un tutorial que lo recomienda para SPAs, está desactualizado.
+
+### 4.8 Client Credentials (máquina a máquina, sin usuario)
+
+Cuando **no hay usuario humano** —un cron job, un microservicio que llama a otro, un agente de IA que consume una API— no hay nadie a quien mostrarle una pantalla de consentimiento. El cliente es **confidencial** (corre en un servidor, puede guardar un secreto de verdad). El flujo es directo:
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente (servicio backend)
+    participant A as Authorization Server
+    participant R as Resource Server (API destino)
+    C->>A: /token (client_id + client_secret, grant=client_credentials, scopes)
+    A->>C: access_token
+    C->>R: GET /recurso (Authorization: Bearer access_token)
+    R->>C: 200 + datos
+```
+
+No hay `code`, ni PKCE, ni usuario: el servicio se identifica con su `client_id` + `client_secret` y obtiene un token que representa **a sí mismo**, no a un usuario. Este es el flujo que vas a usar en la Fase 7 cuando tu automatización se autentique contra APIs externas, y en la Fase 6 cuando un servidor MCP necesite credenciales.
+
+### 4.9 Refresh tokens, rotación y scopes
+
+Si el access token expira en 30 minutos, ¿el usuario hace login cada media hora? No. Junto al access token (corto), el authorization server entrega un **refresh token** (largo). Cuando el access token expira, el cliente canjea el refresh token por uno nuevo, sin molestar al usuario.
+
+Esto crea un riesgo: el refresh token es de larga vida, así que si lo roban, duele más. Dos defensas:
+
+- **Rotación con detección de reuso**: cada vez que usas un refresh token, el servidor te da uno nuevo e **invalida el anterior**. Si alguna vez aparece un refresh token ya usado (porque un atacante robó una copia), el servidor sabe que algo huele mal y **revoca toda la familia** de tokens. Es la mejor práctica actual.
+- **Scopes (mínimo privilegio)**: un token no debería poder "todo". Los **scopes** acotan qué puede hacer (`facturas:leer`, `perfil:editar`). Pides solo los que necesitas. Si un token con scope `facturas:leer` se filtra, el atacante no puede borrar nada. Es el principio de **least privilege** aplicado a tokens — el mismo que regirá los permisos de tus agentes en la Fase 6/7.
+
+FastAPI soporta scopes nativamente con `Security(dep, scopes=[...])` y `SecurityScopes`, integrándolos en la documentación OpenAPI.
+
+### 4.10 ¿Dónde guarda el cliente web el token? (la pregunta de entrevista)
+
+Tu SPA recibió un token. ¿Dónde lo guarda en el navegador? Hay dos opciones y **ninguna es gratis** — es un trade-off entre dos vectores de ataque distintos:
+
+| | **`localStorage`** | **Cookie `httpOnly`** |
+|---|---|---|
+| Acceso desde JS | Sí — `localStorage.getItem(...)` | **No** — el navegador la guarda, JS no la lee |
+| Vulnerable a **XSS** | **Sí, grave**: cualquier script inyectado roba el token | Mitigado: el JS malicioso no puede leerla |
+| Vulnerable a **CSRF** | No (no se envía sola) | **Sí**: el navegador la manda automática → necesitas defensa CSRF |
+| Defensa necesaria | Eliminar todo XSS (difícil de garantizar) | `SameSite=Strict/Lax` + `Secure` + token anti-CSRF |
+
+La trampa: `localStorage` es lo *fácil* (lo lees con una línea de JS), y por eso miles de tutoriales lo usan. Pero un solo **XSS** —un script malicioso inyectado, p. ej. vía una dependencia npm comprometida— lee tu `localStorage` y se lleva el token. Por eso la recomendación moderna para el refresh token (el de larga vida, el que más duele perder) es: **cookie `httpOnly` + `Secure` + `SameSite`**, que JS no puede leer, aceptando que entonces debes defenderte de CSRF (con `SameSite` y/o un token anti-CSRF).
+
+El patrón más robusto en 2026 es el **BFF (Backend-For-Frontend)**: un backend liviano que guarda los tokens server-side y le da al navegador solo una cookie de sesión `httpOnly`. El navegador nunca toca el access token. Más infraestructura, pero elimina el dilema.
+
+:::tip[GLaDOS dice]
+Regla práctica para el capstone: **refresh token → cookie `httpOnly`+`Secure`+`SameSite` (o BFF). Nunca en `localStorage`.** El access token de vida corta en memoria (una variable JS) es un mal menor aceptable. Y documenta esta decisión como un **ADR**: "elegí cookies httpOnly sobre localStorage por XSS, asumiendo CSRF mitigado con SameSite" es justo el trade-off defendible que distingue a un semi-senior.
+:::
+
+## 5. Non-examples y misconceptions (lee esto, aquí se cae la gente)
+
+:::caution[Podrías pensar X… y está mal]
+
+**"El JWT va firmado, así que puedo meter datos sensibles, nadie los ve."**
+Falso y peligroso. Firmado ≠ cifrado. El payload es base64, legible por cualquiera que intercepte el token. Mete lo mínimo (`sub`, `role`, `exp`). Datos sensibles, jamás.
+
+**"Guardo las contraseñas hasheadas con SHA-256, total es un hash."**
+Insuficiente. SHA-256 es *rápido*: un atacante prueba miles de millones por segundo. Usa Argon2 o bcrypt (lentos y con salt, a propósito). "Es un hash" no basta; tiene que ser un hash *para contraseñas*.
+
+**"Autenticar y autorizar son lo mismo: si inició sesión, puede."**
+El bug #1 de seguridad web (Broken Access Control). Autenticar es "sé quién eres" (401 si falla). Autorizar es "¿puedes hacer ESTO con ESTE recurso?" (403 si falla). Que ana esté logueada no la deja borrar facturas de pedro. Verifica la propiedad del recurso en cada acción.
+
+**"Una SPA usa client credentials para hablar con la API."**
+No. Client credentials es máquina-a-máquina, sin usuario, y exige un `client_secret` que una SPA **no puede esconder** (su código está en el navegador). Una SPA con usuario usa **authorization code + PKCE**. Si alguien te dice "implicit flow", también está mal: está deprecado.
+
+**"Guardo el token en localStorage porque es lo más cómodo."**
+Cómodo y vulnerable a XSS: un script inyectado lo roba en una línea. El refresh token va en cookie `httpOnly`+`Secure`+`SameSite` (o BFF), no en `localStorage`.
+
+**"Mi JWT no expira, así el usuario nunca tiene que reloguear."**
+Un JWT que no expira es un token robado que vale para siempre, y no puedes revocarlo (es stateless). Expiración corta + refresh token con rotación. La comodidad no vale el riesgo.
+
+**"Confío en el `alg` que viene en el header del token para verificarlo."**
+Así nace el ataque `alg: none`. El algoritmo lo fijas TÚ al validar (`algorithms=["HS256"]`). El token no decide cómo se verifica a sí mismo.
+:::
+
+## 6. Práctica con andamiaje (antes de soltarte)
+
+### 6.1 Predice antes de correr
+
+Lee este fragmento que **decodifica** (no verifica) un JWT, sin ejecutarlo, y responde:
+
+```python
+import base64, json
+
+token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbmEiLCJyb2xlIjoiYWRtaW4ifQ.firma_cualquiera"
+header_b64, payload_b64, firma = token.split(".")
+# base64url necesita re-agregar el padding '=' que se quita en JWT:
+payload = payload_b64 + "=" * (-len(payload_b64) % 4)
+print(json.loads(base64.urlsafe_b64decode(payload)))
+```
+
+<Quiz
+  question="¿Qué imprime, y qué demuestra sobre los JWT?"
+  options={[
+    "Error: no se puede leer el payload sin el SECRET_KEY",
+    "{'sub': 'ana', 'role': 'admin'} — el payload es base64, legible por cualquiera SIN el secreto",
+    "{'sub': 'ana', 'role': 'admin'} pero solo porque la firma es válida",
+  ]}
+  answer={1}
+  explanation="Decodificar el payload NO requiere el secreto: es base64, no cifrado. Imprime el dict tal cual. Esto prueba la lección central: un JWT es legible por cualquiera; la firma solo evita que lo MODIFIQUEN, no que lo LEAN. Por eso nunca metes datos sensibles en el payload. Nota: aquí solo decodificamos; verificar la firma (que sí necesita el secreto) es otra cosa."
+/>
+
+### 6.2 Completa el hueco (faded)
+
+Este validador de JWT en FastAPI debe rechazar el ataque `alg: none` y la confusión de algoritmos. Falta el argumento clave en `jwt.decode`. ¿Cuál?
+
+```python
+def validar(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, ___ )  # (1) fija el algoritmo permitido
+        return payload
+    except InvalidTokenError:
+        raise HTTPException(status_code=401, detail="token inválido")
+```
+
+<Solucion title="Ver el argumento que falta (pista, no la solución del ejercicio)">
+
+```python
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+```
+
+`algorithms=["HS256"]` le dice a PyJWT: "verifica esto SOLO como HS256, ignora el `alg` que traiga el token". Sin este argumento (o con una lista que incluya `"none"`), abres la puerta al ataque `alg: none` y a la confusión de algoritmos. El token nunca decide cómo se verifica a sí mismo.
+
+</Solucion>
+
+## 7. Ejercicios Primero-Sin-IA
+
+Trabaja cada uno **a mano y sin IA** dentro de su timebox. Las carpetas viven en tu repo; ábrelas en tu editor. Solo cuando estés trabado de verdad usa la IA para *revisar* (no para generar). Pídele la corrección con la rúbrica de `.ai/` cuando termines.
+
+<Reto title="Verifica un JWT a mano (con solo la librería estándar)" timebox="40–45 min">
+
+Carpeta: `ejercicios/fase-3/verificar-jwt-a-mano/`
+
+Implementa `verificar_jwt(token, secret, ahora)` usando **únicamente** `hmac`, `hashlib`, `base64` y `json` — sin PyJWT. Es la mejor forma de entender qué protege (y qué no) un JWT. Te damos `firmar_jwt` (para crear tokens) y los helpers de base64url; tú escribes la verificación, que debe, **en este orden de defensa**:
+
+1. Exigir exactamente 3 partes (`header.payload.signature`) que decodifiquen → si no, `TokenMalformado`.
+2. Exigir `alg == "HS256"` en el header; cualquier otro valor (incluido `"none"`) → `AlgoritmoNoPermitido`.
+3. Recalcular la firma con HMAC-SHA256 y compararla **en tiempo constante** (`hmac.compare_digest`) → si no cuadra, `FirmaInvalida`.
+4. Si hay claim `exp` y `ahora` es mayor o igual que `exp` → `TokenExpirado`.
+5. Si todo pasa, devolver los claims.
+
+**Hecho significa:**
+- `pytest` en verde: el test verifica token válido, firma inválida (secreto distinto), payload manipulado, expiración, ataque `alg: none`, estructura malformada y base64 inválido.
+- Usas `hmac.compare_digest` para comparar firmas (no `==`) y puedes explicar por qué (timing attack).
+- En `bitacora.md` respondes: ¿por qué verificas la firma **antes** de leer `exp`? ¿Por qué el `alg` lo decides tú y no el token?
+
+Implementa primero la versión que se te ocurra y **mira los tests fallar**: ver el `alg: none` rechazado es el momento "ajá" del ejercicio.
+
+</Reto>
+
+<Reto title="Diseña los flujos de auth de tres clientes (y dónde guardar el token)" timebox="35–40 min">
+
+Carpeta: `ejercicios/fase-3/disenar-flujo-oauth2/`
+
+Sin código: puro criterio de diseño. Te dan tres clientes que necesitan acceder a tu API y debes, para cada uno, **elegir el flujo OAuth2 correcto y justificarlo**, más decidir el almacenamiento de tokens y diseñar la estrategia de refresh + scopes. Los tres clientes:
+
+- **C1** — Una SPA en React (corre en el navegador) con usuarios humanos.
+- **C2** — Un cron job nocturno que llama a tu API para generar reportes, sin usuario presente.
+- **C3** — Una app móvil nativa con login de usuario.
+
+**Hecho significa** (entregas `decisiones.md` + `diagrama.md`):
+- Cada cliente tiene su flujo (`authorization code + PKCE` o `client credentials`) con 2–3 líneas de justificación basadas en **cliente público vs confidencial** y **con/sin usuario**.
+- Explicas qué ataque evita PKCE y por qué C1 y C3 lo necesitan pero C2 no.
+- Para C1, decides dónde guardar el refresh token (cookie `httpOnly` vs `localStorage`) razonando el trade-off **XSS vs CSRF**, y mencionas el patrón BFF.
+- Diseñas rotación de refresh tokens + 2 ejemplos de scopes de mínimo privilegio.
+- `diagrama.md` tiene un `sequenceDiagram` Mermaid del flujo de C1 (authorization code + PKCE).
+- Detectas al menos una **trampa**: identifica qué flujo sería incorrecto para C1 y por qué (pista: client credentials e implicit).
+
+</Reto>
+
+> La **solución de referencia** de cada ejercicio existe para el corrector IA, no para ti: no la busques antes de cerrar tu intento. La pista inline de la sección 6.2 es un empujón, no la respuesta.
+
+## 8. Check de dominio
+
+Sin mirar la lección, responde en voz alta o por escrito. Si una te traba, ya sabes qué sección releer.
+
+<CheckDominio items={[
+  "Explicar la diferencia entre autenticación y autorización con un ejemplo, y qué status code (401 vs 403) corresponde a cada falla.",
+  "Explicar por qué se hashea una contraseña con Argon2/bcrypt y no con SHA-256, mencionando 'lento a propósito' y 'salt'.",
+  "Describir las tres partes de un JWT y explicar por qué un JWT es legible pero no falsificable sin el secreto.",
+  "Explicar por qué NO se ponen datos sensibles en el payload de un JWT aunque vaya firmado.",
+  "Decidir, dado un cliente (SPA, servicio sin usuario, móvil), qué flujo OAuth2 usar y por qué.",
+  "Explicar qué ataque evita PKCE y por qué un cliente público lo necesita.",
+  "Razonar el trade-off de guardar un token en cookie httpOnly vs localStorage (XSS vs CSRF).",
+  "Explicar qué es la rotación de refresh tokens y por qué los scopes aplican 'least privilege'.",
+]} />
+
+<Quiz
+  question="Un servicio backend tuyo (sin usuario humano) necesita llamar cada noche a la API de un proveedor. ¿Qué flujo OAuth2 usa y por qué?"
+  options={[
+    "Authorization code + PKCE: es el flujo más seguro y moderno, sirve para todo",
+    "Client credentials: no hay usuario que dé consentimiento, y el servicio es un cliente confidencial que SÍ puede guardar un client_secret",
+    "Implicit flow: es máquina a máquina, así que el token va directo sin código",
+  ]}
+  answer={1}
+  explanation="Sin usuario humano que dé consentimiento, no hay a quién mostrarle una pantalla de login: authorization code + PKCE no aplica (es para clientes con usuario). El servicio corre en un servidor y puede guardar un client_secret de verdad (cliente confidencial), así que usa client credentials: se identifica a sí mismo y obtiene un token que lo representa. El implicit flow está deprecado y nunca fue para esto."
+/>
+
+## 9. Recursos (oficial primero)
+
+- **FastAPI — Security** (`fastapi.tiangolo.com/tutorial/security/`): la serie completa, en orden. El tutorial *OAuth2 with Password (and hashing), Bearer with JWT tokens* es el patrón canónico de la sección 4.5 (usa `pwdlib` + PyJWT).
+- **PyJWT — documentación oficial** (`pyjwt.readthedocs.io`): `encode`, `decode`, el parámetro `algorithms` y las excepciones. Lee la nota sobre validar siempre el algoritmo.
+- **pwdlib — documentación** (`frankie567.github.io/pwdlib/`): el reemplazo moderno de passlib; Argon2 por defecto.
+- **RFC 7636 — PKCE** (`datatracker.ietf.org/doc/html/rfc7636`): la fuente sobre `code_verifier`/`code_challenge`. Densa pero corta.
+- **OAuth 2.0 Simplified** (Aaron Parecki, `oauth.net/2/`): la mejor introducción legible a los flujos; explica por qué Implicit murió.
+- **OWASP Cheat Sheet — JWT for Java / Session Management**: las trampas de seguridad de tokens y sesiones (refuerza [`3.13`](/fase-3-backend/3-13-owasp-top10-web/)).
+- **MDN — `Set-Cookie` (`HttpOnly`, `Secure`, `SameSite`)**: para entender la cookie de la sección 4.10.
+
+## 10. Conexión con el capstone
+
+El [capstone de la Fase 3](/fase-3-backend/proyecto/) es una **API de producción en FastAPI con auth JWT**. Esta sub-unidad es ese pilar:
+
+- El **login + emisión de JWT** y la dependencia `usuario_actual` (sección 4.5) son los que protegen tus endpoints — montados sobre el `Depends` de [`3.8`](/fase-3-backend/3-8-backend-fastapi/).
+- La **autorización por recurso** (verificar que el usuario sea dueño de lo que toca) es la defensa contra Broken Access Control que endureces en [`3.13`](/fase-3-backend/3-13-owasp-top10-web/).
+- El `SECRET_KEY` **leído del entorno, nunca hardcodeado**, es el hilo de **secrets management** del capstone (gitleaks en el pipeline).
+- La decisión de almacenamiento de tokens y la expiración corta + refresh son un **ADR** del proyecto: documenta el trade-off que elegiste.
+
+Recuerda el **Definition of Done** de la fase: la auth bien hecha (hashing seguro, JWT validado con `alg` pinneado, autorización por recurso, secreto fuera del código) es parte de "seguridad aplicada" — no es opcional, es ship-gate.
+
+## 11. Reflexión + repaso espaciado
+
+Escribe 3–4 frases respondiendo: **¿cuál de estas ideas te sorprendió más — que un JWT sea legible por cualquiera, o que `localStorage` sea un mal lugar para un token?** Lo que te sorprendió es justo lo que tu modelo mental tenía mal, y por eso es lo que más vale fijar.
+
+**Gancho de spaced repetition:**
+- **Mañana:** reescribe de memoria, sin mirar, la diferencia entre autenticación y autorización con un ejemplo y sus status codes (401/403). Y dibuja las tres partes de un JWT.
+- **En 3 días:** explícale a alguien (o a una grabación tuya, en inglés técnico) por qué una SPA usa authorization code + PKCE y un cron job usa client credentials. Si no puedes justificar "cliente público vs confidencial", relee 4.7–4.8.
+- **En 1 semana:** al montar el capstone, implementa el login + `usuario_actual` sin copiar de aquí, y escribe el ADR de almacenamiento de tokens. Esa es la prueba real de que lo interiorizaste.

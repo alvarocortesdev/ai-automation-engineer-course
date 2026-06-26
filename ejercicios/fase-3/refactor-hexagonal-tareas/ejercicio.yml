@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/refactor-hexagonal-tareas
+titulo: "Refactor: desacopla un endpoint en dominio + puerto + adaptadores"
+fase: fase-3
+sub_unidad: "3.9"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Separar un endpoint acoplado en dominio puro (entidad + reglas), un puerto (Protocol) y adaptadores, manteniendo el dominio sin importar fastapi ni sqlalchemy"
+  - "Implementar el mismo puerto con dos adaptadores intercambiables (memoria y SQLAlchemy) y cablearlos en FastAPI con Depends"
+  - "Testear la regla de negocio sin base de datos usando un doble en memoria y app.dependency_overrides; justificar en un ADR dónde sí y dónde no va un puerto"
+hilos_transversales: [testing, spec-driven, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

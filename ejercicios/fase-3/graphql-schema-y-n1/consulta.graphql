@@ -1,0 +1,11 @@
+# consulta.graphql — STARTER
+#
+# Escribe UNA query que resuelva la PANTALLA DE PERFIL:
+# debe mostrar el NOMBRE del usuario y los TÍTULOS de sus posts.
+#
+# Regla del ejercicio: pide EXACTAMENTE esos campos. Nada de email, bio o body.
+# Si pides de más, estás reintroduciendo el over-fetching que GraphQL vino a matar.
+
+query PerfilDeUsuario {
+  # TODO: pide el usuario con id "1", su name, y dentro de posts solo el title.
+}

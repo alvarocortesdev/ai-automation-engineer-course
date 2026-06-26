@@ -1,0 +1,41 @@
+# schema.graphql — STARTER
+#
+# Completa los TODOs. Recuerda:
+#   - String!  -> el campo NUNCA es null (non-null)
+#   - String   -> el campo PUEDE ser null
+#   - [Post!]! -> lista que no es null y cuyos elementos no son null (relación 1:N)
+#   - type Query es la puerta de entrada de LECTURA
+#
+# No tienes que ejecutar nada: esto es diseño a mano. Si quieres validarlo,
+# puedes pegarlo en https://graphql.org (o en un editor con plugin de GraphQL),
+# pero el ejercicio se evalúa a mano.
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  bio: String        # opcional: puede no tener bio
+  # TODO: relación 1:N con Post (un usuario escribe muchos posts)
+}
+
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+  # TODO: relación con su autor (un post tiene UN autor)
+  # TODO: relación con sus comentarios (un post tiene muchos comentarios)
+}
+
+type Comment {
+  id: ID!
+  text: String!
+  # TODO: relación con el autor del comentario
+}
+
+type Query {
+  # Entrada para la PANTALLA DE PERFIL: un usuario por id
+  user(id: ID!): User
+
+  # TODO: entrada para la PANTALLA DE FEED (lista de posts recientes).
+  #       Piensa el nombre y el tipo de retorno.
+}

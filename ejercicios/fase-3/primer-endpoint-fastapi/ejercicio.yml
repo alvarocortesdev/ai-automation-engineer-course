@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/primer-endpoint-fastapi
+titulo: "Tu primera API FastAPI: tareas con CRUD parcial"
+fase: fase-3
+sub_unidad: "3.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar endpoints FastAPI que reciben datos por path, query y body y los validan con modelos pydantic"
+  - "Devolver el status code correcto (201 al crear) y un response_model explícito que controla la salida"
+  - "Manejar el caso 'recurso no existe' con HTTPException(404) en vez de un error disfrazado de 200"
+hilos_transversales: [testing, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: ejercicios/fase-3/primer-endpoint-fastapi/test_app.py

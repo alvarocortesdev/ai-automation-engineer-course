@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/disenar-puertos-cobranza
+titulo: "Diseña los puertos de una feature (y decide dónde NO ponerlos)"
+fase: fase-3
+sub_unidad: "3.9"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Clasificar las piezas de una feature en dominio puro vs adaptadores, y proponer los puertos necesarios con sus métodos"
+  - "Decidir, por escenario, puerto SI / puerto NO con un trade-off defendible (testabilidad o punto de cambio real vs sobre-ingenieria)"
+  - "Dibujar la direccion de las dependencias en un diagrama hexagonal: todo apunta al dominio, nada sale del dominio hacia la infra"
+hilos_transversales: [testing, spec-driven, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: no hay suite; entrega razonamiento + diagrama en Markdown

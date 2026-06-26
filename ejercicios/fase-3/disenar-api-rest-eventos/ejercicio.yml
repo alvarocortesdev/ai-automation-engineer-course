@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/disenar-api-rest-eventos
+titulo: "Diseña la API de un sistema de eventos"
+fase: fase-3
+sub_unidad: "3.7"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diseñar recursos y endpoints REST desde requisitos: sustantivos en la URL, verbos HTTP para la acción, y el status code correcto por caso"
+  - "Modelar acciones que no son CRUD (inscribirse, cancelar) como recursos o cambios de estado, sin verbos en la URL"
+  - "Justificar trade-offs de diseño: status code de conflicto de estado, paginación offset vs cursor, y versionado (URL vs header) en un mini-ADR"
+  - "Especificar un modelo de errores problem+json (RFC 9457) y un fragmento de contrato OpenAPI 3.1"
+hilos_transversales: [seguridad, observabilidad, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: no hay suite; se entrega diseño en Markdown + OpenAPI YAML

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/leer-explain-analyze
+titulo: "Leer un plan EXPLAIN ANALYZE y arreglar la query"
+fase: fase-3
+sub_unidad: "3.3"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Identificar el cuello de botella de una query leyendo su plan (Seq Scan, Rows Removed by Filter, actual time) y citando las líneas"
+  - "Distinguir el cost estimado (unidades arbitrarias) del actual time real (ms) y detectar una brecha entre rows estimado y real"
+  - "Proponer el índice correcto y predecir la operación del plan nuevo (Index Scan / Bitmap Heap Scan), incluyendo el caso del ORDER BY"
+hilos_transversales: [observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # razonamiento + SQL; verificación opcional con datos-sinteticos.sql, sin suite

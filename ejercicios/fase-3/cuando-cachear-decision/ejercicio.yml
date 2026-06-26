@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/cuando-cachear-decision
+titulo: "¿Cachear o no? Decide y elige la estructura"
+fase: fase-3
+sub_unidad: "3.15"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Decidir cuándo una cache se justifica y cuándo NO, argumentando con métricas (lee-mucho/cambia-poco; cuello de botella real)"
+  - "Elegir la estructura Redis correcta (string/hash/list/set/sorted set) según el caso de uso"
+  - "Razonar el TTL y la estrategia de invalidación, nombrando el riesgo (staleness/race/thundering herd) que introduce o evita"
+hilos_transversales: [costo-latencia, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: la entrega es decisiones.md, no hay suite

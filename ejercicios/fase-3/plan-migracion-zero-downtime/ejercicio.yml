@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/plan-migracion-zero-downtime
+titulo: "Diseña un cambio de esquema zero-downtime"
+fase: fase-3
+sub_unidad: "3.4"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Explicar por qué un rename de columna aplicado de un solo golpe causa downtime bajo rolling deploy (viejo y nuevo código conviven)"
+  - "Diseñar la secuencia expand/contract: migraciones y deploys ordenados donde cada paso es compatible con el código en ejecución"
+  - "Planificar backfill por lotes y un rollback seguro paso a paso, reconociendo qué pasos no son reversibles"
+hilos_transversales: [spec-driven, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: lo evalúa el corrector contra la solución de referencia, no una suite

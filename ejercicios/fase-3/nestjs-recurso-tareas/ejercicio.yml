@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/nestjs-recurso-tareas
+titulo: "Recurso de tareas en NestJS (módulo + controller + service + DTO)"
+fase: fase-3
+sub_unidad: "3.10"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar un recurso REST en NestJS con módulo, controller y service inyectado por constructor (DI)"
+  - "Validar la entrada con un DTO (clase) + class-validator y explicar por qué debe ser clase y no interface"
+  - "Mantener el dominio desacoplado del transporte: el service no habla HTTP; razonar NotFoundException vs excepción de dominio"
+hilos_transversales: [testing, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: ejercicios/fase-3/nestjs-recurso-tareas/test/tareas.spec.ts

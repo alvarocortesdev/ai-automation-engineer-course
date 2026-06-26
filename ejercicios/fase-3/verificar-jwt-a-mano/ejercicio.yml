@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/verificar-jwt-a-mano
+titulo: "Verifica un JWT a mano (solo librería estándar)"
+fase: fase-3
+sub_unidad: "3.12"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar la verificación de un JWT HS256 a mano (estructura, algoritmo, firma HMAC, expiración) sin usar PyJWT"
+  - "Explicar por qué la firma protege la integridad pero NO la confidencialidad, y por qué el algoritmo se fija al validar (ataque alg:none)"
+  - "Comparar firmas en tiempo constante (hmac.compare_digest) y verificar la firma antes de confiar en cualquier claim"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: ejercicios/fase-3/verificar-jwt-a-mano/test_verificador.py

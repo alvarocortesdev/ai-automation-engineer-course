@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/graphql-rest-decidir
+titulo: "Decide: REST o GraphQL para tres escenarios"
+fase: fase-3
+sub_unidad: "3.11"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Decidir entre REST y GraphQL con criterios concretos (heterogeneidad de clientes, caching HTTP, over/under-fetching real, complejidad del servidor)"
+  - "Nombrar el trade-off de cada elección y qué evidencia la cambiaría"
+  - "Defender por qué un cliente único favorece REST y muchos clientes heterogéneos favorecen GraphQL, sin caer en moda"
+hilos_transversales: [spec-driven, costo-latencia, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: el corrector evalúa DECISION.md contra la rúbrica

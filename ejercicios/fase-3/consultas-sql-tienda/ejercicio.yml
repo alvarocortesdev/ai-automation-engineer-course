@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/consultas-sql-tienda
+titulo: "Escribe SQL contra una base que corre"
+fase: fase-3
+sub_unidad: "3.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Escribir SELECT correctos con WHERE, ORDER BY + LIMIT y GROUP BY con agregados (COUNT/SUM)"
+  - "Escribir operaciones de escritura (INSERT/UPDATE/DELETE) con el WHERE correcto y sin tocar de más"
+  - "Predecir el resultado de cada consulta antes de ejecutarla (notional machine de SQL)"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

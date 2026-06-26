@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/retry-backoff-jitter
+titulo: "Reintentos con backoff exponencial + jitter (a mano)"
+fase: fase-3
+sub_unidad: "3.14"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar reintentos que reintentan SOLO errores transitorios y propagan los permanentes de inmediato"
+  - "Implementar backoff exponencial acotado por un tope, con full jitter, calculando la espera del intento n"
+  - "Explicar por qué el jitter evita la retry storm y por qué reintentar un POST no idempotente es peligroso"
+hilos_transversales: [testing, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

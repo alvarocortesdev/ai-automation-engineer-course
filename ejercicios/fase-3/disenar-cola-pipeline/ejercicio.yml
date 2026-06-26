@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/disenar-cola-pipeline
+titulo: "Diseña el pipeline: qué encolar, cómo reintentar, qué va a la DLQ"
+fase: fase-3
+sub_unidad: "3.16"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Decidir síncrono vs cola para cada operación con criterio (lento / frágil / no-crítico para la respuesta) y nombrar el costo de agregar una cola"
+  - "Diseñar una política de reintentos (max_attempts + backoff + jitter) e idempotency key para cada trabajo encolado"
+  - "Distinguir fallo transitorio (reintentar) de poison message (DLQ) y definir cómo se monitorea la DLQ"
+hilos_transversales: [spec-driven, costo-latencia, observabilidad, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: el corrector evalúa DISENO.md contra la rúbrica

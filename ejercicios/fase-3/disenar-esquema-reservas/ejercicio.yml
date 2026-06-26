@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/disenar-esquema-reservas
+titulo: "Diseña un esquema desde requisitos: reservas de coworking"
+fase: fase-3
+sub_unidad: "3.1"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Diseñar un esquema relacional desde requisitos en prosa: entidades, atributos y relaciones (1:1, 1:N, N:M)"
+  - "Traducir el modelo a DDL con claves primarias y foráneas correctas, NOT NULL/UNIQUE/CHECK donde aplique"
+  - "Justificar la normalización hasta 3NF (anomalías evitadas) y elegir índices defendiendo su trade-off"
+hilos_transversales: [spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: lo evalúa el corrector contra la solución de referencia, no una suite

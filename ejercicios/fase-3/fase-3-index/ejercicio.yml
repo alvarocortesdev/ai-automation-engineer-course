@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/fase-3-index
+titulo: "Diagnóstico, plan y mapa al capstone de Fase 3"
+fase: fase-3
+sub_unidad: "3.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar con honestidad el nivel de partida en las 16 sub-unidades de la Fase 3"
+  - "Diseñar un plan de estudio realista que decida explícitamente sobre las 5 sub-unidades opcionales según el rol objetivo"
+  - "Mapear cada punto del Definition of Done del Capstone F3 a las sub-unidades que lo enseñan (constructive alignment)"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: repaso
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/planificación: no hay suite automatizable

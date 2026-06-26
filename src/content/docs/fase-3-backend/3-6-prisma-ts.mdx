@@ -1,0 +1,390 @@
+---
+title: "Prisma (TypeScript)"
+description: "Tu segundo ORM, ahora en el ecosistema Node/TypeScript: schema.prisma como única fuente de verdad, migraciones versionadas, un cliente type-safe que el editor autocompleta, y relaciones sin caer en N+1. Más una comparación honesta con SQLAlchemy para decidir cuándo elegir cada uno."
+sidebar:
+  order: 6
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="profundización" />
+
+:::note[Esta lección es opcional — profundización, no ruta crítica]
+El **troncal** de la Fase 3 es Python + FastAPI + SQLAlchemy (lo verás en [`3.5`](/fase-3-backend/3-5-orms-problema-n1/) y [`3.8`](/fase-3-backend/3-8-backend-fastapi/)), y el **capstone se construye con ese stack**. Prisma vive aquí por dos razones concretas: (1) si una oferta o un proyecto te lleva al mundo Node/TypeScript —y la ruta [`3.10` NestJS](/fase-3-backend/3-10-backend-nestjs/) lo hace—, Prisma es el ORM dominante de ese ecosistema; (2) ver **un segundo ORM** te enseña a separar lo que es "una idea de ORM" de lo que es "una peculiaridad de SQLAlchemy". Saltar esta lección no te deja huecos en el camino crítico. Hacerla te da criterio.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Explicar el trade-off** entre Prisma y SQLAlchemy y **decidir** cuál conviene a un proyecto dado, justificándolo con criterios concretos (lenguaje del equipo, cuánto control de SQL necesitas, madurez del modelo de datos).
+- **O2 — Modelar** un dominio en `schema.prisma` (modelos, relaciones 1:N y N:M, índices) y aplicarlo a la base con `prisma migrate dev`, entendiendo **por qué el schema es la única fuente de verdad** y qué pasa si la base se desincroniza.
+- **O3 — Implementar** lecturas y escrituras **type-safe** con el cliente generado —incluyendo relaciones con `include`/`select`— y explicar cómo Prisma evita el **N+1** y la **inyección SQL**, y dónde esa protección se rompe.
+
+## 2. Por qué importa
+
+> 💰 **Por qué importa:** el backend REST es el skill #1 del mercado, y una porción enorme de ese backend vive en Node/TypeScript. Cuando una oferta dice "Node + Postgres", en 2026 lo más probable es que el ORM sea **Prisma**: es el estándar de facto del ecosistema y el compañero natural de Next.js (tu Fase 4) y NestJS. Un AI/Automation Engineer que puede moverse entre el mundo Python (FastAPI + SQLAlchemy) **y** el mundo Node (Prisma) no queda fuera de una vacante por el lenguaje del stack. Esa flexibilidad es, literalmente, más ofertas a las que puedes postular.
+
+Y hay un beneficio que no se ve en el currículum pero se nota en entrevista: **conocer dos ORMs te obliga a entender el patrón, no la herramienta**. Cuando alguien solo sabe SQLAlchemy, confunde "así se hace en un ORM" con "así se hace en SQLAlchemy". Cuando conoces dos, puedes decir *por qué* uno resuelve las migraciones distinto al otro, y eso es exactamente lo que distingue a un semi-senior de alguien que copió un tutorial.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección reutiliza casi todo lo de la fase. Recupéralo antes de seguir:
+
+- De [`3.1` SQL y modelado relacional](/fase-3-backend/3-1-sql-modelado-relacional/): entidades, claves primarias/foráneas, relaciones 1:N y N:M, e índices. El `schema.prisma` es ese mismo modelo, escrito en otra sintaxis.
+- De [`3.4` Migraciones de esquema](/fase-3-backend/3-4-migraciones-esquema/): por qué versionar la base como versionas el código. `prisma migrate` es otra implementación de esa misma idea.
+- De [`3.5` ORMs y el problema N+1](/fase-3-backend/3-5-orms-problema-n1/): qué es un ORM, el mapeo objeto-tabla, y el bug N+1 (una query por cada fila de un loop). Aquí lo verás otra vez, con la cara de Prisma.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="Tienes 100 autores y quieres listar cada autor con sus posts. Tu código hace 1 query para traer los autores y luego, dentro de un loop, 1 query por autor para traer sus posts. ¿Cuántas queries golpean la base y cómo se llama el problema?"
+  options={[
+    "1 query: el ORM siempre junta todo automáticamente",
+    "101 queries (1 + 100): es el problema N+1, y es la causa #1 de endpoints lentos con ORM",
+    "100 queries: el loop reemplaza a la query inicial",
+  ]}
+  answer={1}
+  explanation="1 query para los autores + 100 queries (una por autor) = 101. Es el N+1 que viste en 3.5. La cura es pedirle al ORM que traiga la relación en una sola operación (en Prisma: `include`). El N+1 no desaparece por usar Prisma en vez de SQLAlchemy: desaparece si pides bien la relación. Por eso esta lección insiste en cómo se cargan relaciones."
+/>
+
+## 4. Cómo se ve Prisma, en voz alta
+
+Voy a razonar **paso a paso**, como si montáramos juntos un mini-blog desde cero. Mira la diferencia de filosofía con SQLAlchemy antes de escribir nada:
+
+```mermaid
+flowchart LR
+    A["schema.prisma<br/>(fuente de verdad)"] -->|prisma migrate dev| B["Migración SQL<br/>versionada en git"]
+    A -->|prisma generate| C["Cliente TypeScript<br/>type-safe (autogenerado)"]
+    B --> D[("PostgreSQL")]
+    C -->|queries tipadas| D
+```
+
+La idea central de Prisma: **tú no escribes clases de modelos en TypeScript**. Escribes un archivo declarativo, `schema.prisma`, y Prisma **genera** por ti dos cosas: las migraciones SQL y un cliente TypeScript con tipos exactos. En SQLAlchemy las clases Python *son* el modelo; en Prisma el modelo vive en su propio lenguaje y el código TypeScript lo consume. Esa es la diferencia de fondo que explica casi todo lo demás.
+
+### 4.1 El proyecto y la configuración
+
+Partimos de un proyecto Node con TypeScript. Instalas Prisma (CLI + adaptador de Postgres):
+
+```bash
+npm install prisma --save-dev
+npm install @prisma/adapter-pg
+npx prisma init --datasource-provider postgresql
+```
+
+`prisma init` te deja tres archivos clave. Primero, la configuración de la CLI, `prisma.config.ts`, donde vive la URL de conexión (leída de una variable de entorno, **nunca** escrita a mano en el código):
+
+```typescript
+// prisma.config.ts
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: env("DATABASE_URL"),
+  },
+});
+```
+
+Y tu `.env` (que **sí o sí** va en `.gitignore` — esto es seguridad, no estética; un `DATABASE_URL` filtrado en git es una credencial filtrada):
+
+```bash
+# .env  — NUNCA se commitea
+DATABASE_URL="postgresql://user:pass@localhost:5432/blog"
+```
+
+:::caution[Cambio importante de Prisma 7 — no te confíes de tutoriales viejos]
+Hasta Prisma 6, la `url` de la base se escribía dentro del `datasource` del `schema.prisma` con `url = env("DATABASE_URL")`, y no hacía falta adaptador. Desde **Prisma 7 (2026)** la URL se mueve a `prisma.config.ts` y se usa un **driver adapter** (`@prisma/adapter-pg` para Postgres). Si copias un tutorial de 2023-2024 verás la forma antigua: funciona en proyectos legacy, pero la guía oficial actual es la de arriba. Cuando algo no calce, la fuente de verdad son los [docs oficiales](https://www.prisma.io/docs), no el primer blog del buscador.
+:::
+
+### 4.2 El schema: la fuente de verdad
+
+Aquí está el corazón. Modelamos un blog: usuarios que escriben posts (1:N), y posts que tienen etiquetas, donde una etiqueta puede estar en muchos posts y un post puede tener muchas etiquetas (N:M).
+
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  posts     Post[]
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  tags      Tag[]
+  createdAt DateTime @default(now())
+
+  @@index([authorId])
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
+}
+```
+
+Léelo en voz alta conmigo, porque cada decisión tiene su porqué:
+
+- **`@id @default(autoincrement())`** — la clave primaria, igual que el `SERIAL`/`IDENTITY` que viste en SQL.
+- **`String?`** — el `?` significa **nullable** (la columna acepta `NULL`). `name String?` = el nombre es opcional. Esto es exactamente el `NOT NULL` al revés, y Prisma lo refleja en el tipo TypeScript: `name` será `string | null`.
+- **La relación 1:N (User → Post)** se declara en *los dos lados*: en `Post` pones la FK real (`authorId Int` + `@relation(fields: [authorId], references: [id])`), y en `User` pones `posts Post[]` que **no es una columna**, es la "vista" del otro lado de la relación. La FK vive solo en `Post`, igual que en SQL.
+- **La relación N:M (Post ↔ Tag)** se declara con `Tag[]` en `Post` y `Post[]` en `Tag`, y **no escribes la tabla intermedia**: Prisma la crea sola (la tabla de unión `_PostToTag`). Esto es comodidad, pero recuérdalo: si esa tabla de unión necesitara atributos propios (como una fecha de etiquetado), tendrías que modelarla explícitamente como un tercer modelo, igual que la `reservas` de tu ejercicio de [`3.1`](/fase-3-backend/3-1-sql-modelado-relacional/).
+- **`@@index([authorId])`** — un índice sobre la FK, porque vas a filtrar posts por autor. Esto no lo adivina Prisma: lo decides tú, con el criterio de [`3.1`](/fase-3-backend/3-1-sql-modelado-relacional/).
+
+### 4.3 La migración: del schema a la base
+
+El schema todavía no tocó la base. Para aplicarlo:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+Este comando hace tres cosas, en orden: (1) compara tu `schema.prisma` con el estado de la base, (2) **genera un archivo SQL de migración** en `prisma/migrations/` (que commiteas a git), y (3) lo aplica a la base. Si abres ese SQL verás `CREATE TABLE "User" (...)`, `CREATE TABLE "Post" (...)`, la tabla `_PostToTag`, y los índices. **Es el mismo SQL que escribirías a mano** — Prisma solo te lo escribe y lo versiona.
+
+> La distinción que confunde a todos: `prisma migrate dev` es para **desarrollo** (genera + aplica + regenera el cliente). En producción usas `prisma migrate deploy`, que **solo aplica** las migraciones ya commiteadas, sin generar nada nuevo. Mezclarlos es un error clásico: nunca generas migraciones contra la base de producción.
+
+### 4.4 El cliente type-safe
+
+Tras la migración, Prisma regeneró el cliente en `generated/client`. Lo instancias **una vez** y lo reutilizas:
+
+```typescript
+// db.ts
+import { PrismaClient } from "./generated/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+export const prisma = new PrismaClient({ adapter });
+```
+
+Ahora las queries. Lo mágico aquí no es que sean cortas, es que **el editor las conoce**: si escribes `prisma.user.findUnique({ where: { emial: ... } })`, TypeScript marca el error *antes* de ejecutar, porque `emial` no existe en `User`. Eso es lo que significa "type-safe": el modelo de datos viaja hasta el autocompletado.
+
+```typescript
+// Crear un usuario con un post en una sola operación (nested write)
+const user = await prisma.user.create({
+  data: {
+    email: "ada@example.com",
+    name: "Ada",
+    posts: {
+      create: [{ title: "Hola mundo", published: true }],
+    },
+  },
+});
+
+// Leer usuarios CON sus posts — una sola operación, sin N+1
+const usersConPosts = await prisma.user.findMany({
+  include: { posts: true },
+});
+
+// Traer solo los campos que necesitas (más liviano que include)
+const titulos = await prisma.post.findMany({
+  where: { published: true },
+  select: { id: true, title: true, author: { select: { name: true } } },
+  orderBy: { createdAt: "desc" },
+  take: 10, // paginación: 10 más recientes
+});
+```
+
+Fíjate en `include: { posts: true }`: eso le dice a Prisma "tráeme los posts de cada usuario". Por dentro Prisma **no** hace 1 query por usuario (no cae en N+1): hace un puñado fijo de queries (una por nivel de relación) y arma los objetos. Esa es la diferencia entre escribir `include` y caer en la trampa de cargar relaciones dentro de un `for`. La cura del N+1 que viste en [`3.5`](/fase-3-backend/3-5-orms-problema-n1/) tiene aquí nombre y apellido: `include` o `select`.
+
+### 4.5 Seguridad: lo que Prisma te da gratis y lo que no
+
+Todas las queries de arriba son **parametrizadas** por dentro: el `email` que pasas nunca se concatena en un string SQL, así que la **inyección SQL** (que verás a fondo en [`3.13`](/fase-3-backend/3-13-owasp-top10-web/)) no es posible por esta vía. Eso es protección real, gratis.
+
+Pero Prisma tiene una puerta trasera, y los juniors la abren sin pensar: `$queryRawUnsafe`. Si construyes SQL crudo concatenando entrada del usuario, **vuelves a ser vulnerable**, ORM o no:
+
+```typescript
+// ❌ NUNCA — inyección SQL servida en bandeja
+const r = await prisma.$queryRawUnsafe(
+  `SELECT * FROM "User" WHERE email = '${emailDelUsuario}'`
+);
+
+// ✅ Si necesitas SQL crudo, usa $queryRaw (template tag): parametriza
+const r2 = await prisma.$queryRaw`SELECT * FROM "User" WHERE email = ${emailDelUsuario}`;
+```
+
+La regla: el ORM te protege **mientras uses sus métodos**. En el momento que escribes SQL a mano con strings interpolados, la responsabilidad vuelve a ser tuya.
+
+## 5. Lo que podrías creer y está mal
+
+:::caution[Misconception 1: "Prisma es para principiantes y no escala / SQLAlchemy es para los serios"]
+Falso, y al revés también. Prisma corre en producción en empresas grandes; SQLAlchemy también. La elección **no es por madurez ni por seriedad**, es por **ecosistema y control**. Prisma brilla en Node/TS y prioriza la ergonomía (cliente generado, tipos perfectos). SQLAlchemy te da un control más fino del SQL generado y vive en Python, donde está tu stack de IA. Quien dice "X no escala" casi siempre repite un eslogan que no probó.
+:::
+
+:::caution[Misconception 2: "El cliente type-safe me protege de todo error"]
+Te protege de **errores de forma** (campo que no existe, tipo equivocado), y eso es muchísimo. **No** te protege de errores de **lógica** (un `WHERE` mal pensado que trae las filas equivocadas) ni de **rendimiento** (una query que cae en N+1 porque cargaste relaciones en un loop en vez de con `include`). Los tipos cazan typos, no malas decisiones. Sigues necesitando tests y `EXPLAIN`.
+:::
+
+:::caution[Misconception 3: "include resuelve el N+1 siempre"]
+`include` resuelve el N+1 *cuando lo usas*. Si haces `prisma.user.findMany()` y luego, dentro de un `for`, llamas `prisma.post.findMany({ where: { authorId } })` por cada usuario, **reintrodujiste el N+1 con tus propias manos**. El ORM no adivina tu intención; tú decides cargar la relación de una o en goteo. El N+1 es un patrón de uso, no una propiedad del ORM.
+:::
+
+:::caution[Misconception 4: "Puedo editar la base directo con SQL y listo"]
+Si cambias la base por fuera (un `ALTER TABLE` a mano) sin tocar el `schema.prisma`, creas **drift**: el schema (la fuente de verdad) ya no describe la base real. La próxima migración se confundirá o intentará deshacer tu cambio. La regla de oro de Prisma: **el cambio nace en el `schema.prisma`**, y `prisma migrate dev` lo propaga. La base es un derivado, no la fuente.
+:::
+
+## 6. Práctica con andamiaje (hazla antes de los retos)
+
+Tres pasos que se desvanecen. Hazlos **sin ejecutar** (predice primero); son rápidos y calibran tu modelo mental.
+
+### 6.1 PREDICT — ¿qué tipo genera Prisma?
+
+Dado el modelo `User` de la sección 4.2 (`name String?`), **predice** el tipo TypeScript del valor que devuelve `prisma.user.findUnique({ where: { id: 1 } })` cuando el usuario existe. ¿`name` es `string` o `string | null`? ¿Y el retorno completo si el usuario **no** existe?
+
+<Solucion title="Ver la respuesta (solo después de predecir)">
+`name` es **`string | null`**, porque lo declaraste `String?` (nullable). El retorno de `findUnique` es **`User | null`**: si no hay fila que coincida, devuelve `null` (no lanza error). Por eso TypeScript te **obliga** a manejar el caso `null` antes de tocar `user.name` — el tipo te empuja a no olvidar el "¿y si no existe?". Compara con `findUniqueOrThrow`, que lanza si no encuentra, y devuelve `User` a secas. Elegir entre los dos es una decisión de diseño, y el tipo te la recuerda.
+</Solucion>
+
+### 6.2 SPOT THE BUG — caza el N+1
+
+Este código quiere listar cada post publicado con el nombre de su autor. Léelo y di **cuántas queries** dispara con 50 posts, y cómo lo arreglarías:
+
+```typescript
+const posts = await prisma.post.findMany({ where: { published: true } });
+for (const post of posts) {
+  const autor = await prisma.user.findUnique({ where: { id: post.authorId } });
+  console.log(`${post.title} — ${autor?.name}`);
+}
+```
+
+<Solucion title="Ver la respuesta (solo después de pensarla)">
+Dispara **51 queries**: 1 para traer los 50 posts + 1 por cada post para traer su autor (50). Es el N+1 clásico, reintroducido a mano. La cura es pedir la relación de una sola vez:
+
+```typescript
+const posts = await prisma.post.findMany({
+  where: { published: true },
+  include: { author: true }, // <- el autor viaja con cada post
+});
+for (const post of posts) {
+  console.log(`${post.title} — ${post.author.name}`);
+}
+```
+
+Ahora son ~2 queries fijas sin importar cuántos posts haya. Pista clave: cada vez que veas una query **dentro de un loop**, sospecha N+1.
+</Solucion>
+
+### 6.3 MODIFY — de 1:N a N:M
+
+Tienes el modelo `Post` con `author User` (relación 1:N). El requisito cambia: ahora un post puede tener **varios** co-autores y un usuario co-escribir **varios** posts. **Describe** (en palabras, sin escribir todo el schema) qué cambia en el modelo: ¿sigue sirviendo `authorId Int` en `Post`? ¿Qué relación es ahora y cómo se declara en Prisma? Piensa antes de mirar la sección 4.2 de nuevo.
+
+## 7. Ejercicios Primero-Sin-IA
+
+Ahora sin red. Resuélvelos **a mano, sin IA**, dentro del timebox. Como Prisma es nuevo para ti, primero releíste el worked example (sección 4); ahora aplícalo.
+
+<Reto title="Modela un dominio en schema.prisma y escribe sus queries" timebox="40–45 min">
+
+Te damos un requisito en prosa (un mini-blog con usuarios, posts y etiquetas) y un `schema.prisma` starter incompleto. Debes: (1) completar el `schema.prisma` con los modelos, relaciones (1:N usuario→posts, N:M posts↔tags) e índices correctos; (2) validar el schema con `npx prisma validate` (esto **no** necesita una base corriendo); (3) escribir, en `consultas.ts`, cuatro queries del cliente Prisma que cubran las operaciones que pide el enunciado (crear con nested write, leer con `include` evitando N+1, filtrar+paginar, y contar); y (4) en `NOTAS.md`, justificar dónde pusiste cada FK e índice y por qué tu lectura de relación no cae en N+1.
+
+**Hecho significa:**
+- [ ] `npx prisma validate` pasa en verde (el schema es sintáctica y relacionalmente válido).
+- [ ] La relación 1:N tiene la FK en el lado correcto (en `Post`, no en `User`) y la N:M está declarada sin inventar una tabla de unión a mano (Prisma la genera) — salvo que argumentes que necesita atributos propios.
+- [ ] Las queries son **type-safe** (usan campos que existen) y la lectura de relaciones usa `include`/`select`, no un loop.
+- [ ] `NOTAS.md` explica, con tus palabras, por qué el `schema.prisma` es la fuente de verdad y qué pasaría si editaras la base por fuera.
+- [ ] Puedes explicar, sin notas, en qué se parece y en qué se diferencia esto del mismo modelo en SQLAlchemy.
+
+Enunciado completo y starter: `ejercicios/fase-3/prisma-ts-modelar-blog/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Para la 1:N: la FK (`authorId Int`) vive en el modelo "muchos" (`Post`), con `author User @relation(fields: [authorId], references: [id])`; en `User` pones `posts Post[]` (la vista, no una columna). Para la N:M: `tags Tag[]` en `Post` y `posts Post[]` en `Tag`, y Prisma crea la tabla intermedia sola — no la declares tú a menos que la unión tenga datos propios. El índice va sobre la FK por la que filtras (`@@index([authorId])`). Para evitar N+1 al leer usuarios con posts: `findMany({ include: { posts: true } })`, nunca un `findMany` seguido de un loop con queries. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+<Reto title="Decide: Prisma o SQLAlchemy para tres proyectos" timebox="30–35 min">
+
+Ejercicio de **razonamiento puro** (no se ejecuta nada). Te damos tres escenarios de proyecto reales (en el README). Para **cada uno** debes: (1) elegir Prisma **o** SQLAlchemy, (2) justificar la elección con criterios concretos (lenguaje/equipo, control de SQL necesario, ecosistema, integración con IA), (3) nombrar **un riesgo o costo** de tu elección (ninguna es gratis), y (4) decir qué dato adicional te haría cambiar de opinión. El entregable es un `DECISION.md` con tu análisis.
+
+**Hecho significa:**
+- [ ] Las tres decisiones están justificadas con criterios concretos, no con "Prisma es más moderno" ni "Python es mejor".
+- [ ] Reconoces al menos un caso donde tu elección **no** es obvia y explicas la tensión.
+- [ ] Nombras un costo real de cada elección (no vendes una como perfecta).
+- [ ] Puedes defender, sin notas, por qué para una app de **IA en Python** (RAG, agentes) SQLAlchemy suele ganar por ecosistema, aunque Prisma sea más cómodo.
+
+Enunciado completo: `ejercicios/fase-3/prisma-ts-decidir-orm/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+No hay una respuesta "correcta" universal; hay decisiones **defendibles**. Ejes para decidir: ¿el equipo ya está en Node/TS o en Python? (el ORM no debería forzar un cambio de lenguaje). ¿Necesitas control fino del SQL generado o priorizas velocidad de desarrollo? ¿La app es fullstack con Next.js (Prisma encaja) o sirve modelos de IA en FastAPI (SQLAlchemy encaja por ecosistema)? El truco del ejercicio es que el "mejor ORM" depende casi siempre del **lenguaje y el contexto**, no de una superioridad técnica abstracta. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+## 8. Check de dominio
+
+Sin mirar la lección, en voz alta o por escrito:
+
+<CheckDominio
+  items={[
+    "Explicar qué es schema.prisma y por qué es la 'única fuente de verdad' (qué se genera a partir de él).",
+    "Decir qué hace prisma migrate dev y en qué se diferencia de prisma migrate deploy.",
+    "Declarar una relación 1:N en Prisma: en qué modelo va la FK y qué es el campo Post[] del otro lado.",
+    "Explicar cómo Prisma resuelve una N:M sin que escribas la tabla intermedia, y cuándo SÍ debes escribirla.",
+    "Mostrar cómo se evita el N+1 al leer relaciones (include/select) y cómo se reintroduce sin querer.",
+    "Explicar qué significa 'type-safe' aquí y de qué errores te protege y de cuáles no.",
+    "Nombrar la puerta trasera de inyección SQL en Prisma ($queryRawUnsafe) y la alternativa segura.",
+    "Dar dos criterios concretos para elegir Prisma vs SQLAlchemy en un proyecto.",
+  ]}
+/>
+
+Si fallaste tres o más, vuelve a la sección correspondiente **antes** de avanzar.
+
+<Quiz
+  question="Cambiaste la base de producción a mano con un ALTER TABLE para añadir una columna, sin tocar schema.prisma. ¿Qué problema creaste?"
+  options={[
+    "Ninguno: Prisma detecta el cambio y actualiza el schema solo",
+    "Drift: el schema.prisma (la fuente de verdad) ya no describe la base real, y la próxima migración se confundirá o intentará revertir tu cambio",
+    "El cliente type-safe deja de funcionar permanentemente y hay que reinstalar Prisma",
+  ]}
+  answer={1}
+  explanation="Es 'drift' (deriva). En Prisma el cambio SIEMPRE nace en schema.prisma y migrate lo propaga a la base; la base es un derivado. Editar la base por fuera rompe esa relación: el schema deja de ser fuente de verdad y las próximas migraciones detectan una diferencia que no esperaban. La disciplina —cambio en el schema, nunca en la base directo— es lo que mantiene el sistema reproducible."
+/>
+
+## 9. Recursos (documentación oficial primero)
+
+- **Prisma — Get started (Quickstart con tu base):** [prisma.io/docs/getting-started](https://www.prisma.io/docs/getting-started) — el camino oficial actual (Prisma 7): `prisma init`, `prisma.config.ts`, driver adapters.
+- **Prisma — Prisma Schema reference:** [prisma.io/docs/orm/prisma-schema](https://www.prisma.io/docs/orm/prisma-schema) — la referencia completa de modelos, atributos (`@id`, `@unique`, `@relation`, `@@index`) y tipos.
+- **Prisma — Relations:** [prisma.io/docs/orm/prisma-schema/data-model/relations](https://www.prisma.io/docs/orm/prisma-schema/data-model/relations) — 1:1, 1:N y N:M (implícitas y explícitas) en detalle.
+- **Prisma — Prisma Client queries (CRUD, relation queries):** [prisma.io/docs/orm/prisma-client/queries](https://www.prisma.io/docs/orm/prisma-client/queries) — `include`, `select`, nested writes, paginación, y cómo evita el N+1.
+- **Prisma — Raw queries (la parte peligrosa):** [prisma.io/docs/orm/prisma-client/using-raw-sql](https://www.prisma.io/docs/orm/prisma-client/using-raw-sql) — la diferencia entre `$queryRaw` (parametrizado) y `$queryRawUnsafe`.
+- **SQLAlchemy — para comparar:** [docs.sqlalchemy.org](https://docs.sqlalchemy.org/) — el ORM del troncal Python; tenlo al lado cuando hagas el ejercicio de decisión.
+
+## 10. Conexión con el capstone de la fase
+
+El **[Capstone F3 — API de producción](/fase-3-backend/proyecto/)** se construye con el **troncal** (FastAPI + SQLAlchemy), así que Prisma **no es obligatorio** para terminarlo. Pero esta lección le aporta dos cosas concretas:
+
+- **Criterio para un ADR.** Una de las decisiones de arquitectura del capstone es la capa de datos. Que puedas escribir, en un ADR, "elegí SQLAlchemy sobre Prisma porque el stack es Python y sirvo modelos de IA, aceptando que pierdo el cliente type-safe generado" es exactamente el tipo de trade-off defendible que el Definition of Done de la fase pide. No se elige bien lo que no se conoce.
+- **La ruta Node, si la tomas.** Si haces [`3.10` NestJS](/fase-3-backend/3-10-backend-nestjs/) y decides un capstone alternativo en Node, Prisma es tu capa de datos, y todo lo de esta lección (schema como fuente de verdad, migraciones versionadas, relaciones sin N+1, parametrización contra inyección) entra directo al proyecto.
+
+En ambos casos, el hábito transversal es el mismo: **el modelo de datos se versiona y se razona**, no se improvisa contra la base.
+
+## 11. Reflexión y repaso espaciado
+
+Cierra escribiendo dos o tres frases: **¿qué cosa de Prisma te resultó claramente mejor que SQLAlchemy, y qué cosa te pareció peor o más rígida? ¿Esa diferencia es técnica de verdad, o es solo "distinto a lo que ya sabía"?** Distinguir una ventaja real de una incomodidad por costumbre es justo el músculo que te hace elegir herramientas con criterio en vez de por moda.
+
+Gancho de **spaced repetition**:
+
+- **Mañana:** sin mirar, escribe de memoria un `schema.prisma` con dos modelos en relación 1:N (FK en el lado correcto) y la query con `include` que los lee sin N+1. Verifica contra la sección 4. Si la FK te sale en el modelo equivocado, no caló todavía.
+- **En 3 días:** toma cualquier modelo de tu capstone (en SQLAlchemy) y **tradúcelo** a `schema.prisma`. El ejercicio de traducir entre los dos ORMs es lo que fija el patrón por encima de la herramienta.

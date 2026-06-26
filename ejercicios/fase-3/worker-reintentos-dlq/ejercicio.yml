@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/worker-reintentos-dlq
+titulo: "Implementa un worker con reintentos y DLQ (Python puro)"
+fase: fase-3
+sub_unidad: "3.16"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar reintentos con tope: un job que falla se reencola hasta max_attempts, sin loop infinito"
+  - "Enrutar a la DLQ los jobs que agotan intentos (poison messages) y a done los que tienen éxito"
+  - "Deduplicar por job.id bajo entrega at-least-once (el handler corre una sola vez por id ya completado) como equivalente de la idempotencia"
+hilos_transversales: [testing, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

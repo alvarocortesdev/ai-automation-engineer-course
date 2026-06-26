@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/cerrar-idor-y-fugas
+titulo: "Cierra el IDOR y la fuga de datos"
+fase: fase-3
+sub_unidad: "3.13"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Identificar y cerrar un Broken Access Control (IDOR) agregando el chequeo de propiedad que falta en cada operación (GET, DELETE, listado)"
+  - "Devolver 404 (no 403) para un recurso ajeno y explicar por qué eso evita filtrar su existencia"
+  - "Evitar la fuga de datos con un response_model explícito y distinguir autenticación de autorización"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: ejercicios/fase-3/cerrar-idor-y-fugas/test_app.py

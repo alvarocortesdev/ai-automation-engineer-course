@@ -1,0 +1,64 @@
+# Contrato OpenAPI — Plataforma de eventos (esqueleto a completar).
+# Completa AL MENOS: POST /inscripciones (con respuesta 409 problem+json)
+# y GET /eventos (con los parámetros de filtro y paginación que decidiste).
+# Pista: este archivo debe ser YAML válido. Si tu editor tiene una extensión de
+# OpenAPI/Swagger, úsala para ver errores mientras escribes.
+
+openapi: 3.1.0
+info:
+  title: API Plataforma de Eventos
+  version: "1.0.0"
+
+paths:
+  /eventos:
+    get:
+      summary: Lista eventos (próximos), con filtro por categoría y paginación
+      parameters:
+        # TODO: declara aquí los query params: categoria, sort, y los de paginación.
+        # Ejemplo de uno (bórralo o ajústalo):
+        - name: categoria
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lista de eventos
+          # TODO: define el content (array de Evento) y, si paginas con cursor,
+          # cómo devuelves el cursor de la siguiente página.
+
+  /inscripciones:
+    post:
+      summary: Inscribe a un asistente en un evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [evento_id, asistente_id]
+              properties:
+                evento_id: { type: integer }
+                asistente_id: { type: integer }
+      responses:
+        "201":
+          description: Inscripción creada
+          # TODO: header Location + content con el recurso creado.
+        "409":
+          description: # TODO: ¿qué describe este 409?
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+
+components:
+  schemas:
+    Problem:
+      # Modelo de error problem+json (RFC 9457). Complétalo.
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        # TODO: faltan dos campos estándar. ¿Cuáles?
+    Evento:
+      type: object
+      # TODO: define las propiedades de un Evento (id, titulo, categoria, fecha, cupo_maximo...).

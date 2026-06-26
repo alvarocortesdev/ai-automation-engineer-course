@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/migracion-reversible
+titulo: "Escribe una migración reversible con backfill"
+fase: fase-3
+sub_unidad: "3.4"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una migración que cambie esquema y datos a la vez: agregar columnas y rellenarlas (backfill) desde una columna existente"
+  - "Escribir un downgrade que revierte el cambio sin perder ni alterar los datos originales (round-trip idéntico)"
+  - "Explicar por qué el cambio de esquema (ADD COLUMN) debe ocurrir antes de la migración de datos (UPDATE)"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

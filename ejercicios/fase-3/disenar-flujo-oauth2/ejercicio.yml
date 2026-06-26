@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/disenar-flujo-oauth2
+titulo: "Diseña los flujos de auth de tres clientes (y dónde guardar el token)"
+fase: fase-3
+sub_unidad: "3.12"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Elegir el flujo OAuth2 correcto (authorization code + PKCE vs client credentials) por cliente, justificando con público/confidencial y con/sin usuario"
+  - "Explicar qué ataque evita PKCE y por qué un cliente público lo necesita"
+  - "Decidir el almacenamiento de tokens en el navegador razonando XSS vs CSRF, y diseñar rotación de refresh tokens + scopes de minimo privilegio"
+hilos_transversales: [seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: no hay suite; entrega razonamiento + diagrama en Markdown

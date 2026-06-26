@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/dependencias-y-errores-fastapi
+titulo: "Dependencias, errores globales y background tasks"
+fase: fase-3
+sub_unidad: "3.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Inyectar dependencias reutilizables con Depends (estilo Annotated): autenticación por header y paginación"
+  - "Registrar un exception handler global que traduce una excepción de dominio a una respuesta HTTP, manteniendo el dominio desacoplado del transporte"
+  - "Usar una background task para trabajo posterior a la respuesta y explicar sus límites frente a una cola real"
+hilos_transversales: [testing, seguridad, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: ejercicios/fase-3/dependencias-y-errores-fastapi/test_app.py

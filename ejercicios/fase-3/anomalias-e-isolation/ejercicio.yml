@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/anomalias-e-isolation
+titulo: "Diagnosticar anomalías y elegir el isolation level"
+fase: fase-3
+sub_unidad: "3.3"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Nombrar la anomalía de concurrencia (dirty/non-repeatable/phantom/lost update/write skew) a partir del entrelazado de dos sesiones"
+  - "Predecir si la anomalía ocurre bajo READ COMMITTED y bajo REPEATABLE READ en Postgres"
+  - "Elegir el isolation level (o técnica: aritmética atómica / FOR UPDATE) mínimo que la resuelve y justificar su trade-off"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: la verificación es opcional en psql, no hay suite

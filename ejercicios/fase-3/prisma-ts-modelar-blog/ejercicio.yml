@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/prisma-ts-modelar-blog
+titulo: "Modela un dominio en schema.prisma y escribe sus queries"
+fase: fase-3
+sub_unidad: "3.6"
+ruta_critica: false
+modalidad: mixto
+objetivos:
+  - "Modelar un dominio en schema.prisma: relación 1:N y N:M con las FK en el lado correcto, e índices justificados"
+  - "Validar el schema y explicar por qué schema.prisma es la fuente de verdad y qué es el drift"
+  - "Escribir queries type-safe que crean (nested write), leen relaciones con include/select sin N+1, filtran/paginan y cuentan"
+hilos_transversales: [spec-driven, costo-latencia, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # se valida con `npx prisma validate`; el corrector evalúa modelo, queries y NOTAS.md

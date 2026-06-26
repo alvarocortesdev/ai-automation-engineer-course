@@ -1,0 +1,482 @@
+---
+title: PostgreSQL a fondo
+description: "Lo que pasa por dentro cuando dos usuarios tocan la misma fila a la vez: transacciones ACID, isolation levels y sus anomalías, leer un plan con EXPLAIN ANALYZE, connection pooling y locking optimista vs pesimista. El salto de 'sé escribir SQL' a 'entiendo cómo se ejecuta'."
+sidebar:
+  order: 3
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="intermedio" />
+
+Hasta aquí escribiste SQL como si fueras el único usuario de la base de datos: una query, un resultado, listo. Esta lección rompe esa ilusión. En producción **nunca** eres el único: decenas de requests tocan las mismas filas en el mismo milisegundo, y la diferencia entre un backend que cobra dos veces y uno que no, está en cosas que el SQL no muestra a simple vista. Aquí abrimos el motor de Postgres y miramos cómo decide, bloquea y ejecuta.
+
+:::tip[Si ya tocaste Postgres en algún proyecto]
+¿Ya usaste transacciones o viste un `EXPLAIN`? Úsalo como diagnóstico, no como excusa para saltar. La trampa del que "ya sabe Postgres" es no poder responder *por qué* su app vendió el último ticket dos veces, o por qué una query que andaba bien con 1.000 filas se cae con 1.000.000. Si puedes explicar, sin notas, la diferencia entre `READ COMMITTED` y `REPEATABLE READ` en Postgres, cuándo un `SELECT ... FOR UPDATE` te salva y cuándo te clava un deadlock, y leer un plan con `Seq Scan` y decidir el índice que lo arregla — salta a los ejercicios (sección 7) y mídete. Si dudas en cualquiera, la respuesta está en las secciones 4 a 8.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Explicar el trade-off** entre los tres isolation levels de Postgres (`READ COMMITTED`, `REPEATABLE READ`, `SERIALIZABLE`), nombrar qué anomalía permite cada uno (dirty read, non-repeatable read, phantom, lost update, write skew) y elegir el nivel correcto para un caso dado.
+- **O2 — Depurar** una query lenta leyendo su plan con `EXPLAIN ANALYZE`: distinguir estimaciones de tiempos reales, identificar un `Seq Scan` problemático y predecir el índice que lo convierte en `Index Scan`.
+- **O3 — Implementar** la protección contra una condición de carrera con las dos estrategias —locking **pesimista** (`SELECT ... FOR UPDATE`) y **optimista** (columna `version` + reintento)— y justificar cuál conviene según la contención esperada.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** REST API es el skill #1 del mercado (≈70% de las ofertas) y el backend es donde vive la lógica de las apps de IA que quieres construir. Pero "saber hacer un CRUD" es lo que hace un junior. Lo que separa a un semi-senior —y lo que un entrevistador busca con una sola pregunta— es entender qué pasa *bajo concurrencia y a escala*. "Dos usuarios compran el último asiento al mismo tiempo, ¿qué hace tu código?" es la pregunta que filtra. Si tu respuesta es "pongo un `SELECT` y después un `UPDATE`", acabas de fallarla.
+
+Tres razones hacen de esta sub-unidad una bisagra de la Fase 3:
+
+1. **Los bugs de concurrencia no se ven en tu máquina.** Funcionan perfecto cuando eres el único probando, y revientan en producción con usuarios reales: doble cobro, stock negativo, saldos que no cuadran. Son los más caros de cazar porque no se reproducen pidiendo "ejecuta otra vez". Entenderlos *antes* de escribir el endpoint es la marca de alguien que ya se quemó —o que aprendió de quien se quemó.
+2. **El rendimiento es un requisito, no un lujo.** Una query sin índice que escanea la tabla entera anda bien en demo y mata la app a los seis meses, cuando la tabla creció. Saber leer un plan con `EXPLAIN ANALYZE` es la herramienta #1 de diagnóstico de backend, y es directamente examinable: muchas entrevistas te ponen una query lenta y te piden arreglarla en vivo.
+3. **Es la base sobre la que se monta todo lo demás de la fase.** El capstone (una API de producción con FastAPI + Postgres) asume que sabes transaccionar bien, que tus queries tienen los índices correctos, y que el pool de conexiones está configurado. Sin esto, tu API "funciona" hasta el primer pico de tráfico.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección se para sobre las dos anteriores. Reúsalo antes de seguir:
+
+- De [`3.1` SQL y modelado relacional](/fase-3-backend/3-1-sql-modelado-relacional/): claves primarias/foráneas, e **índices** — qué son y por qué aceleran las búsquedas. Aquí vas a *ver*, con `EXPLAIN`, el momento exacto en que un índice cambia el plan.
+- De [`3.2` Queries avanzadas](/fase-3-backend/3-2-queries-avanzadas/): `JOIN`, subqueries, `WHERE`. El `UPDATE ... WHERE` que usarás para el locking optimista es ese mismo `WHERE` filtrando por una condición extra.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="Tu app lee el stock de un producto (queda 1), tu código resta 1 en Python, y escribe el nuevo valor (0) con un UPDATE. Dos requests hacen esto exactamente a la vez. ¿Qué puede salir mal?"
+  options={[
+    "Nada: Postgres serializa todo automáticamente, es imposible que se pisen",
+    "Ambos leen 1, ambos calculan 0, ambos escriben 0 — se vendieron 2 unidades de 1 (lost update)",
+    "El segundo UPDATE falla con un error de sintaxis",
+  ]}
+  answer={1}
+  explanation="Es el clásico 'lost update'. Leer-modificar-escribir en la aplicación NO es atómico: entre tu SELECT y tu UPDATE, otra transacción cabe perfectamente. Por defecto (READ COMMITTED) Postgres no te protege de esto: cada UPDATE es válido por separado, pero juntos pierden una de las ventas. Esta lección es, en gran parte, cómo evitarlo."
+/>
+
+## 4. Cómo piensa Postgres, en voz alta
+
+Voy a razonar **paso a paso**, como si estuviéramos frente a la misma terminal. Vamos a construir el problema, verlo fallar, y arreglarlo de cuatro maneras distintas entendiendo el trade-off de cada una.
+
+### 4.1 Una transacción es un contrato: ACID
+
+Una **transacción** agrupa varias operaciones en una sola unidad de "todo o nada". En SQL:
+
+```sql
+BEGIN;
+  UPDATE cuentas SET saldo = saldo - 10000 WHERE id = 1;  -- débito
+  UPDATE cuentas SET saldo = saldo + 10000 WHERE id = 2;  -- crédito
+COMMIT;   -- o ROLLBACK para deshacer todo
+```
+
+Si el servidor se cae entre los dos `UPDATE`, **ninguno** queda aplicado: no existe el universo donde el dinero salió de una cuenta y no llegó a la otra. Esa garantía tiene cuatro letras, **ACID**:
+
+- **A**tomicity (atomicidad): todo o nada. `COMMIT` confirma; `ROLLBACK` (o un crash) deshace.
+- **C**onsistency (consistencia): la transacción lleva la base de un estado válido a otro válido (respeta constraints, foreign keys, checks).
+- **I**solation (aislamiento): transacciones concurrentes no se ven a medias entre sí. *Cuánto* no se ven es el `isolation level` — el corazón de esta lección.
+- **D**urability (durabilidad): una vez que `COMMIT` retorna, los datos sobreviven aunque se corte la luz (Postgres lo logra con el WAL, el write-ahead log).
+
+> Detalle que confunde a todos al principio: en `psql`, si **no** escribes `BEGIN`, cada sentencia es su propia transacción que se auto-confirma (autocommit). Tu `UPDATE` suelto *sí* es atómico — pero solo él. El peligro aparece cuando una *regla de negocio* necesita varios pasos y tú los dejas sueltos.
+
+### 4.2 El bug: dos sesiones, el último ticket
+
+Tenemos un evento con `stock = 1`. Dos clientes compran a la vez. El código ingenuo lee, resta en la app, y escribe. Mira el entrelazado en el tiempo:
+
+```mermaid
+sequenceDiagram
+    participant A as Sesión A
+    participant DB as Postgres (stock=1)
+    participant B as Sesión B
+    A->>DB: SELECT stock FROM eventos WHERE id=1  -> 1
+    B->>DB: SELECT stock FROM eventos WHERE id=1  -> 1
+    A->>DB: UPDATE eventos SET stock = 0 WHERE id=1; COMMIT
+    B->>DB: UPDATE eventos SET stock = 0 WHERE id=1; COMMIT
+    Note over DB: stock=0, pero se vendieron 2 tickets habiendo 1
+```
+
+Razono: *"Cada sesión hizo algo individualmente correcto. A leyó 1, calculó 0, escribió 0. B hizo lo mismo. El problema es el entrelazado: B leyó **antes** de que A escribiera, así que B trabajó con un dato ya viejo. Esto se llama **lost update**: la escritura de A se perdió bajo la de B. Y lo importante: Postgres, en su nivel por defecto, **no lo impide**, porque cada `UPDATE` por separado es legal."*
+
+### 4.3 El catálogo de anomalías (y cuál te puede pasar)
+
+El "lost update" es una de varias formas en que la concurrencia te muerde. Estas son las que tienes que reconocer por nombre:
+
+| Anomalía | Qué pasa |
+|---|---|
+| **Dirty read** | Lees datos que otra transacción escribió pero **aún no confirmó** (y que quizás haga `ROLLBACK`). |
+| **Non-repeatable read** | Lees una fila, otra transacción la modifica y confirma, vuelves a leer **la misma fila** y el valor cambió dentro de tu transacción. |
+| **Phantom read** | Repites una query de **rango** (`WHERE fecha > ...`) y aparecen filas nuevas que otra transacción insertó y confirmó. |
+| **Lost update** | Dos transacciones leen-modifican-escriben la misma fila; una pisa a la otra (el bug de 4.2). |
+| **Write skew** | Dos transacciones leen datos que se solapan, deciden por separado, y escriben filas distintas que **juntas** rompen una regla (ej.: "siempre debe quedar 1 médico de turno"; ambos se dan de baja porque cada uno vio al otro disponible). |
+
+### 4.4 Isolation levels: cuánto te protege Postgres
+
+El `isolation level` decide qué anomalías se permiten. El estándar SQL define cuatro; **Postgres implementa tres distintos** (pide `READ UNCOMMITTED` y te da `READ COMMITTED` — en Postgres los dirty reads sencillamente **no existen** en ningún nivel, gracias a su arquitectura MVCC).
+
+| Nivel | Dirty read | Non-repeatable | Phantom | Write skew / serialization anomaly |
+|---|---|---|---|---|
+| **READ COMMITTED** (por defecto) | nunca | posible | posible | posible |
+| **REPEATABLE READ** | nunca | nunca | **nunca** (en Postgres) | posible |
+| **SERIALIZABLE** | nunca | nunca | nunca | nunca |
+
+Razono sobre las dos sorpresas de esta tabla, porque caen en entrevistas:
+
+1. *"`REPEATABLE READ` en Postgres NO permite phantom reads, aunque el estándar SQL sí lo permitiría. Postgres da una garantía **más fuerte** que la que el estándar exige, y eso es legal: el estándar dice qué anomalías deben *evitarse* como mínimo, no prohíbe ser más estricto. Esto pasa porque `REPEATABLE READ` en Postgres congela un **snapshot** de toda la base al inicio de la transacción: ves el mundo como estaba cuando empezaste, sin importar lo que otros confirmen después."*
+
+2. *"`SERIALIZABLE` es el único que evita el **write skew**. Lo logra con SSI (Serializable Snapshot Isolation): detecta dependencias peligrosas entre transacciones y, si encuentra una, **aborta** una de ellas con el error `40001` (`could not serialize access...`). No bloquea — te deja correr y, si al final detecta el problema, te dice 'reintenta'. Por eso, usar `SERIALIZABLE` te obliga a escribir un **loop de reintento** en la aplicación."*
+
+`READ COMMITTED` (el default) te da snapshots **por sentencia**: cada `SELECT` ve lo confirmado hasta el instante en que *esa sentencia* empezó. `REPEATABLE READ` te da un snapshot **por transacción**: el primer statement fija la foto y todos los demás la respetan.
+
+```mermaid
+flowchart TB
+  RC["READ COMMITTED<br/>snapshot por sentencia<br/>(rápido, default)"] --> RR["REPEATABLE READ<br/>snapshot por transacción<br/>(sin non-repeatable ni phantom)"]
+  RR --> SER["SERIALIZABLE<br/>SSI + detección de anomalías<br/>(aborta con 40001, necesita retry)"]
+```
+
+Lo cambias así, justo después de abrir la transacción (antes de la primera query):
+
+```sql
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+  -- ...
+COMMIT;
+```
+
+> Ojo: subir el nivel **no** arregla el lost update mágicamente. Bajo `REPEATABLE READ`, el bug de 4.2 no se pierde en silencio: la segunda transacción que intente escribir la fila ya tocada falla con `40001` y tú **debes** reintentar. Es decir, `REPEATABLE READ`/`SERIALIZABLE` convierten un bug silencioso en un error explícito que tu código tiene que manejar. Eso ya es una victoria —pero no es gratis.
+
+### 4.5 EXPLAIN ANALYZE: ver cómo Postgres ejecuta de verdad
+
+Cambiamos de tema a rendimiento. Tengo una query simple sobre una tabla `pagos` con un millón de filas:
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM pagos WHERE usuario_id = 42;
+```
+
+`EXPLAIN` te muestra el **plan** que el planner eligió. `EXPLAIN ANALYZE` además **ejecuta** la query y te da los números reales. Salida (recortada):
+
+```text
+ Seq Scan on pagos  (cost=0.00..18584.00 rows=12 width=64)
+                    (actual time=0.231..142.880 rows=11 loops=1)
+   Filter: (usuario_id = 42)
+   Rows Removed by Filter: 999989
+ Planning Time: 0.102 ms
+ Execution Time: 142.931 ms
+```
+
+Razono leyéndolo línea a línea:
+
+- *"`Seq Scan on pagos` — Postgres está leyendo la tabla **entera**, fila por fila. Primera bandera roja."*
+- *"`cost=0.00..18584.00` — el costo **estimado**, en unidades arbitrarias (relativas, no milisegundos). El formato es `startup..total`: cuánto cuesta antes de devolver la primera fila, y el total. Sirve para *comparar* planes, no como tiempo absoluto."*
+- *"`rows=12` es la **estimación** del planner; `actual ... rows=11` es lo que de verdad salió. Acá calzan, bien. Cuando estos dos números difieren por órdenes de magnitud, casi siempre las estadísticas están viejas: corre `ANALYZE pagos;`."*
+- *"`actual time=0.231..142.880` — tiempo **real** en ms para esta operación. 142 ms para encontrar 11 filas es carísimo."*
+- *"`Rows Removed by Filter: 999989` — la prueba del delito: Postgres miró un millón de filas y descartó casi todas. Está buscando con la fuerza bruta porque **no hay índice** sobre `usuario_id`."*
+
+El arreglo:
+
+```sql
+CREATE INDEX idx_pagos_usuario ON pagos (usuario_id);
+```
+
+Y el plan nuevo:
+
+```text
+ Index Scan using idx_pagos_usuario on pagos
+       (cost=0.42..8.61 rows=12 width=64)
+       (actual time=0.038..0.061 rows=11 loops=1)
+   Index Cond: (usuario_id = 42)
+ Execution Time: 0.094 ms
+```
+
+*"`Seq Scan` se volvió `Index Scan`: ahora salta directo a las 11 filas usando el índice (`Index Cond`), sin leer el millón. El tiempo cayó de 142 ms a 0.09 ms — unas 1.500 veces más rápido. Eso es leer un plan: buscas el `Seq Scan` sobre tablas grandes, el `Rows Removed by Filter` alto, y la brecha entre `rows` estimado y real."*
+
+:::caution[`EXPLAIN ANALYZE` realmente EJECUTA la query]
+Con `SELECT` es inofensivo. Pero `EXPLAIN ANALYZE DELETE FROM ...` **borra de verdad**. Si necesitas analizar un `UPDATE`/`DELETE`, envuélvelo en una transacción y haz `ROLLBACK`: `BEGIN; EXPLAIN ANALYZE DELETE ...; ROLLBACK;`. Para ver lecturas de disco vs. caché, añade `BUFFERS`: `EXPLAIN (ANALYZE, BUFFERS) SELECT ...`.
+:::
+
+### 4.6 Connection pooling: por qué no abres una conexión por request
+
+Cada conexión a Postgres no es "gratis": el servidor **forkea un proceso** del sistema operativo por conexión, que consume varios MB de RAM, y el handshake (TCP + autenticación) tarda. Si tu API abre una conexión nueva en cada request HTTP y la cierra al terminar, pagas ese costo miles de veces por minuto y, peor, chocas contra `max_connections` (por defecto ≈100): la conexión 101 recibe un error y tu app cae bajo carga.
+
+La solución es un **pool**: un conjunto de conexiones ya abiertas y "tibias" que se reutilizan. Un request toma una prestada, la usa, y la devuelve al pool en vez de cerrarla.
+
+- **Pool en la aplicación:** tu propio proceso mantiene N conexiones. En Python, `psycopg_pool.ConnectionPool`; SQLAlchemy trae el suyo. Suficiente para un solo servicio.
+
+```python
+from psycopg_pool import ConnectionPool
+
+# Abre el pool una vez al arrancar la app, no por request.
+pool = ConnectionPool("postgresql://user:pass@host/db", min_size=4, max_size=20)
+
+def cobrar(usuario_id: int):
+    with pool.connection() as conn:          # toma una prestada
+        conn.execute("UPDATE ... WHERE id=%s", (usuario_id,))
+    # al salir del 'with': commit + la conexión vuelve al pool (no se cierra)
+```
+
+- **Pooler externo (pgbouncer):** un proceso *aparte* que se sienta entre tus apps y Postgres. Indispensable cuando tienes **muchas** instancias (varios servidores, o funciones serverless que escalan a cientos). Tiene tres modos:
+  - **session** (por defecto): la conexión al servidor queda atada a un cliente mientras dure su sesión. Compatible con todo, menos ahorro.
+  - **transaction**: la conexión se devuelve al pool al terminar **cada transacción**. Es el modo ideal para web (máximo reúso), pero rompe features que viven a nivel de sesión: prepared statements, `SET` de sesión, advisory locks, `LISTEN/NOTIFY`.
+  - **statement**: el más agresivo; fuerza autocommit y prohíbe transacciones multi-sentencia. Casos muy específicos.
+
+> Regla práctica: un solo servicio backend → pool de la aplicación basta. Serverless o muchas instancias → pgbouncer en modo transaction (y entonces evita prepared statements del lado cliente).
+
+### 4.7 La solución, en cuatro sabores
+
+Volvamos al lost update de 4.2. Hay cuatro formas de arreglarlo; entender *por qué* cada una funciona es el objetivo.
+
+**(a) Hacer la aritmética en la base (lo primero que deberías intentar).** El bug nace de leer-modificar-escribir en la app. Si Postgres hace la resta, desaparece la ventana entre lectura y escritura:
+
+```sql
+UPDATE eventos SET stock = stock - 1 WHERE id = 1 AND stock > 0;
+```
+
+Un solo statement, atómico. El `AND stock > 0` impide vender bajo cero (si devuelve 0 filas afectadas, no había stock). Resuelve la mayoría de los casos reales. Pero **no alcanza** cuando la decisión depende de *leer* el valor y hacer lógica compleja en la app antes de escribir. Ahí entran las dos estrategias clásicas.
+
+**(b) Locking pesimista — `SELECT ... FOR UPDATE`.** "Asumo que va a haber conflicto, así que **bloqueo la fila** apenas la leo." Las demás transacciones que quieran esa fila **esperan** hasta que yo haga commit:
+
+```sql
+BEGIN;
+  SELECT stock FROM eventos WHERE id = 1 FOR UPDATE;  -- bloqueo la fila
+  -- ... lógica en la app con el valor leído ...
+  UPDATE eventos SET stock = stock - 1 WHERE id = 1;
+COMMIT;  -- recién aquí se libera el lock
+```
+
+Razono: *"`FOR UPDATE` toma un lock de fila. Si B llega mientras A tiene el lock, B se queda esperando en el `SELECT` hasta que A confirme — y entonces B lee el valor **ya actualizado**. Cero lost update. El costo: las transacciones se **serializan** sobre esa fila (menos paralelismo) y, si dos transacciones se bloquean mutuamente esperando filas cruzadas, hay **deadlock** (Postgres lo detecta y mata una con error)."* Variantes útiles: `FOR UPDATE SKIP LOCKED` (sáltate las filas bloqueadas — patrón de colas de trabajo) y `FOR UPDATE NOWAIT` (falla en vez de esperar).
+
+**(c) Locking optimista — columna `version`.** "Asumo que **no** habrá conflicto; si lo hubo, lo detecto al escribir y reintento." No tomo locks; agrego una columna `version` y la condiciono en el `UPDATE`:
+
+```sql
+-- 1) leo la fila y su versión (sin bloquear)
+SELECT stock, version FROM eventos WHERE id = 1;   -- ej: stock=1, version=7
+
+-- 2) escribo SOLO si nadie cambió la fila desde que la leí
+UPDATE eventos
+   SET stock = stock - 1, version = version + 1
+ WHERE id = 1 AND version = 7;
+```
+
+Razono: *"Si entre mi lectura y mi escritura otro confirmó, su `UPDATE` ya subió `version` a 8. Mi `WHERE ... AND version = 7` entonces afecta **0 filas**. Detecto ese `rowcount == 0` y **reintento** desde la lectura. Mientras nadie choque, no hay locks ni esperas: es más rápido bajo **baja contención**. Bajo **alta** contención, en cambio, los reintentos se acumulan y rinde peor que el pesimista."*
+
+**(d) Subir el isolation level.** `REPEATABLE READ` o `SERIALIZABLE` hacen que el motor detecte el conflicto y aborte con `40001`; tú reintentas. Es "optimista, pero gestionado por Postgres". Útil cuando la regla involucra **varias** filas/tablas (write skew), donde una sola columna `version` no alcanza.
+
+```mermaid
+flowchart LR
+  Q{"¿Esperas mucha<br/>contención sobre<br/>la misma fila?"} -->|Sí| P["Pesimista<br/>SELECT FOR UPDATE<br/>(serializa, evita reintentos)"]
+  Q -->|No| O["Optimista<br/>version + retry<br/>(sin locks, más throughput)"]
+```
+
+## 5. Non-examples y misconceptions (lee esto despacio)
+
+Aquí es donde casi todos creen que su backend es seguro y no lo es. Confronta cada idea:
+
+:::caution[Misconception 1: "Una transacción (BEGIN/COMMIT) ya me protege de la concurrencia"]
+**Está mal.** `BEGIN/COMMIT` te da **atomicidad** (todo o nada) y **durabilidad**, no exclusión mutua. Bajo el nivel por defecto (`READ COMMITTED`), dos transacciones pueden leer el mismo `stock=1`, restar, y ambas confirmar: lost update con transacciones impecables. La atomicidad evita que quedes a medias; **no** evita que dos lleguen a la misma fila. Para eso necesitas un lock, una aritmética atómica, o un isolation level más alto.
+:::
+
+:::caution[Misconception 2: "SERIALIZABLE es lento y peligroso, mejor ni tocarlo"]
+**A medias, y el matiz importa.** `SERIALIZABLE` no bloquea más que los otros niveles: usa SSI, que *detecta* conflictos en vez de prevenirlos con locks. El costo real es que puede **abortar** transacciones con `40001`, así que tu código **debe** reintentar. Si no manejas el reintento, no es que sea "lento": es que tu app lanzará errores al usuario. Bien usado (con retry), es la forma más simple de correctitud cuando hay write skew. La regla honesta: úsalo cuando la regla de negocio cruza varias filas y no quieres razonar lock por lock.
+:::
+
+:::caution[Misconception 3: "El costo de EXPLAIN está en milisegundos"]
+**Está mal.** `cost=0.00..18584.00` son **unidades arbitrarias** del planner (calibradas con `seq_page_cost = 1` como referencia). Sirven para que Postgres *compare* planes entre sí, no para decirte cuánto tarda. El tiempo real solo aparece con `EXPLAIN ANALYZE`, en la parte `actual time=...`. Confundir cost con ms lleva a "optimizar" persiguiendo un número que no es el reloj.
+:::
+
+:::caution[Misconception 4: "Agrego índices a todas las columnas, así todo va rápido"]
+**Está mal.** Cada índice acelera las lecturas que lo usan, pero **frena cada `INSERT`/`UPDATE`/`DELETE`** (hay que mantenerlo) y ocupa disco. Un índice que ninguna query usa es puro costo. Se indexan las columnas que aparecen en `WHERE`, `JOIN` y `ORDER BY` de tus queries frecuentes — y se verifica con `EXPLAIN` que el índice *realmente* se usa. Más índices no es más rápido; los índices correctos sí.
+:::
+
+:::caution[Misconception 5: "Optimista vs pesimista es cuestión de gusto"]
+**Está mal: es cuestión de contención.** Con **poca** competencia por la misma fila (la mayoría de los casos web), el optimista gana: cero locks, más throughput, y los raros reintentos casi no ocurren. Con **mucha** competencia (todos peleando por el último ticket de una venta flash), el optimista se degrada en una tormenta de reintentos y el pesimista —que serializa el acceso— rinde mejor y es más predecible. Elegir sin estimar la contención es adivinar.
+:::
+
+:::caution[Misconception 6: "Le pido a la IA que me escriba el endpoint y listo"]
+**Está mal, y es el punto del curso.** Una IA te genera un `SELECT` seguido de un `UPDATE` que pasa todos tus tests locales (donde eres el único usuario) y vende dos veces en producción. El razonamiento de concurrencia —¿hay una ventana entre leer y escribir? ¿qué pasa si dos llegan juntos?— es exactamente lo que no puedes delegar, porque el bug no aparece hasta que hay carga real. Aquí la IA, si acaso, revisa tu solución **después** de que tú razonaste el entrelazado.
+:::
+
+## 6. Práctica con andamiaje
+
+Antes de los ejercicios sin red, tres pasos que se desvanecen. Hazlos en orden, **sin ejecutar** (predice primero).
+
+### 6.1 PREDICT — ¿hay lost update aquí?
+
+Dos sesiones, `READ COMMITTED` (default), sobre `eventos` con `stock = 5`. **Predice** el `stock` final y si se perdió alguna venta:
+
+```text
+Sesión A: BEGIN;
+Sesión A:   SELECT stock FROM eventos WHERE id=1;        -- lee 5
+Sesión B: BEGIN;
+Sesión B:   UPDATE eventos SET stock = stock - 1 WHERE id=1;  -- aritmética en la DB
+Sesión B: COMMIT;                                         -- stock ahora 4
+Sesión A:   UPDATE eventos SET stock = stock - 1 WHERE id=1;  -- aritmética en la DB
+Sesión A: COMMIT;
+```
+
+<Solucion title="Ver la respuesta (solo después de predecir)">
+`stock` final = **3**, y **no** se perdió ninguna venta. La clave: el `UPDATE ... SET stock = stock - 1` de A **no** usa el `5` que A leyó al inicio; cuando A ejecuta su `UPDATE`, Postgres re-evalúa `stock` sobre el valor **actual confirmado** (4, porque B ya confirmó), y bajo `READ COMMITTED` un `UPDATE` ve lo último confirmado al momento de ejecutarse. Resultado: 4 - 1 = 3. Compáralo con el bug de 4.2, donde la resta la hacía la *aplicación* con el valor viejo (`stock = 0` calculado en Python). Moraleja: hacer la aritmética en la base (sabor **a** de la sección 4.7) cierra la ventana del lost update sin locks ni niveles altos.
+</Solucion>
+
+### 6.2 PARSONS — ordena el loop de reintento optimista
+
+Estas líneas implementan locking optimista con reintento, pero están desordenadas. Reescríbelas en el único orden correcto:
+
+```text
+A. UPDATE ... SET stock = stock - 1, version = version + 1 WHERE id = 1 AND version = v
+B. SELECT stock, version FROM eventos WHERE id = 1   (guarda version en v)
+C. si filas_afectadas == 1: COMMIT y termina (éxito)
+D. repite hasta un máximo de N intentos
+E. si filas_afectadas == 0: alguien cambió la fila -> vuelve a empezar
+```
+
+<Solucion title="Ver el orden correcto">
+Orden: **D → B → A → C → E** (con E volviendo al inicio del loop D/B).
+
+1. **D** — abre el loop con un tope de intentos (sin tope, una fila muy peleada te deja girando para siempre).
+2. **B** — lee el estado actual y **captura** `version` en `v`. Sin lock.
+3. **A** — intenta escribir condicionado a `version = v`.
+4. **C** — si afectó **1** fila, nadie te ganó: commit y listo.
+5. **E** — si afectó **0**, otro confirmó entre tu lectura y tu escritura (subió `version`); descarta y reintenta desde B.
+
+El error clásico es olvidar el tope **D** (loop infinito bajo alta contención) o leer `version` una sola vez fuera del loop (reintentarías siempre con la versión vieja y nunca avanzarías).
+</Solucion>
+
+### 6.3 MODIFY — del lento al rápido
+
+Te doy este plan de `EXPLAIN ANALYZE`:
+
+```text
+ Seq Scan on pedidos  (cost=0.00..25310.00 rows=48 width=72)
+                      (actual time=0.04..198.7 rows=51 loops=1)
+   Filter: (estado = 'pendiente')
+   Rows Removed by Filter: 1499949
+```
+
+Escribe (1) qué operación es el cuello de botella y cómo lo sabes, (2) el `CREATE INDEX` que lo arregla, y (3) el nombre de la operación que esperas ver en el plan nuevo. Pregúntate además: ¿y si el 90% de los pedidos estuvieran en estado `'pendiente'` — seguiría siendo útil el índice? (Pista: un índice ayuda cuando filtra a *pocas* filas; si casi todo pasa el filtro, el `Seq Scan` puede seguir ganando.)
+
+## 7. Ejercicios Primero-Sin-IA
+
+Ahora sin andamiaje. Resuélvelos **a mano, sin IA**, dentro del timebox. La regla de oro: razona el **entrelazado en el tiempo** antes de escribir una línea. Está bien que sea lento.
+
+<Reto title="Diagnosticar anomalías y elegir el isolation level" timebox="30–40 min">
+
+Te damos tres escenarios de dos sesiones concurrentes (en `escenarios.md`). Para **cada uno** debes: (1) nombrar la anomalía exacta que ocurre o podría ocurrir (dirty read / non-repeatable / phantom / lost update / write skew), (2) decir si pasa bajo `READ COMMITTED` y bajo `REPEATABLE READ`, (3) elegir el isolation level **mínimo** (o la técnica: aritmética atómica / `FOR UPDATE`) que lo resuelve, y (4) justificar el trade-off de tu elección en 1–2 frases.
+
+Este es un ejercicio de **razonamiento puro**: no se ejecuta nada (aunque puedes verificar en `psql` después, con dos terminales). El entregable es tu análisis escrito.
+
+**Hecho significa:**
+- [ ] Los tres escenarios tienen anomalía nombrada **correctamente** y justificada con el entrelazado, no con una etiqueta suelta.
+- [ ] Distingues bien qué permite `READ COMMITTED` vs `REPEATABLE READ` (recuerda: en Postgres `REPEATABLE READ` ya mata los phantom).
+- [ ] Eliges el nivel/técnica **mínimo** que basta (no "todo a `SERIALIZABLE` por si acaso") y nombras su costo.
+- [ ] Puedes explicar, sin notas, por qué subir el nivel a veces convierte un bug silencioso en un error `40001` que hay que reintentar.
+
+Enunciado completo: `ejercicios/fase-3/anomalias-e-isolation/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Para cada escenario, dibuja la línea de tiempo (quién lee, quién escribe, quién confirma y cuándo). La anomalía se define por el **patrón**, no por las tablas: si repites una lectura de la *misma fila* y cambió → non-repeatable; si repites una query de *rango* y aparecen filas → phantom; si dos leen y ambos escriben la misma fila pisándose → lost update; si dos leen un estado común y escriben filas distintas que juntas rompen una invariante → write skew. Para el nivel mínimo: non-repeatable y phantom los corta `REPEATABLE READ`; el write skew **solo** `SERIALIZABLE`; el lost update puro lo arregla la aritmética atómica o `FOR UPDATE` sin subir el nivel. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+<Reto title="Leer un plan EXPLAIN ANALYZE y arreglar la query" timebox="30–45 min">
+
+En `consulta.sql` tienes una query lenta y, en `plan-actual.txt`, su salida de `EXPLAIN ANALYZE` sobre una tabla grande. Debes producir un `analisis.md` que: (1) identifique el cuello de botella citando las **líneas exactas** del plan que lo prueban (`Seq Scan`, `Rows Removed by Filter`, `actual time`), (2) explique por qué el planner eligió ese plan, (3) proponga el/los `CREATE INDEX` en `indice.sql`, y (4) prediga el plan nuevo (qué operación reemplaza al `Seq Scan` y por qué el tiempo baja). Bonus: la query también ordena por una columna — explica si tu índice puede servir además para el `ORDER BY`.
+
+Razonamiento puro: no necesitas una base corriendo. Si tienes Postgres a mano, verifica creando la tabla con datos sintéticos (te dejamos un script opcional en el README).
+
+**Hecho significa:**
+- [ ] El cuello de botella está identificado citando líneas concretas del plan, no "se ve lento".
+- [ ] El `CREATE INDEX` apunta a la(s) columna(s) correcta(s) del `WHERE`/`JOIN`/`ORDER BY`.
+- [ ] Predices la operación del plan nuevo (`Index Scan` o `Bitmap Heap Scan`) y justificas la mejora.
+- [ ] Explicas, sin notas, por qué `cost` no son milisegundos y qué significa una brecha grande entre `rows` estimado y real.
+
+Enunciado completo: `ejercicios/fase-3/leer-explain-analyze/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Empieza por arriba del plan: si la operación raíz sobre la tabla grande es `Seq Scan` y hay un `Filter` con `Rows Removed by Filter` enorme, el problema es que no hay índice para ese filtro. Indexa la columna del `Filter`/`WHERE`. Si la query además hace `ORDER BY col` y filtras por `WHERE otra = X`, un índice compuesto `(otra, col)` puede servir para filtrar **y** entregar las filas ya ordenadas (evita un paso `Sort`). Predice `Index Scan` (pocas filas) o `Bitmap Heap Scan` (filas moderadas dispersas). Pista, no solución.
+</Solucion>
+
+</Reto>
+
+<Reto title="Resolver la carrera del stock: pesimista vs optimista" timebox="40–45 min">
+
+El ejercicio con código. Te damos `solucion.py` con dos funciones a implementar usando `psycopg` (v3) contra un Postgres local, y `schema.sql` con la tabla `eventos(id, stock, version)`:
+
+- `comprar_pesimista(pool, evento_id)` — usa `SELECT ... FOR UPDATE` para bloquear la fila, valida stock, decrementa. Retorna `True` si vendió, `False` si no había stock.
+- `comprar_optimista(pool, evento_id)` — usa la columna `version` + reintento (tope de intentos), sin locks. Misma firma y semántica.
+
+Ninguna de las dos debe **nunca** dejar el stock negativo ni vender más unidades de las que había, aunque las llamen muchos hilos a la vez. El test (`test_acceptance.py`, te lo damos) crea un evento con `stock = 50`, lanza 100 compras concurrentes con threads, y verifica que se vendieron **exactamente 50** y el stock quedó en **0**, para ambas estrategias.
+
+Necesitas un Postgres corriendo (el que instalaste en [`3.1`](/fase-3-backend/3-1-sql-modelado-relacional/)). Exporta `DATABASE_URL`; si no hay base, el test se salta con un mensaje claro (pero entonces no lo terminaste de verdad — levanta uno).
+
+**Hecho significa:**
+- [ ] `pytest` en **verde** para ambas estrategias: exactamente 50 ventas, stock final 0, nunca negativo.
+- [ ] La versión pesimista bloquea con `FOR UPDATE` y libera al confirmar; la optimista reintenta ante `rowcount == 0` con un tope (sin loop infinito).
+- [ ] En `bitacora.md` explicas, con tus palabras, en qué escenario de contención preferirías cada una y por qué.
+- [ ] Puedes explicar, sin notas, por qué un `SELECT` y luego un `UPDATE` "normales" (sin `FOR UPDATE`, sin `version`, sin aritmética atómica) fallarían este test.
+
+Enunciado completo y starter: `ejercicios/fase-3/carrera-stock-locking/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Pesimista: dentro de una transacción, `SELECT stock FROM eventos WHERE id = %s FOR UPDATE`, revisa en Python si `stock > 0`, y si sí, `UPDATE eventos SET stock = stock - 1 WHERE id = %s`. El lock se mantiene hasta el commit (al salir del `with pool.connection()`), así que el segundo hilo espera y lee el valor ya decrementado. Optimista: `SELECT stock, version ...` (sin `FOR UPDATE`), y luego `UPDATE eventos SET stock = stock - 1, version = version + 1 WHERE id = %s AND version = %s`; si `cur.rowcount == 0`, otro te ganó: vuelve a leer y reintenta (hasta, digamos, 100 veces). Usa `pool.connection()` para tomar/devolver conexiones. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+## 8. Check de dominio
+
+Sin mirar la lección, en voz alta o por escrito:
+
+<CheckDominio
+  items={[
+    "Nombrar las 4 letras de ACID y explicar qué garantiza cada una.",
+    "Listar los 3 isolation levels de Postgres y qué anomalía permite cada uno.",
+    "Explicar por qué REPEATABLE READ en Postgres no permite phantom reads (a diferencia del estándar SQL).",
+    "Explicar qué hace SERIALIZABLE diferente y por qué obliga a un loop de reintento (error 40001).",
+    "Leer un plan: distinguir cost (estimado, arbitrario) de actual time (real, ms) y detectar un Seq Scan problemático.",
+    "Explicar por qué no se abre una conexión por request y qué resuelve un connection pool.",
+    "Implementar y contrastar locking pesimista (FOR UPDATE) vs optimista (version + retry), y decir cuál usar según la contención.",
+  ]}
+/>
+
+Si marcaste menos de seis, vuelve a la sección correspondiente **antes** de avanzar.
+
+<Quiz
+  question="Bajo REPEATABLE READ, dos transacciones leen la misma fila (stock=1) y ambas intentan hacer UPDATE para decrementarla. ¿Qué ocurre?"
+  options={[
+    "Ambas confirman y se pierde una venta, igual que en READ COMMITTED",
+    "La primera confirma; la segunda falla con error 40001 ('could not serialize access due to concurrent update') y tu app debe reintentar",
+    "Postgres las ejecuta en paralelo sin ningún problema porque REPEATABLE READ usa snapshots",
+  ]}
+  answer={1}
+  explanation="REPEATABLE READ convierte el lost update silencioso en un error explícito: la segunda transacción que toca una fila ya modificada por una transacción concurrente confirmada aborta con 40001. Eso es bueno —no pierdes la venta en silencio— pero te obliga a manejar el reintento en la aplicación. Si no lo manejas, el usuario ve un error en vez de un dato corrupto."
+/>
+
+## 9. Recursos (documentación oficial primero)
+
+- **PostgreSQL — Transaction Isolation:** [postgresql.org/docs/current/transaction-iso.html](https://www.postgresql.org/docs/current/transaction-iso.html) — la fuente canónica de los niveles, la tabla de anomalías, y por qué `REPEATABLE READ` de Postgres es más estricto que el estándar.
+- **PostgreSQL — Explicit Locking (`FOR UPDATE`, deadlocks):** [postgresql.org/docs/current/explicit-locking.html](https://www.postgresql.org/docs/current/explicit-locking.html) — los modos de lock de fila y cómo Postgres detecta deadlocks.
+- **PostgreSQL — Using EXPLAIN:** [postgresql.org/docs/current/using-explain.html](https://www.postgresql.org/docs/current/using-explain.html) — cómo se lee un plan, qué significan cost/rows/actual time, y `BUFFERS`.
+- **psycopg 3 — Transactions:** [psycopg.org/psycopg3/docs/basic/transactions.html](https://www.psycopg.org/psycopg3/docs/basic/transactions.html) — autocommit, `conn.transaction()`, isolation level y manejo de `SerializationFailure` desde Python.
+- **psycopg 3 — Connection pools:** [psycopg.org/psycopg3/docs/advanced/pool.html](https://www.psycopg.org/psycopg3/docs/advanced/pool.html) — `ConnectionPool` en la aplicación.
+- **PgBouncer — Features (pooling modes):** [pgbouncer.org/features.html](https://www.pgbouncer.org/features.html) — session vs transaction vs statement, y cuándo cada uno.
+
+## 10. Conexión con el capstone de la fase
+
+El **[Capstone F3 — API de producción](/fase-3-backend/proyecto/)** (FastAPI + Postgres) descansa sobre esta lección en cada endpoint que escribe datos:
+
+- Todo endpoint que **modifica** un recurso compartido (stock, saldo, contador) debe ser correcto bajo concurrencia: aritmética atómica, `FOR UPDATE`, o `version` según el caso — y tu write-up justifica la elección. Es justo el tipo de decisión que va a un **ADR**.
+- Cuando una query del API sea lenta, `EXPLAIN ANALYZE` es tu primer paso de diagnóstico, no adivinar índices.
+- El connection pool se configura **una vez** al arrancar la app (FastAPI `lifespan`), no por request — lo conectarás en [`3.8` FastAPI](/fase-3-backend/3-8-backend-fastapi/).
+- La idempotencia que verás en [`3.14`](/fase-3-backend/3-14-idempotencia-resiliencia/) y la seguridad de [`3.13`](/fase-3-backend/3-13-owasp-top10-web/) se apoyan en transaccionar bien: un reintento de cliente no debe cobrar dos veces, y eso es, otra vez, razonar el entrelazado.
+
+## 11. Reflexión y repaso espaciado
+
+Cierra escribiendo dos o tres frases: **¿en qué momento de los ejercicios te diste cuenta de que tu intuición de "primero leo, después escribo" tenía una ventana de tiempo donde otro cabía? ¿Qué te dice eso sobre la diferencia entre código que "funciona en mi máquina" y código correcto bajo carga?** Nombrar esa ventana ("entre mi `SELECT` y mi `UPDATE` cabía toda otra transacción") es la señal de que el modelo mental caló.
+
+Gancho de **spaced repetition**:
+
+- **Mañana:** reescribe de memoria la tabla de anomalías × isolation levels (3 niveles × 4 anomalías) y verifica contra la sección 4.4. Si no te sale `REPEATABLE READ` sin phantom, no lo aprendiste todavía.
+- **En 3 días:** toma una query de tu proyecto, córrele `EXPLAIN ANALYZE`, y predice *antes* de mirar si verás `Seq Scan` o `Index Scan`. Te sorprenderá cuántas veces hay un escaneo completo escondido.
+- **En 1 semana:** explícale a alguien (o a una grabación) por qué dos compras del último ticket pueden venderlo dos veces, y las cuatro formas de evitarlo. Enseñarlo es el test de dominio definitivo — y es, casi palabra por palabra, una pregunta de entrevista de backend.

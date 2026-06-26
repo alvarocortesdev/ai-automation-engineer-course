@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/problem-details-rfc9457
+titulo: "Construye errores problem+json (RFC 9457)"
+fase: fase-3
+sub_unidad: "3.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Construir un cuerpo de error problem+json válido según RFC 9457: campos estándar, default about:blank, y sin claves con valor None"
+  - "Soportar extension members (campos extra) sin romper la forma del problema"
+  - "Elegir el status code HTTP correcto por situación (2xx/4xx/5xx) y distinguir 400/401/403/404/409/422"
+hilos_transversales: [testing, seguridad, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}   # convención: tests en tests/ ; aquí el test vive junto al starter (test_problem_details.py)

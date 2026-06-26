@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/cazar-n1
+titulo: "Caza y mata el N+1 con eager loading"
+fase: fase-3
+sub_unidad: "3.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una consulta SQLAlchemy 2.0 que liste autores con sus libros sin disparar el problema N+1 (<= 2 queries para N autores)"
+  - "Elegir entre joinedload y selectinload según el tipo de relación y justificar la decisión por escrito"
+  - "Diagnosticar el N+1 contando las queries reales (no por intuición de tiempo)"
+hilos_transversales: [testing, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

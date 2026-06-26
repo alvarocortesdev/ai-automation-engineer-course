@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/auditoria-owasp-config
+titulo: "Audita una configuración insegura (mapéala a OWASP)"
+fase: fase-3
+sub_unidad: "3.13"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Detectar fallas de seguridad en un arranque de backend y clasificar cada una en su categoría del OWASP Top 10 (2021)"
+  - "Proponer un fix concreto y accionable por hallazgo, distinguiendo autenticación de autorización"
+  - "Aplicar secrets management: detectar secretos con gitleaks y saber que un secreto filtrado se rota, no solo se borra"
+hilos_transversales: [seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la entrega es la auditoría en Markdown, no hay suite

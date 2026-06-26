@@ -1,0 +1,29 @@
+# Plantilla de dependencias (gestiona con uv:  uv sync  /  uv add <pkg>).
+# Versiones: deja que uv resuelva las últimas estables al momento de construir; estos son los
+# paquetes, no un lockfile. Verifica la doc oficial de cada uno.
+[project]
+name = "mi-api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]",     # incluye uvicorn y el CLI `fastapi`
+    "sqlalchemy>=2.0",       # ORM estilo 2.0 (Mapped, mapped_column)
+    "alembic",               # migraciones de esquema versionadas
+    "psycopg[binary]",       # driver PostgreSQL (postgresql+psycopg://...)
+    "pydantic-settings",     # cargar config desde env vars / .env
+    "pyjwt",                 # firmar/verificar JWT (import jwt)
+    "pwdlib[argon2]",        # hashing de contraseñas recomendado por FastAPI
+    "httpx",                 # cliente HTTP para el import (con tu guardia SSRF)
+    "slowapi",               # rate limiting para FastAPI/Starlette
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",                  # lint + format
+    "mutmut",                # mutation testing (mide tus tests de verdad)
+    "pip-audit",             # dependency-scanning (SCA) para el CI
+]
+
+[tool.ruff]
+line-length = 100

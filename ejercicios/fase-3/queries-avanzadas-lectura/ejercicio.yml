@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/queries-avanzadas-lectura
+titulo: "Lee y diagnostica: JOINs, NULLs y window functions"
+fase: fase-3
+sub_unidad: "3.2"
+ruta_critica: true
+modalidad: mixto                     # razonamiento a-mano + verificación opcional en psql
+objetivos:
+  - "Predecir la salida de queries con LEFT JOIN + COUNT y con window functions (RANK, SUM OVER) sin ejecutar"
+  - "Diagnosticar por qué un WHERE sobre la tabla derecha degrada un LEFT JOIN a INNER y corregirlo moviendo la condición al ON"
+  - "Decidir el tipo de JOIN correcto según qué filas sin pareja deben sobrevivir"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de lectura: la verificación la hace el alumno ejecutando en psql, no hay suite

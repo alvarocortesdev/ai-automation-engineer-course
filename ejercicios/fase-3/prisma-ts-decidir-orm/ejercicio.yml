@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/prisma-ts-decidir-orm
+titulo: "Decide: Prisma o SQLAlchemy para tres proyectos"
+fase: fase-3
+sub_unidad: "3.6"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Decidir entre Prisma y SQLAlchemy para distintos contextos con criterios concretos (lenguaje/equipo, control de SQL, ecosistema, IA)"
+  - "Nombrar el trade-off de cada elección y qué evidencia la cambiaría"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: repaso
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: lo evalúa el corrector contra la solución de referencia

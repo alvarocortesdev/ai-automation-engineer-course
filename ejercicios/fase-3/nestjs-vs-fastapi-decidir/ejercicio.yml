@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-3/nestjs-vs-fastapi-decidir
+titulo: "Decide: FastAPI, NestJS o Express para tres proyectos"
+fase: fase-3
+sub_unidad: "3.10"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Decidir el framework de backend con criterios concretos (lenguaje del equipo/sistema, tamaño, integración con IA, estructura necesaria)"
+  - "Nombrar el trade-off de cada elección y qué evidencia la cambiaría"
+  - "Defender por qué para una app de IA en Python FastAPI suele ganar por ecosistema, sin caer en chovinismo de lenguaje"
+hilos_transversales: [spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: el corrector evalúa DECISION.md contra la rúbrica
