@@ -1,0 +1,177 @@
+/* custom.css — branding mínimo del curso + estilos de los componentes propios.
+   Enlazado desde astro.config.mjs (starlight.customCss). */
+
+:root {
+  /* Acento "AI/Automation": violeta técnico. Starlight deriva la escala. */
+  --sl-color-accent-low: #1e1b4b;
+  --sl-color-accent: #6d4aff;
+  --sl-color-accent-high: #c7bbff;
+  --course-radius: 0.6rem;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #e6e0ff;
+  --sl-color-accent: #5a37e0;
+  --sl-color-accent-high: #2a1d6e;
+}
+
+/* ── Reto ──────────────────────────────────────────────────────────── */
+.reto {
+  border: 1px solid var(--sl-color-accent);
+  border-left-width: 4px;
+  border-radius: var(--course-radius);
+  padding: 0.6rem 1rem;
+  margin: 1.25rem 0;
+  background: var(--sl-color-bg-nav);
+}
+.reto__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+.reto__timebox {
+  margin-left: auto;
+  font-size: var(--sl-text-xs);
+  font-weight: 600;
+  color: var(--sl-color-text-accent);
+  white-space: nowrap;
+}
+.reto__body > :first-child {
+  margin-top: 0;
+}
+
+/* ── Solución (spoiler) ────────────────────────────────────────────── */
+.solucion {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: var(--course-radius);
+  padding: 0.25rem 1rem;
+  margin: 1rem 0;
+  background: var(--sl-color-bg-sidebar);
+}
+.solucion__summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.4rem 0;
+}
+.solucion[open] > .solucion__summary {
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid var(--sl-color-hairline);
+}
+
+/* ── Quiz ──────────────────────────────────────────────────────────── */
+.quiz {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: var(--course-radius);
+  padding: 1rem;
+  margin: 1.25rem 0;
+}
+.quiz__field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.quiz__question {
+  font-weight: 700;
+  padding: 0;
+}
+.quiz__options {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.quiz__option {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.4rem;
+  background: var(--sl-color-bg);
+  color: inherit;
+  font: inherit;
+}
+.quiz__option:hover {
+  border-color: var(--sl-color-accent);
+}
+.quiz__option.is-correct {
+  border-color: #2e9c5a;
+  background: color-mix(in srgb, #2e9c5a 15%, transparent);
+}
+.quiz__option.is-wrong {
+  border-color: #d23a3a;
+  background: color-mix(in srgb, #d23a3a 15%, transparent);
+}
+.quiz__feedback {
+  margin: 0.75rem 0 0;
+  font-weight: 600;
+}
+.quiz__explanation {
+  margin: 0.5rem 0 0;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-2);
+}
+
+/* ── Check de dominio ──────────────────────────────────────────────── */
+.check {
+  border: 1px dashed var(--sl-color-accent);
+  border-radius: var(--course-radius);
+  padding: 0.75rem 1rem;
+  margin: 1.25rem 0;
+}
+.check__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+.check__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.check__item label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.check__item input {
+  margin-top: 0.25rem;
+}
+
+/* ── Nivel (badge) ─────────────────────────────────────────────────── */
+.nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--sl-text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  vertical-align: middle;
+}
+.nivel--básico {
+  color: #2e9c5a;
+}
+.nivel--intermedio {
+  color: #c79100;
+}
+.nivel--avanzado {
+  color: #d23a3a;
+}
+.nivel--profundización {
+  color: var(--sl-color-accent);
+}
+.nivel__dot {
+  font-size: 0.7em;
+}

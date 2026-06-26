@@ -1,0 +1,78 @@
+---
+/**
+ * Quiz.astro — pregunta de opción múltiple con respuesta revelable.
+ * JS mínimo client-side: marca acierto/error al pulsar una opción.
+ * Sirve como "check de dominio" de bajo riesgo (active recall).
+ *
+ * Uso en MDX:
+ *   import Quiz from "@components/Quiz.astro";
+ *   <Quiz
+ *     question="¿Qué hace `git rebase`?"
+ *     options={["Fusiona ramas", "Reaplica commits sobre otra base", "Borra el historial"]}
+ *     answer={1}
+ *     explanation="Reaplica tus commits encima de otra base, reescribiendo el historial."
+ *   />
+ *
+ * Props:
+ *   - question:    string    (enunciado)
+ *   - options:     string[]  (alternativas; mínimo 2)
+ *   - answer:      number    (índice 0-based de la opción correcta)
+ *   - explanation: string    (se revela tras responder); opcional
+ */
+interface Props {
+  question: string;
+  options: string[];
+  answer: number;
+  explanation?: string;
+}
+const { question, options, answer, explanation } = Astro.props;
+---
+
+<form class="quiz" data-answer={answer} aria-label="Pregunta de repaso">
+  <fieldset class="quiz__field">
+    <legend class="quiz__question">{question}</legend>
+    <ul class="quiz__options">
+      {
+        options.map((option, i) => (
+          <li>
+            <button type="button" class="quiz__option" data-index={i}>
+              {option}
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </fieldset>
+  <p class="quiz__feedback" role="status" aria-live="polite" hidden></p>
+  {
+    explanation && (
+      <p class="quiz__explanation" hidden>
+        {explanation}
+      </p>
+    )
+  }
+</form>
+
+<script>
+  // Un solo handler para todos los quizzes de la página.
+  document.querySelectorAll<HTMLFormElement>(".quiz").forEach((quiz) => {
+    const correct = Number(quiz.dataset.answer);
+    const feedback = quiz.querySelector<HTMLElement>(".quiz__feedback");
+    const explanation = quiz.querySelector<HTMLElement>(".quiz__explanation");
+    quiz.querySelectorAll<HTMLButtonElement>(".quiz__option").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const index = Number(btn.dataset.index);
+        const ok = index === correct;
+        quiz
+          .querySelectorAll<HTMLButtonElement>(".quiz__option")
+          .forEach((b) => b.classList.remove("is-correct", "is-wrong"));
+        btn.classList.add(ok ? "is-correct" : "is-wrong");
+        if (feedback) {
+          feedback.hidden = false;
+          feedback.textContent = ok ? "✅ Correcto" : "❌ Inténtalo otra vez";
+        }
+        if (explanation && ok) explanation.hidden = false;
+      });
+    });
+  });
+</script>

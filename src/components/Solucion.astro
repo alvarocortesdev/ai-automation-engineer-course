@@ -1,0 +1,31 @@
+---
+/**
+ * Solucion.astro — spoiler colapsable con la solución de referencia.
+ * Cerrado por defecto para no arruinar el "Primero-Sin-IA".
+ *
+ * Uso en MDX:
+ *   import Solucion from "@components/Solucion.astro";
+ *   <Solucion title="Ver solución de referencia">
+ *     ```python
+ *     # solución comentada...
+ *     ```
+ *   </Solucion>
+ *
+ * Props:
+ *   - title: string  (texto del resorte); opcional, default "Ver solución"
+ */
+interface Props {
+  title?: string;
+}
+const { title = "Ver solución" } = Astro.props;
+---
+
+<details class="solucion">
+  <summary class="solucion__summary">
+    <span class="solucion__icon" aria-hidden="true">💡</span>
+    {title}
+  </summary>
+  <div class="solucion__body">
+    <slot />
+  </div>
+</details>

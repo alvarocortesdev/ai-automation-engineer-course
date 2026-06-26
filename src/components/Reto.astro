@@ -1,0 +1,31 @@
+---
+/**
+ * Reto.astro — callout de ejercicio "Primero-Sin-IA".
+ *
+ * Uso en MDX:
+ *   import Reto from "@components/Reto.astro";
+ *   <Reto title="Parsea un CSV a mano" timebox="30 min">
+ *     Enunciado del reto en markdown...
+ *   </Reto>
+ *
+ * Props:
+ *   - title:   string  (título del reto)
+ *   - timebox: string  (tiempo sugerido, ej. "25–45 min"); opcional
+ */
+interface Props {
+  title: string;
+  timebox?: string;
+}
+const { title, timebox } = Astro.props;
+---
+
+<aside class="reto" aria-label={`Reto: ${title}`}>
+  <p class="reto__head">
+    <span class="reto__icon" aria-hidden="true">🎯</span>
+    <span class="reto__title">Reto · {title}</span>
+    {timebox && <span class="reto__timebox">⏱ {timebox}</span>}
+  </p>
+  <div class="reto__body">
+    <slot />
+  </div>
+</aside>

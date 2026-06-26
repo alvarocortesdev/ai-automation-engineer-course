@@ -1,0 +1,55 @@
+# Licencia
+
+Este repositorio usa **licencia dual**. La separación es deliberada: el contenido pedagógico se puede
+compartir y remezclar libremente (con atribución y manteniendo la misma licencia), mientras que el
+código se puede reutilizar sin fricción en cualquier proyecto.
+
+| Qué | Cubre | Licencia |
+|---|---|---|
+| **Contenido** | Lecciones, prosa, diagramas, rúbricas, textos de `src/content/`, `ROADMAP.md`, `.ai/`, `*.md` de documentación | **CC BY-SA 4.0** (este archivo) |
+| **Código** | Ejemplos, scaffolds, starters, tests, configuración, scripts, `ejercicios/`, `src/components/`, `src/styles/` | **MIT** ([`LICENSE-CODE`](./LICENSE-CODE)) |
+
+Cuando un mismo archivo combine ambos (por ejemplo, una lección `.mdx` con bloques de código), el
+**texto en prosa** se rige por CC BY-SA 4.0 y los **fragmentos de código** por MIT.
+
+Copyright (c) 2026 Álvaro Cortés (`donpelusa`).
+
+---
+
+## Contenido — Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+
+El contenido de este repositorio está licenciado bajo
+**Creative Commons Attribution-ShareAlike 4.0 International**.
+
+**Eres libre de:**
+
+- **Compartir** — copiar y redistribuir el material en cualquier medio o formato.
+- **Adaptar** — remezclar, transformar y construir a partir del material para cualquier propósito,
+  incluso comercial.
+
+El licenciante no puede revocar estas libertades mientras cumplas los términos de la licencia.
+
+**Bajo los siguientes términos:**
+
+- **Atribución** — Debes dar crédito apropiado (Álvaro Cortés / `donpelusa`), enlazar a la licencia
+  e indicar si realizaste cambios. Puedes hacerlo de cualquier forma razonable, pero no de una que
+  sugiera que el licenciante te respalda a ti o a tu uso.
+- **CompartirIgual (ShareAlike)** — Si remezclas, transformas o construyes a partir del material,
+  debes distribuir tus contribuciones bajo la **misma licencia** que el original.
+- **Sin restricciones adicionales** — No puedes aplicar términos legales ni medidas tecnológicas que
+  restrinjan legalmente a otros a hacer cualquier cosa que la licencia permita.
+
+El texto legal completo y vinculante de la licencia es el publicado por Creative Commons:
+
+- Texto legal (legalcode): <https://creativecommons.org/licenses/by-sa/4.0/legalcode>
+- Resumen legible: <https://creativecommons.org/licenses/by-sa/4.0/deed.es>
+
+Este resumen no sustituye la licencia. Al usar el contenido de este repositorio, aceptas los términos
+del texto legal completo de CC BY-SA 4.0 enlazado arriba.
+
+---
+
+## Código — MIT
+
+Todo el código de este repositorio está licenciado bajo la licencia **MIT**. El texto completo está
+en [`LICENSE-CODE`](./LICENSE-CODE).

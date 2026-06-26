@@ -1,0 +1,29 @@
+---
+/**
+ * Nivel.astro — badge de dificultad de una lección o ejercicio.
+ *
+ * Uso en MDX:
+ *   import Nivel from "@components/Nivel.astro";
+ *   <Nivel nivel="intermedio" />
+ *
+ * Props:
+ *   - nivel: "básico" | "intermedio" | "avanzado" | "profundización"
+ */
+type NivelTipo = "básico" | "intermedio" | "avanzado" | "profundización";
+interface Props {
+  nivel: NivelTipo;
+}
+const { nivel } = Astro.props;
+
+const ICONO: Record<NivelTipo, string> = {
+  básico: "🟢",
+  intermedio: "🟡",
+  avanzado: "🔴",
+  profundización: "🔵",
+};
+---
+
+<span class={`nivel nivel--${nivel}`} title={`Nivel: ${nivel}`}>
+  <span class="nivel__dot" aria-hidden="true">{ICONO[nivel]}</span>
+  {nivel}
+</span>

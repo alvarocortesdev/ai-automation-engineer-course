@@ -1,0 +1,41 @@
+---
+/**
+ * CheckDominio.astro — lista de auto-chequeo de "active recall".
+ * El estudiante marca lo que puede EXPLICAR sin notas (estado local, no persistido).
+ *
+ * Uso en MDX:
+ *   import CheckDominio from "@components/CheckDominio.astro";
+ *   <CheckDominio items={[
+ *     "Explicar qué es un puntero sin mirar apuntes",
+ *     "Trazar a mano la salida de un bucle anidado",
+ *   ]} />
+ *
+ * Props:
+ *   - items: string[]  (afirmaciones de dominio en primera persona)
+ *   - title: string    (encabezado); opcional, default "Check de dominio"
+ */
+interface Props {
+  items: string[];
+  title?: string;
+}
+const { items, title = "Check de dominio" } = Astro.props;
+---
+
+<section class="check" aria-label={title}>
+  <p class="check__head">
+    <span class="check__icon" aria-hidden="true">🧠</span>
+    {title}
+  </p>
+  <ul class="check__list">
+    {
+      items.map((item) => (
+        <li class="check__item">
+          <label>
+            <input type="checkbox" />
+            <span>{item}</span>
+          </label>
+        </li>
+      ))
+    }
+  </ul>
+</section>

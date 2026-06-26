@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-0/trazado-a-mano-bucle
+titulo: "Trazado a mano de un bucle anidado"
+fase: fase-0
+sub_unidad: "0.3"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Predecir la salida de un bucle anidado con acumulador, línea a línea, sin ejecutar"
+  - "Construir una tabla de traza (variable × iteración) que justifique la predicción"
+  - "Diagnosticar el propio error contrastando predicción vs. ejecución real"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la "verificación" la hace el alumno ejecutando, no hay suite
