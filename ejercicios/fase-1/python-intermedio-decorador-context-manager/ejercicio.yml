@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/python-intermedio-decorador-context-manager
+titulo: "Un decorador de reintento y un context manager con limpieza garantizada"
+fase: fase-1
+sub_unidad: "1.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un decorador parametrizado (tres niveles) que envuelve una función preservando su identidad con functools.wraps"
+  - "Implementar un context manager con @contextmanager que garantiza la limpieza del recurso aunque el bloque lance una excepción"
+  - "Explicar qué problema concreto de duplicación (decorador) y de limpieza (context manager) resuelve cada construcción"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

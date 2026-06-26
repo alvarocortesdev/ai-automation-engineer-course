@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/cliente-api-resiliente
+titulo: "Cliente de API resiliente y testeable"
+fase: fase-1
+sub_unidad: "1.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Consumir una API distinguiendo status codes (200/404/5xx/otro) y mapeándolos a errores de dominio"
+  - "Manejar errores de red (timeout, conexión) convirtiéndolos en una excepción de dominio, sin dejarlos crudos"
+  - "Hacer testeable el código de API inyectando la dependencia de red (fetch), sin tocar internet en los tests"
+  - "Validar el input antes de gastar una petición HTTP"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

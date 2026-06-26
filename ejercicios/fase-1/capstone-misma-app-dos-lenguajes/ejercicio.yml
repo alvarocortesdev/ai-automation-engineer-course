@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/capstone-misma-app-dos-lenguajes
+titulo: "Capstone F1 — La misma app, dos lenguajes (despensa HomeHub)"
+fase: fase-1
+sub_unidad: "1.P"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Construir la misma mini-API REST (gestor de despensa) en Python y en TypeScript/Node a partir de una mini-spec compartida, cumpliendo un contrato HTTP idéntico"
+  - "Validar los datos de entrada en ambos lenguajes (pydantic en Python, zod en TypeScript) antes de persistirlos, de forma declarativa y no con ifs a mano"
+  - "Separar la lógica de dominio (PantryStore) de la capa HTTP para que la lógica sea testeable sin levantar un servidor"
+  - "Proteger la lógica con tests unitarios de aserciones reales (pytest y vitest), escritos primero y vistos fallar (red-green)"
+  - "Explicar y defender por escrito qué cambió entre la versión Python y la TypeScript y por qué (write-up de trade-offs)"
+hilos_transversales: [testing, spec-driven, costo-latencia, ingles]
+primero_sin_ia:
+  novedad: repaso        # el capstone consolida la fase -> Primero-Sin-IA de entrada
+  timebox_min: 45        # presupuesto por sesion; el capstone total es multi-sesion (~6-10 h)
+definition_of_done: [1, 2, 8, 9]   # IDs del DoD unico (§B) que aplican en F1; 3/4/5/6/7 llegan en fases posteriores
+paths: {}

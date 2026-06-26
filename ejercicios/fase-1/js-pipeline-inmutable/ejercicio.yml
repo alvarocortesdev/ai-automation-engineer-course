@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/js-pipeline-inmutable
+titulo: "Pipeline de pedidos inmutable"
+fase: fase-1
+sub_unidad: "1.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Transformar una lista de objetos con filter/map/reduce devolviendo datos nuevos"
+  - "Mantener la inmutabilidad: no mutar el array de entrada ni sus objetos (spread en vez de mutación)"
+  - "Usar reduce con valor inicial para colapsar una lista a un solo valor"
+  - "Explicar por qué la inmutabilidad evita una clase de bugs"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

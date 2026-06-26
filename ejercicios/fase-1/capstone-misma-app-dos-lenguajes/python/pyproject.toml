@@ -1,0 +1,22 @@
+[project]
+name = "despensa-python"
+version = "0.1.0"
+description = "Capstone F1 — API de despensa (versión Python)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+# Cómo correr (con uv, el gestor de la sub-unidad 1.1):
+#   uv run pytest
+#   uv run python server.py
+#
+# Sin uv:
+#   pip install pydantic pytest
+#   pytest
+#   python server.py

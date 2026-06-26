@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/python-asincrono-diagnostico
+titulo: "Diagnostica el async roto"
+fase: fase-1
+sub_unidad: "1.3"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Diagnosticar por qué una corutina llamada sin await nunca ejecuta su cuerpo, y nombrar la advertencia que produce Python"
+  - "Explicar por qué una llamada bloqueante (time.sleep) dentro de una corutina congela el event loop entero, y corregirla con asyncio.sleep / to_thread"
+  - "Reescribir un bucle de await secuenciales como ejecución concurrente con gather/TaskGroup"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

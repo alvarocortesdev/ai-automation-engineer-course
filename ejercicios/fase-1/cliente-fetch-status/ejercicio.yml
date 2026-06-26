@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/cliente-fetch-status
+titulo: "Cliente fetch que rutea status codes (sin red)"
+fase: fase-1
+sub_unidad: "1.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Consumir una API con un fetch inyectado distinguiendo status codes (200/404/5xx/otro)"
+  - "Separar el error de red (la promesa rechaza) del status de error (la promesa resuelve con status malo): fetch no rechaza por 4xx/5xx"
+  - "Usar el doble await (la respuesta y luego .json())"
+  - "Validar el input antes de gastar una petición; hacer el código testeable inyectando fetch"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

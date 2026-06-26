@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/tdd-total-propina
+titulo: "Tu primer ciclo red-green-refactor (TDD)"
+fase: fase-1
+sub_unidad: "1.6"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Aplicar el ciclo red-green-refactor: escribir el test que falla ANTES de implementar, pasar al verde con el mínimo código, y refactorizar con la red puesta"
+  - "Estructurar tests con AAA (Arrange-Act-Assert) y nombres que describen el comportamiento"
+  - "Cubrir el camino feliz con @pytest.mark.parametrize y los casos de error con pytest.raises"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

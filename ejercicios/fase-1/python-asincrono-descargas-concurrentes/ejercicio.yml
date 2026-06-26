@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/python-asincrono-descargas-concurrentes
+titulo: "Descargas concurrentes que se miden solas"
+fase: fase-1
+sub_unidad: "1.3"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una corutina que ejecute varias operaciones de I/O concurrentemente, preservando el orden de entrada de los resultados"
+  - "Demostrar con una medición de tiempo que la versión concurrente no tarda la suma de las demoras, sino aproximadamente la mayor"
+  - "Explicar por qué hacer await dentro de un bucle, uno por uno, NO produce concurrencia"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

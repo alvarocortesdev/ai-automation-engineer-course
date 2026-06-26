@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/python-basico-intermedio-entornos-modulos
+titulo: "Entornos y módulos, explicados y montados"
+fase: fase-1
+sub_unidad: "1.1"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Predecir qué código corre al importar un módulo vs. al ejecutarlo directo (guard __main__)"
+  - "Crear y usar un entorno virtual aislado con venv y con uv, con comandos reproducibles"
+  - "Explicar el trade-off del aislamiento de dependencias (por qué evita el 'works on my machine')"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento+setup: la verificación la hace el alumno, no hay suite

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/tests-con-fixtures-parametrize
+titulo: "Diseñar tests con fixtures y parametrize"
+fase: fase-1
+sub_unidad: "1.6"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Aislar el estado de un test que toca disco usando el fixture tmp_path (sin tocar el repo ni depender del orden)"
+  - "Extraer datos de prueba compartidos a un @pytest.fixture propio y reutilizarlo"
+  - "Cubrir múltiples casos con @pytest.mark.parametrize y el caso de error con pytest.raises"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

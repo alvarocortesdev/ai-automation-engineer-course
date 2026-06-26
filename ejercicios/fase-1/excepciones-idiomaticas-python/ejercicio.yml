@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/excepciones-idiomaticas-python
+titulo: "Excepciones de dominio en Python (parser de gastos)"
+fase: fase-1
+sub_unidad: "1.9"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar una jerarquía de excepciones de dominio (subclase de Exception) y lanzarla ante entrada inválida"
+  - "Encadenar excepciones con `raise ... from e` preservando la causa original (observabilidad de la stack trace)"
+  - "Decidir el nivel del manejo: la unidad lanza (contrato 'válido o nada'); el lote devuelve los errores como datos sin caerse"
+hilos_transversales: [testing, spec-driven, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

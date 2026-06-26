@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/tipar-y-pasar-mypy
+titulo: "Tipar un módulo y hacer pasar mypy --strict"
+fase: fase-1
+sub_unidad: "1.4"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Anotar funciones y un acumulador local con type hints precisos (list[dict[str, int]], int | None, float)"
+  - "Hacer pasar mypy --strict con 0 errores, interpretando cada error de tipo que reporta"
+  - "Diagnosticar y arreglar, vía el aviso de mypy, un bug de campo opcional (int | None tratado como int)"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

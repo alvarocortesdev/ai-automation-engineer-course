@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/index
+titulo: "Diagnóstico de entrada y plan de Fase 1"
+fase: fase-1
+sub_unidad: "1.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar el punto de partida real por sub-unidad (1.1–1.10) en las dos pistas, distinguiendo 'lo sé hacer sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de Fase 1 que alterne las dos pistas (Python y TypeScript) y agende la victoria-IA temprana (1.10), con un ritual de active recall / spaced repetition"
+  - "Justificar por escrito por qué el curso exige dos lenguajes (Python como puente a IA, TypeScript como filtro fullstack) y cuándo usar cada uno"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

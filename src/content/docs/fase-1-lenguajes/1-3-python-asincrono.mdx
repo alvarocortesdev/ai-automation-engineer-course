@@ -1,0 +1,405 @@
+---
+title: Python asíncrono
+description: async/await y el modelo de concurrencia en Python — qué problema resuelve, el event loop en intuición, y cuándo ayuda de verdad y cuándo no.
+sidebar:
+  order: 3
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="avanzado" />
+
+Esta es la última parada de la secuencia de Python, y la primera que te obliga a cambiar el **modelo mental** de cómo corre tu código. Hasta aquí, tus programas ejecutaban una línea, terminaban, y pasaban a la siguiente. `async`/`await` rompe esa imagen: permite que tu programa **deje algo a medias mientras espera**, haga otra cosa útil, y vuelva cuando lo que esperaba esté listo. No es magia ni es paralelismo. Es una forma muy concreta de no quedarse cruzado de brazos esperando a la red.
+
+Lo vas a ver desde cero. No necesitas haber tocado async antes. Pero sí necesitas tener firme lo de [`1.1`–`1.2`](/fase-1-lenguajes/): funciones, `return`, y especialmente los **context managers** (`with`) y los **generadores**, porque `async with` y `async for` son sus primos directos.
+
+:::tip[Si ya tocaste async antes]
+Si ya escribiste algún `await` y reconoces `asyncio.gather`, no te saltes la lección: úsala como **diagnóstico**. Ve directo a los **dos ejercicios Primero-Sin-IA** (sección 7). El primero te exige que tu versión concurrente **mida** que no tarda la suma de las demoras; el segundo es diagnosticar tres bugs clásicos. Si los cierras en el timebox sin titubear y puedes explicar *por qué* `await` dentro de un `for` no da concurrencia, valida con el check de dominio y avanza a [`1.4`](/fase-1-lenguajes/). Si dudas, lee la sección 4 — ahí está el malentendido que más se repite.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Explicar el trade-off** entre trabajo *I/O-bound* y *CPU-bound*, y decidir cuándo `async`/`await` ayuda, cuándo es inútil y cuándo empeora las cosas.
+- **O2 — Implementar** una corutina que ejecute varias operaciones de I/O **concurrentemente** (con `asyncio.gather` o `TaskGroup`) y **medir** que la latencia baja de la suma a, aproximadamente, la mayor.
+- **O3 — Depurar** los tres errores clásicos: olvidar `await`, bloquear el event loop con código síncrono, y hacer `await` en serie dentro de un bucle.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** casi todo lo que un AI/Automation Engineer construye **espera por la red**: cada llamada a una API de LLM, cada query a una base de datos, cada webhook. Un agente que llama a 5 herramientas en serie, o un pipeline que pide 100 embeddings de a uno, es lento y **caro** (en serverless pagas por tiempo de ejecución; la latencia es plata). Saber convertir ese "esperar de a uno" en "esperar todo junto" es una de las optimizaciones de mayor retorno que existen, y se nota de inmediato.
+
+Hay una razón concreta y cercana: **FastAPI**, el backend troncal del curso (Fase 3), es asíncrono de nacimiento. Un endpoint que llama a un LLM y a tu base de datos **debe** ser `async` para no bloquear a los demás usuarios. Y en la Fase 6, el `AsyncClient` de tu librería HTTP es lo que mantiene barata una app de RAG que dispara retrieval + reranking + generación. Esta lección no es teoría: es el motor de rendimiento de casi todo lo que viene.
+
+## 3. Lo que ya traes (actívalo)
+
+`async` no es un lenguaje nuevo: es sintaxis encima de cosas que ya conoces.
+
+- De [`1.2`](/fase-1-lenguajes/): un **generador** (`yield`) es una función que se **pausa y reanuda**. Una corutina (`async def`) es exactamente esa idea, pero quien decide cuándo reanudarla es el event loop. Si entendiste cómo un generador "se queda esperando en el `yield`", ya entendiste la mitad de async.
+- De [`1.2`](/fase-1-lenguajes/): un **context manager** (`with`) garantiza setup y limpieza. `async with` hace lo mismo cuando el setup/limpieza también espera por I/O (abrir y cerrar una conexión de red).
+- De [`0.3`](/fase-0-fundamentos/): la **tabla de traza**. La vas a usar, pero ahora la "línea actual" puede saltar entre tareas.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="Un generador en Python (con yield), ¿qué hace cuando llega a un yield?"
+  options={[
+    "Termina la función y devuelve todos los valores juntos",
+    "Se pausa, entrega un valor, y se reanuda desde ahí en la próxima llamada",
+    "Lanza una excepción que hay que capturar",
+  ]}
+  answer={1}
+  explanation="El yield pausa la función y conserva su estado; la próxima vez que pides un valor, reanuda justo después del yield. Esa capacidad de 'pausar y reanudar' es la base mental de async."
+/>
+
+## 4. El problema, contado en voz alta
+
+Voy a razonar como si estuviera al lado tuyo. Olvida la sintaxis por un momento: primero el **problema**.
+
+### 4.1 Esperar es el cuello de botella
+
+Cuando tu programa pide datos por la red —una API, una base de datos— pasa la mayoría del tiempo **esperando**. El CPU está ocioso; el dato viaja por el cable. A eso se le llama trabajo **I/O-bound** (limitado por entrada/salida): lo que tarda no es calcular, es esperar.
+
+El caso opuesto es trabajo **CPU-bound**: redimensionar una imagen, sumar un millón de números, entrenar un modelo. Ahí el CPU está al 100%, no esperando.
+
+> **Guárdalo, es la regla de oro de toda la lección:** `async` sirve para no desperdiciar el tiempo de **espera** (I/O-bound). Para trabajo **CPU-bound** no sirve, y a veces lo empeora. Si confundes esto, vas a meter async donde no ayuda.
+
+### 4.2 La analogía del mesero
+
+Un restaurante con **un solo mesero** (un hilo de ejecución). Tiene tres mesas.
+
+- **Forma síncrona (bloqueante):** el mesero toma el pedido de la mesa 1, va a la cocina, y **se queda parado mirando la olla** hasta que el plato esté listo. Recién entonces atiende a la mesa 2. Las mesas 2 y 3 esperan aunque el mesero esté ahí, sin hacer nada útil.
+- **Forma asíncrona:** el mesero toma el pedido de la mesa 1, lo **deja en la cocina** (la cocina cocina sola: eso es la red/el disco trabajando) y, **mientras se cocina**, va a tomar el pedido de la mesa 2, y el de la 3. Cuando un plato está listo, lo lleva. Un solo mesero, pero nadie espera de más.
+
+`await` es exactamente el momento en que el mesero **deja el pedido en la cocina y se libera para hacer otra cosa**. No es que haya más meseros (eso sería paralelismo, varios CPU). Es **un** mesero que dejó de quedarse parado.
+
+```mermaid
+sequenceDiagram
+    participant Loop as Event loop (el mesero)
+    participant A as tarea A
+    participant B as tarea B
+    participant Red as Red / cocina
+    A->>Red: GET /a  (await: dejo el pedido)
+    Note over Loop: A está esperando → no me quedo parado
+    Loop->>B: te doy el turno a ti
+    B->>Red: GET /b  (await: dejo el pedido)
+    Note over Loop: B también espera → sigo libre
+    Red-->>A: ¡listo /a!
+    Loop->>A: te despierto, sigue desde el await
+    Red-->>B: ¡listo /b!
+    Loop->>B: te despierto, sigue desde el await
+```
+
+### 4.3 El event loop, sin misterio
+
+El **event loop** es ese mesero: un bucle que mantiene una lista de tareas y, cuando una dice "estoy esperando I/O" (`await`), la deja en pausa y le da el turno a otra que sí pueda avanzar. Cuando el I/O de la primera termina, la vuelve a poner en la cola para reanudarla.
+
+Tres ideas que cierran el modelo:
+
+1. **Es un solo hilo.** En un instante dado, **solo una** tarea está corriendo. La concurrencia viene de **alternar rápido entre esperas**, no de correr cosas a la vez.
+2. **El cambio de turno solo ocurre en un `await`.** Si tu código nunca hace `await`, el event loop no puede quitarte el turno. Por eso el código síncrono y lento (un `for` que calcula) **bloquea a todos** los demás (sección 5).
+3. **Tú no llamas al event loop a mano.** Lo enciende `asyncio.run(...)` una vez, en el punto de entrada de tu programa.
+
+### 4.4 La sintaxis, ahora que el modelo está claro
+
+```python
+import asyncio
+
+async def saluda(nombre):        # 'async def' → esto es una CORUTINA, no una función normal
+    await asyncio.sleep(1)       # 'await' → "me voy a esperar 1s, loop: anda a hacer otra cosa"
+    return f"hola, {nombre}"
+
+asyncio.run(saluda("ada"))       # enciende el event loop y corre la corutina hasta el final
+```
+
+Cuatro piezas:
+
+- `async def` define una **corutina**. Llamarla **no la ejecuta**: te devuelve un *objeto corutina* (una promesa de trabajo, como un pedido sin entregar a la cocina).
+- `await` hace dos cosas: **espera** a que algo asíncrono termine y **cede el turno** al loop mientras tanto. Solo se puede usar **dentro** de un `async def`.
+- `asyncio.sleep(n)` es la versión asíncrona de `time.sleep(n)`: en vez de congelar todo, le dice al loop "despiértame en `n` segundos". Es nuestro simulador de "esperar por la red" en los ejemplos.
+- `asyncio.run(corutina)` es la puerta: enciende el loop, corre la corutina y lo apaga. Va **una sola vez**, en el `main`.
+
+### 4.5 El worked example completo: de 3 segundos a 1
+
+Quiero pedir tres recursos, cada uno tarda 1 segundo en "llegar". Voy a escribirlo de tres formas y razonar la diferencia.
+
+**Versión 1 — secuencial (el mesero parado):**
+
+```python
+import asyncio, time
+
+async def pide(nombre):
+    await asyncio.sleep(1)            # simula 1s de espera de red
+    return f"datos de {nombre}"
+
+async def main():
+    inicio = time.perf_counter()
+    a = await pide("A")              # espero A entero...
+    b = await pide("B")              # ...recién ahora empiezo B...
+    c = await pide("C")              # ...y recién ahora C
+    print([a, b, c])
+    print(f"tardó {time.perf_counter() - inicio:.1f}s")
+
+asyncio.run(main())   # → tardó 3.0s
+```
+
+Razono en voz alta: *"Usé `async` y `await`, pero esto tarda 3 segundos. ¿Por qué? Porque `await pide('A')` no solo lanza el pedido: lo **espera hasta el final** antes de pasar a la línea siguiente. Es el mesero dejando el pedido y quedándose parado igual. Async no es magia: si esperas de a uno, tardas la suma."* **Este es el malentendido número uno.**
+
+**Versión 2 — concurrente con `gather` (el mesero que se libera):**
+
+```python
+import asyncio, time
+
+async def pide(nombre):
+    await asyncio.sleep(1)
+    return f"datos de {nombre}"
+
+async def main():
+    inicio = time.perf_counter()
+    resultados = await asyncio.gather(    # lanzo las tres y espero a TODAS juntas
+        pide("A"), pide("B"), pide("C"),
+    )
+    print(resultados)
+    print(f"tardó {time.perf_counter() - inicio:.1f}s")
+
+asyncio.run(main())   # → tardó 1.0s
+```
+
+Razono: *"`asyncio.gather` recibe las tres corutinas, las **arranca a todas** y deja que el loop las intercale. Las tres esperas de 1s ocurren **solapadas**, así que el total es ~1s, no 3. Y `gather` me devuelve los resultados **en el orden en que los pasé** (`['datos de A', 'datos de B', 'datos de C']`), sin importar cuál terminó primero. Eso es oro: no tengo que reordenar nada."*
+
+**Versión 3 — `TaskGroup` (Python 3.11+, la forma moderna):**
+
+```python
+import asyncio, time
+
+async def pide(nombre):
+    await asyncio.sleep(1)
+    return f"datos de {nombre}"
+
+async def main():
+    inicio = time.perf_counter()
+    async with asyncio.TaskGroup() as tg:      # 3.11+
+        t_a = tg.create_task(pide("A"))
+        t_b = tg.create_task(pide("B"))
+        t_c = tg.create_task(pide("C"))
+    # al salir del 'async with', las tres ya terminaron
+    print([t_a.result(), t_b.result(), t_c.result()])
+    print(f"tardó {time.perf_counter() - inicio:.1f}s")
+
+asyncio.run(main())   # → tardó 1.0s
+```
+
+Razono: *"`TaskGroup` hace lo mismo que `gather`, pero con dos ventajas que importan en producción. Primero, si **una** tarea falla, cancela las otras y te junta los errores en un `ExceptionGroup`, en vez de dejar tareas zombis corriendo. Segundo, el `async with` deja clarísimo **dónde** se espera a todas: al cerrar el bloque. Para código nuevo en 3.11+, prefiere `TaskGroup`; `gather` sigue siendo válido y lo verás en montones de ejemplos."*
+
+Una imagen de las dos líneas de tiempo:
+
+```text
+SECUENCIAL (await de a uno):
+  A: [====espera 1s====]
+  B:                    [====espera 1s====]
+  C:                                       [====espera 1s====]
+  total: 3s
+
+CONCURRENTE (gather / TaskGroup):
+  A: [====espera 1s====]
+  B: [====espera 1s====]   ← las esperas se solapan
+  C: [====espera 1s====]
+  total: ~1s
+```
+
+## 5. Errores que vas a cometer (y por qué)
+
+:::caution[Podrías pensar que `async` hace tu código más rápido siempre]
+No. `async` no acelera **nada**: solo deja de **desperdiciar la espera**. Si tu programa hace una sola llamada de red, o si es CPU-bound (cálculo puro), async no te da nada — y agrega complejidad. Una función que suma un millón de números no se vuelve más rápida con `await`; el CPU sigue ocupado el mismo tiempo. Para acelerar **cálculo** necesitas otra cosa (varios procesos: `multiprocessing`), no concurrencia de I/O.
+:::
+
+:::caution[Podrías pensar que llamar a una corutina la ejecuta]
+`resultado = pide("A")` **no corre** `pide`. Te devuelve un *objeto corutina* dormido, y Python te grita: `RuntimeWarning: coroutine 'pide' was never awaited`. Una corutina solo avanza si la **esperas** (`await pide("A")`) o la **agendas** (`asyncio.create_task` / `tg.create_task` / `gather`). Olvidar el `await` es el bug más común: el cuerpo simplemente nunca corre y no entiendes por qué tu dato viene vacío.
+:::
+
+:::caution[Podrías pensar que puedes meter código bloqueante dentro de una corutina]
+Si dentro de un `async def` llamas a `time.sleep(5)` o a `requests.get(...)` (la versión **síncrona**), **congelas el event loop entero** durante esos 5 segundos. Recuerda: el loop solo cambia de turno en un `await`. Un `time.sleep` no cede el turno: es el mesero que se fue a dormir en la cocina, y **todas** las demás mesas esperan. Usa la versión asíncrona (`await asyncio.sleep(5)`, un cliente HTTP `async`). Si **tienes** que llamar a una librería bloqueante sin alternativa async, envuélvela en `await asyncio.to_thread(funcion_bloqueante, args)` para que corra en otro hilo y no tape el loop.
+:::
+
+:::caution[Podrías pensar que un `for` con `await` adentro corre las cosas a la vez]
+```python
+resultados = []
+for url in urls:
+    resultados.append(await pide(url))   # ❌ espera CADA una hasta el final antes de la próxima
+```
+Esto es la **Versión 1**: secuencial, tarda la suma. El `await` dentro del bucle frena en cada vuelta. Para concurrencia tienes que **lanzar todas primero y esperar después**: junta las corutinas y pásalas a `gather`/`TaskGroup`. Es la confusión que el ejercicio 1 te va a hacer sentir en los números.
+:::
+
+:::caution[Podrías pensar que más concurrencia siempre es mejor]
+Disparar 10.000 requests con `gather` a la vez puede tumbar al servidor del otro lado (o agotar tu memoria/conexiones). Esto se llama *unbounded consumption* y es un riesgo real de costo y de seguridad. La herramienta para poner un techo es `asyncio.Semaphore(n)`: solo deja `n` tareas activas a la vez. Lo vas a necesitar de verdad cuando llames a APIs con *rate limits* (todas las de LLM los tienen).
+:::
+
+## 6. Práctica con andamiaje (que se desvanece)
+
+Tres niveles, de más apoyo a menos. **A mano primero**, sin ejecutar hasta que diga "Run".
+
+### 6.1 PREDICT (sin ejecutar)
+
+Antes de tocar el teclado, escribe qué imprime y **cuánto tarda, aproximadamente**:
+
+```python
+import asyncio, time
+
+async def tarea(nombre, segundos):
+    await asyncio.sleep(segundos)
+    return nombre.upper()
+
+async def main():
+    inicio = time.perf_counter()
+    r = await asyncio.gather(tarea("a", 2), tarea("b", 1), tarea("c", 1))
+    print(r)
+    print(round(time.perf_counter() - inicio))
+
+asyncio.run(main())
+```
+
+<Solucion title="Ver la respuesta (solo después de predecir)">
+Imprime `['A', 'B', 'C']` y luego `2`. **Resultados en orden de entrada** (`gather` preserva el orden, no el de finalización), y el total es ~2s = la **mayor** de las demoras (2, 1, 1), porque las tres esperas se solapan. Si dijiste `4`, sumaste las demoras (pensaste secuencial); si dijiste que el orden era `['B', 'C', 'A']` (por quién terminó antes), confundiste `gather` con "orden de llegada".
+</Solucion>
+
+### 6.2 Parsons — reordena las líneas
+
+Estas líneas descargan dos recursos concurrentemente y suman sus tamaños, pero están **desordenadas**. Reescríbelas en el orden correcto (cuida la indentación):
+
+```text
+    return len(a) + len(b)
+async def main():
+import asyncio
+    a, b = await asyncio.gather(carga("x"), carga("y"))
+async def carga(nombre):
+    return f"contenido-{nombre}"
+    await asyncio.sleep(0.5)
+print(asyncio.run(main()))
+```
+
+<Solucion title="Ver el orden correcto">
+
+```python
+import asyncio
+
+async def carga(nombre):
+    await asyncio.sleep(0.5)
+    return f"contenido-{nombre}"
+
+async def main():
+    a, b = await asyncio.gather(carga("x"), carga("y"))
+    return len(a) + len(b)
+
+print(asyncio.run(main()))
+```
+
+La clave: `asyncio.run(main())` es el único punto síncrono (arranca el loop); todo lo que hace `await` vive **dentro** de un `async def`. `gather` recibe las dos corutinas y desempaca sus resultados en `a, b` **en orden**. Cada `carga` devuelve `"contenido-x"` (11 caracteres) y `"contenido-y"` (11), así que el total es `22`.
+</Solucion>
+
+### 6.3 MODIFY → MAKE
+
+Toma la **Versión 1 secuencial** de la sección 4.5 y conviértela en concurrente **sin usar `gather`**: usa `asyncio.create_task(...)` para lanzar las tres, guárdalas en una lista, y recién después haz `await` de cada una. Confirma con `time.perf_counter()` que baja de ~3s a ~1s. (Pista: `t = asyncio.create_task(pide("A"))` arranca la tarea *ya*; el `await t` posterior solo recoge el resultado.) Esto te prepara el músculo para el ejercicio 1.
+
+## 7. Ejercicios Primero-Sin-IA
+
+Ahora sin andamiaje. Resuélvelos **a mano primero, sin IA**, dentro del timebox. Está bien que sea lento: el músculo se construye con el esfuerzo.
+
+<Reto title="Descargas concurrentes que se miden solas" timebox="35–45 min">
+
+Implementa `obtener_todos(recursos)`: recibe una lista de recursos (cada uno un `dict` con `"nombre"` y `"demora"` en segundos) y devuelve la lista de resultados **en el mismo orden de entrada**, ejecutando todas las "descargas" **concurrentemente**. Cada descarga se simula con `await asyncio.sleep(demora)` y devuelve `f"datos de {nombre}"`.
+
+Lo que hace especial a este ejercicio: el test **mide el tiempo**. Si tu versión es secuencial, tardará la suma de las demoras y el test fallará; solo pasa si de verdad corren solapadas. Esa medición es tu "eval" de concurrencia.
+
+Entregable: tu solución en `ejercicios/fase-1/python-asincrono-descargas-concurrentes/`, con los tests en verde y **un caso borde tuyo** agregado (por ejemplo, lista vacía).
+
+**Hecho significa:**
+- [ ] Los resultados salen **en orden de entrada**, no de finalización.
+- [ ] El test de tiempo pasa: el total es ~la mayor demora, no la suma.
+- [ ] La lista vacía devuelve `[]` sin reventar.
+- [ ] Agregaste al menos un test propio.
+- [ ] Puedes explicar **sin notas** por qué `await` dentro de un `for` no habría servido.
+
+Enunciado completo, starter y tests: `ejercicios/fase-1/python-asincrono-descargas-concurrentes/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Define una corutina interna `descargar(recurso)` que haga el `sleep` y devuelva el string. Luego **no** la esperes dentro del bucle: construye una lista de corutinas (`[descargar(r) for r in recursos]`) y pásala completa a `asyncio.gather(*corutinas)`, o crea tareas con un `TaskGroup`. `gather` ya te devuelve los resultados en orden. La función pública `obtener_todos` debe ser `async def`; el test la corre con `asyncio.run(...)`. Esto es una pista, no la solución.
+</Solucion>
+
+</Reto>
+
+<Reto title="Diagnostica el async roto" timebox="30–40 min">
+
+En `ejercicios/fase-1/python-asincrono-diagnostico/roto.py` hay un programa con **tres bugs clásicos** de async: uno olvida un `await`, otro bloquea el event loop con código síncrono, y otro hace `await` en serie cuando debería ser concurrente. El programa "corre" pero está mal: ni es concurrente ni hace lo que parece.
+
+Tu tarea (modalidad mixta: diagnóstico + corrección):
+
+1. **Sin ejecutar todavía**, lee `roto.py` y escribe en `diagnostico.md` los **tres bugs**: qué línea, por qué está mal, y qué síntoma produce (incluida la advertencia que imprime Python).
+2. **Después** ejecútalo y confirma tus hipótesis (anota qué advertencia/tiempo viste).
+3. Escribe la versión corregida en `solucion.py` (función `descargar_todo`) y haz que los tests pasen.
+
+Entregable: `diagnostico.md` + `solucion.py` en verde, en `ejercicios/fase-1/python-asincrono-diagnostico/`.
+
+**Hecho significa:**
+- [ ] Identificaste los **tres** bugs con su causa (no solo el síntoma).
+- [ ] Explicaste por qué un `time.sleep` dentro de una corutina congela a todas.
+- [ ] Tu versión corregida es concurrente (el test de tiempo lo verifica) y los resultados salen en orden.
+- [ ] Nombraste qué advertencia imprime Python al olvidar un `await`.
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Los tres síntomas a buscar: (1) una corutina cuyo cuerpo nunca corre → `RuntimeWarning: coroutine '...' was never awaited`; falta un `await` o agendarla. (2) Un `time.sleep(...)` (síncrono) dentro de un `async def`: cámbialo por `await asyncio.sleep(...)`, o si fuera una librería bloqueante real, `await asyncio.to_thread(...)`. (3) Un `for` que hace `await` de cada descarga antes de lanzar la siguiente: reúne las corutinas y usa `gather`/`TaskGroup`. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+## 8. Check de dominio
+
+Sin mirar la lección, en voz alta o por escrito:
+
+<CheckDominio
+  items={[
+    "Explicar con la analogía del mesero por qué un solo hilo puede atender muchas esperas.",
+    "Decir cuándo async ayuda (I/O-bound) y cuándo no (CPU-bound), con un ejemplo de cada uno.",
+    "Explicar por qué 'await pide(x)' dentro de un for NO da concurrencia, y cómo arreglarlo.",
+    "Nombrar la advertencia que da Python cuando llamas a una corutina sin await.",
+    "Explicar por qué time.sleep() dentro de una corutina bloquea a todas las demás tareas.",
+    "Decir qué ventaja da TaskGroup sobre gather cuando una tarea falla.",
+  ]}
+/>
+
+Si marcaste menos de cinco, vuelve a la sección correspondiente **antes** de avanzar.
+
+<Quiz
+  question="¿Cuál de estas situaciones se beneficia REALMENTE de async/await?"
+  options={[
+    "Sumar y ordenar un millón de números en memoria",
+    "Pedir datos a 50 endpoints HTTP distintos y esperar todas las respuestas",
+    "Redimensionar un lote de imágenes en el CPU",
+  ]}
+  answer={1}
+  explanation="Pedir a 50 endpoints es I/O-bound: el programa pasa el tiempo esperando la red, y async permite solapar esas esperas. Sumar números y redimensionar imágenes son CPU-bound: el CPU está ocupado, no esperando, así que async no ayuda (ahí va multiprocessing)."
+/>
+
+## 9. Recursos (documentación oficial primero)
+
+- **`asyncio` — Asynchronous I/O (docs oficiales de Python)** — [docs.python.org/3/library/asyncio.html](https://docs.python.org/3/library/asyncio.html). La página "Coroutines and Tasks" cubre `run`, `gather`, `create_task` y `TaskGroup`.
+- **`asyncio.TaskGroup`** — [docs.python.org/3/library/asyncio-task.html#task-groups](https://docs.python.org/3/library/asyncio-task.html#task-groups).
+- **httpx — Async support** — [python-httpx.org/async](https://www.python-httpx.org/async/). El cliente HTTP asíncrono que usarás en las fases de backend e IA.
+- **"async/await" — guía conceptual de Real Python** — [realpython.com/async-io-python](https://realpython.com/async-io-python/) — para reforzar el modelo mental del event loop después de tener la base.
+
+## 10. Conexión con el capstone de la fase
+
+El **Capstone F1 — La misma app, dos lenguajes** ([proyecto](/fase-1-lenguajes/proyecto/)) es una mini-API de la despensa de HomeHub en Python y en TypeScript. Async aparece en cuanto tu API tenga que hablar con algo externo: si un endpoint consulta la base de datos o llama a otro servicio, hacerlo de forma asíncrona es lo que permite que atienda a varios usuarios sin bloquearse. El reflejo que entrenas aquí —"esto espera por I/O, ¿lo estoy haciendo de a uno o concurrente?"— es el mismo que aplicarás en FastAPI (Fase 3) y en cada llamada a un LLM (Fase 6). El ejercicio de las descargas concurrentes es, en miniatura, lo que hará tu agente cuando llame a varias herramientas a la vez.
+
+## 11. Reflexión y repaso espaciado
+
+Cierra escribiendo dos o tres frases: **¿qué parte del modelo mental te costó más — que sea un solo hilo, que el turno solo cambie en un `await`, o que async no acelere el cálculo?** Nombrar la dificultad con precisión es lo que la vuelve atacable.
+
+Gancho de **spaced repetition**:
+
+- **Mañana:** reescribe **de memoria** la Versión 1 (secuencial) y la Versión 2 (con `gather`) del worked example, y explica en una línea por qué una tarda 3s y la otra 1s. Si no puedes, no lo aprendiste todavía.
+- **En 3 días:** toma `obtener_todos` y agrégale un `asyncio.Semaphore(2)` para que nunca haya más de 2 descargas activas a la vez. Observa cómo cambia el tiempo total.
+- **En 1 semana:** explícale a alguien (o a una grabación) la analogía del mesero y por qué `time.sleep` dentro de una corutina es un sabotaje. Enseñar es el test de dominio definitivo.

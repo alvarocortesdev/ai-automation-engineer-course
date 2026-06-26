@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/primer-llm-mini-cli
+titulo: "Tu primer LLM en una mini-CLI (testeable, con la key a salvo)"
+fase: fase-1
+sub_unidad: "1.10"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Llamar a un LLM por API desde Python con el SDK oficial y leer el texto de la respuesta (content[0].text)"
+  - "Leer la API key desde una variable de entorno, sin hardcodear ni imprimir el secreto"
+  - "Validar el input antes de gastar una llamada y mapear los fallos del SDK a errores de dominio claros"
+  - "Hacer testeable el código que llama al LLM inyectando la dependencia, sin tocar la red ni gastar tokens"
+hilos_transversales: [testing, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/bitacora-json
+titulo: "Bitácora en JSON (round-trip robusto)"
+fase: fase-1
+sub_unidad: "1.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar lectura/escritura de archivos JSON con round-trip fiel (json.load/json.dump, encoding utf-8, ensure_ascii=False)"
+  - "Manejar casos borde de archivo: inexistente (default []) vs JSON corrupto (excepción de dominio)"
+  - "Decidir qué error se traga y cuál se propaga, envolviendo JSONDecodeError en una excepción propia"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

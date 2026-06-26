@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/validar-salida-llm-pydantic
+titulo: "Validar la salida de un LLM con pydantic"
+fase: fase-1
+sub_unidad: "1.4"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Diseñar un modelo pydantic v2 (BaseModel + Field constraints) que tipe y valide datos externos no confiables"
+  - "Escribir un @field_validator (con @classmethod) para reglas que las constraints no cubren (strings de solo espacios)"
+  - "Validar en la frontera la salida de un LLM: coacción, rechazo de campos alucinados (extra=forbid) y manejo de ValidationError"
+hilos_transversales: [testing, evals, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

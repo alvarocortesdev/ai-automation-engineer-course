@@ -1,0 +1,16 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/result-discriminated-union-ts
+titulo: "El patrón Result con discriminated unions en TypeScript"
+fase: fase-1
+sub_unidad: "1.9"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar Result<T, E> con una discriminated union (campo `ok`) y los helpers ok/err"
+  - "Devolver el error como valor (no lanzar) para que el fallo sea parte del contrato/tipo de retorno"
+  - "Domar una API que lanza (JSON.parse) envolviéndola en un Result, con narrowing de `catch (e: unknown)`"
+hilos_transversales: [testing, spec-driven, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+paths: {}

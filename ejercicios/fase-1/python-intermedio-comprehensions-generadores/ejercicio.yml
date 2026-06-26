@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/python-intermedio-comprehensions-generadores
+titulo: "Procesar transacciones con comprehensions y un generador"
+fase: fase-1
+sub_unidad: "1.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Reescribir una transformación/filtrado como set y dict comprehension en vez de un bucle con acumulador"
+  - "Implementar un generador con yield que produce datos de a uno, en orden, sin materializar la colección"
+  - "Explicar el trade-off de la evaluación perezosa (memoria/streaming) frente a construir una lista"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

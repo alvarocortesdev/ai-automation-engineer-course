@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/validar-salida-llm-zod
+titulo: "Validar la salida de un LLM con zod"
+fase: fase-1
+sub_unidad: "1.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Diseñar un schema zod v4 (z.strictObject + constraints) que tipe y valide datos externos no confiables"
+  - "Validar en la frontera la salida de un LLM: coacción (z.coerce), rechazo de campos alucinados (strictObject), enum de moneda y manejo de error (parse)"
+  - "Inferir el tipo TypeScript desde el schema con z.infer en vez de duplicarlo a mano"
+hilos_transversales: [testing, evals, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/tipar-y-estrechar-typescript
+titulo: "Tipar y estrechar un módulo TypeScript"
+fase: fase-1
+sub_unidad: "1.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Modelar un dominio con tipos básicos, interface y una unión discriminada, sin usar any"
+  - "Estrechar (narrowing) por el discriminante con switch + chequeo de exhaustividad (never) y escribir un type guard (x is T)"
+  - "Aplicar utility types (Omit) para derivar tipos sin duplicar, haciendo pasar tsc --strict"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

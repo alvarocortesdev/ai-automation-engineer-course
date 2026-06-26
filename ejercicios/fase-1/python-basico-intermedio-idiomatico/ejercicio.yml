@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-1/python-basico-intermedio-idiomatico
+titulo: "Inventario idiomático, empaquetado"
+fase: fase-1
+sub_unidad: "1.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar funciones Python idiomáticas (f-strings, enumerate, comprehensions, truthiness) que pasen una suite de tests"
+  - "Mantener un paquete importable: re-exportar desde __init__.py para que funcione `from despensa import ...`"
+  - "Validar entradas y manejar el caso borde de la lista vacía sin reventar"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

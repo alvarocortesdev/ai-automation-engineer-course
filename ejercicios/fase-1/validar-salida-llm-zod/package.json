@@ -1,0 +1,17 @@
+{
+  "name": "ej-1-8-validar-salida-llm-zod",
+  "private": true,
+  "type": "module",
+  "description": "Ejercicio 1.8 B — validar la salida de un LLM con zod (Primero-Sin-IA).",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
+}
