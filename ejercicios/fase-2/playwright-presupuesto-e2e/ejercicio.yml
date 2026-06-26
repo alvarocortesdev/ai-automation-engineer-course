@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/playwright-presupuesto-e2e
+titulo: "Presupuesto de la pirámide: qué merece e2e y qué no"
+fase: fase-2
+sub_unidad: "2.10"
+ruta_critica: false          # 2.10 es opcional/profundización
+modalidad: a-mano
+objetivos:
+  - "Decidir, para cada escenario, el nivel de test correcto (e2e/integración/unit/no-testear) según la regla 'poco y crítico'"
+  - "Justificar cada decisión por la relación valor/costo, reconociendo que el e2e es caro y frágil"
+  - "Redactar una política de pirámide: cuántos e2e y sobre qué, selectores por rol, prohibición de sleeps, cadencia en CI por costo"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  solucion_referencia: .ai/soluciones/fase-2/playwright-presupuesto-e2e.md
+  tests: null   # ejercicio de razonamiento/diseño: no hay suite

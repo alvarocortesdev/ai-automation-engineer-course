@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/pbt-repartir-monto
+titulo: "Property-based testing: caza el bug del remanente"
+fase: fase-2
+sub_unidad: "2.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Escribir property-based tests con Hypothesis que afirman invariantes (suma conservada, equidad, cantidad) sobre entradas generadas"
+  - "Distinguir un test de ejemplo de una propiedad, y reconocer una propiedad tautologica que no aporta valor"
+  - "Explicar por que una propiedad caza bugs de borde (el remanente de la division entera) que tres ejemplos a mano no cazan, y que es el shrinking"
+hilos_transversales: [testing, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

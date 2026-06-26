@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/vitest-suite-validador
+titulo: "Suite Vitest para un validador (it.each + vi.fn) con pnpm"
+fase: fase-2
+sub_unidad: "2.6"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una suite Vitest con it.each para casos válidos e inválidos, incluyendo bordes"
+  - "Mockear la frontera (logger) con vi.fn() y afirmar la interacción (toHaveBeenCalled / not.toHaveBeenCalled) sin mockear la lógica pura"
+  - "Correr la suite con pnpm y afirmar el valor de retorno de registrar"
+hilos_transversales: [testing, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # el alumno ESCRIBE la suite; no hay tests provistos que él haga pasar

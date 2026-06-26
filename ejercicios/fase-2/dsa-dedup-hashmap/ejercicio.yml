@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/dsa-dedup-hashmap
+titulo: "De O(n²) a O(n): two-sum con hashmap"
+fase: fase-2
+sub_unidad: "2.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar en O(n) un problema tipo entrevista (two-sum booleano) usando un set/hashmap"
+  - "Estimar y justificar la Big-O (tiempo y espacio) de la versión obvia O(n²) vs la versión O(n)"
+  - "Explicar el space-time trade-off: gastar memoria (set) para ganar tiempo (lookup O(1))"
+hilos_transversales: [testing, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

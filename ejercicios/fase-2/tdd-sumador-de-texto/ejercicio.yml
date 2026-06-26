@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/tdd-sumador-de-texto
+titulo: "Sumador de texto (kata de TDD desde cero)"
+fase: fase-2
+sub_unidad: "2.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una función pequeña siguiendo el ciclo red-green-refactor de forma estricta (test rojo antes del código, mínimo para el verde, refactor en verde)"
+  - "Traducir una lista de comportamientos en tests escritos uno a uno, dejando que cada test conduzca el diseño (fake it + triangulación)"
+  - "Diseñar el camino de error con un test que lo exija (ValueError ante un negativo), no como añadido posterior"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

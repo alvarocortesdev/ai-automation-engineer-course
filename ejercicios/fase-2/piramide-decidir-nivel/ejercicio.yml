@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/piramide-decidir-nivel
+titulo: "Ubica los tests en la pirámide y caza el sobre-mockeo"
+fase: fase-2
+sub_unidad: "2.6"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Clasificar tests como unit/integration/e2e y justificar según las fronteras reales que tocan"
+  - "Detectar el sobre-mockeo (mockear lógica pura) y proponer no mockearla"
+  - "Detectar tests de detalle interno y reorientarlos a comportamiento observable; nombrar el antipatrón del cono de helado"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 25
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es por rúbrica, no hay suite

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/disenar-dobles-y-contrato
+titulo: "Diseña la estrategia de dobles y decide dónde va un contrato"
+fase: fase-2
+sub_unidad: "2.8"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Elegir y justificar el test double correcto (dummy/stub/spy/mock/fake) para cada colaborador de un servicio"
+  - "Distinguir verificacion de estado de verificacion de interaccion y escribir casos en Given-When-Then"
+  - "Decidir que frontera merece contract testing (Pact) y explicar el modo de falla que un mock oculta, consumer vs provider"
+hilos_transversales: [testing, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseno: el entregable es plan-de-tests.md, no una suite

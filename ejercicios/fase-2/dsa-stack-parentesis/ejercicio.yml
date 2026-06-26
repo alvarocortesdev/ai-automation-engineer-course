@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/dsa-stack-parentesis
+titulo: "Reconoce el stack: paréntesis balanceados"
+fase: fase-2
+sub_unidad: "2.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Reconocer un problema de anidamiento como un caso de stack (LIFO) y resolverlo en O(n)"
+  - "Implementar un stack con una list (append/pop) y manejar el caso de cierre con stack vacío"
+  - "Explicar por qué contar símbolos no basta y el orden de cierre exige un stack"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

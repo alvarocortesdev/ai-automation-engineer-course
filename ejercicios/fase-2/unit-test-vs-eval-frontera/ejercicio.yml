@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/unit-test-vs-eval-frontera
+titulo: "La frontera: unit test, eval o ninguno"
+fase: fase-2
+sub_unidad: "2.11"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Clasificar afirmaciones sobre una feature de IA en unit test (assert + fake), eval (dataset + métrica) o ninguno, con justificación"
+  - "Reconocer que la calidad/corrección de la salida del modelo se mide con un eval, no con un assert, y que una salida no determinista no se afirma por igualdad exacta"
+  - "Diseñar la frontera de la feature: qué se inyecta y mockea, qué corre real, y cómo se vería el eval (puente a Fase 6)"
+hilos_transversales: [testing, evals, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: el entregable es analisis.md, no una suite

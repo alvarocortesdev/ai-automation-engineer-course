@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/dsa-analisis-big-o
+titulo: "Defiende la complejidad: auditoría Big-O"
+fase: fase-2
+sub_unidad: "2.1"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Estimar la Big-O de tiempo y espacio de un fragmento por intuición, identificando el patrón dominante"
+  - "Distinguir O(n), O(n²), O(log n) y O(1) reconociéndolos en código ajeno"
+  - "Justificar una elección de estructura (list vs set) con Big-O y órdenes de magnitud, no con intuición vaga"
+hilos_transversales: [costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es el razonamiento, no una suite

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/patrones-adapter-notificaciones
+titulo: "Integra dos terceros con Adapter (y prueba Open/Closed)"
+fase: fase-2
+sub_unidad: "2.5"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar el patrón Adapter: hacer que una interfaz de terceros incompatible satisfaga el contrato que el dominio espera, traduciendo por composición sin tocar el negocio"
+  - "Demostrar Open/Closed agregando un segundo proveedor (otra interfaz incompatible) como una clase nueva, sin editar el adapter existente ni el código de negocio"
+  - "Reconocer el smell 'interfaz incompatible' y justificar por qué el que se adapta es el extraño, no el dominio"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/mockear-llm-extractor
+titulo: "Mockear el LLM: suite para un extractor de pedidos"
+fase: fase-2
+sub_unidad: "2.11"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Escribir tests deterministas de código que llama a un LLM, usando un fake/stub que devuelve respuestas fijas (sin red ni tokens)"
+  - "Verificar construcción del prompt (spy), parseo y tres ramas de error (no-JSON, cantidad inválida, mensaje vacío sin llamar al modelo)"
+  - "Demostrar que la suite atrapa bugs reales cazando un mutante que omite la validación, y explicar por qué nada prueba la calidad del modelo (eso es un eval)"
+hilos_transversales: [testing, evals, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

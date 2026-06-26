@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/tdd-dividir-gasto
+titulo: "Dividir un gasto en partes justas (TDD de una regla real)"
+fase: fase-2
+sub_unidad: "2.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Seguir red-green-refactor estricto dejando que un test (el reparto del resto) fuerce el diseño que no se había planeado"
+  - "Traducir comportamientos y un invariante (la suma == monto) en tests, distinguiendo un caso concreto de una propiedad"
+  - "Diseñar los caminos de error (personas<=0, monto<0) con tests que los exijan, usando pytest.raises"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

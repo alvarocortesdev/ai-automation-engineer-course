@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/clean-code-dry-kiss-yagni
+titulo: "DRY/KISS/YAGNI con criterio"
+fase: fase-2
+sub_unidad: "2.2"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Aplicar DRY a duplicación real (mismo conocimiento) extrayéndola a un solo lugar"
+  - "Distinguir duplicación incidental de duplicación real y resistir la falsa DRY (no acoplar lo que cambia por razones distintas)"
+  - "Aplicar KISS/YAGNI simplificando una función sobre-parametrizada a su uso real, sin cambiar el comportamiento"
+  - "Justificar por escrito (mini-ADR) cada decisión de refactor, incluida la de NO unificar"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

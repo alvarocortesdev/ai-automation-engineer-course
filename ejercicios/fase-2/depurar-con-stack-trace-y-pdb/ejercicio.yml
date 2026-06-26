@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/depurar-con-stack-trace-y-pdb
+titulo: "Caza el bug con método: stack trace → pdb → test de regresión"
+fase: fase-2
+sub_unidad: "2.12"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Leer un stack trace de Python de abajo hacia arriba para ubicar el tipo de excepción y el frame exacto del propio código donde nace el fallo"
+  - "Depurar con método científico: reproducir, formular hipótesis y confirmarla inspeccionando el estado con pdb/breakpoint(), sin cambiar código al azar"
+  - "Capturar el bug con un test de regresión que falle primero (rojo) y arreglar solo la causa raíz, registrando el comportamiento raro como deuda separada (dos sombreros)"
+hilos_transversales: [testing, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

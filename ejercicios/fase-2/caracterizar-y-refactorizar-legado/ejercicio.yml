@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/caracterizar-y-refactorizar-legado
+titulo: "Caracteriza y refactoriza código legado (sin red)"
+fase: fase-2
+sub_unidad: "2.3"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Construir characterization tests (golden master) que pinten el comportamiento actual de código legado, cubriendo bordes y casos raros, ANTES de tocarlo"
+  - "Refactorizar el legado eliminando la duplicación entre ramas con la red en verde, sin alterar el comportamiento observable"
+  - "Aplicar la disciplina de los dos sombreros: preservar el comportamiento raro y registrarlo como deuda separada en vez de arreglarlo dentro del refactor"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

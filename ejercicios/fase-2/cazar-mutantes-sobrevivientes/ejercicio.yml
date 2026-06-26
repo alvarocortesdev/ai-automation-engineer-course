@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/cazar-mutantes-sobrevivientes
+titulo: "Caza los mutantes que tu coverage no ve"
+fase: fase-2
+sub_unidad: "2.9"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Predecir, sin ejecutar, qué mutantes sobreviven una suite con 100% de coverage y por qué viven en los bordes"
+  - "Ejecutar mutation testing con mutmut, leer el mutation score y distinguir killed/survived/equivalente"
+  - "Fortalecer una suite agregando tests de borde que matan a los sobrevivientes sin tocar el código fuente"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

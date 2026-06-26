@@ -1,0 +1,7 @@
+# Config de mutmut 3 para este ejercicio.
+# Le dice a mutmut QUÉ mutar (descuento.py) y QUÉ tests usar para matar mutantes.
+# Si corres `mutmut run` y se queja de no encontrar el código, esta sección lo fija.
+# Docs: https://mutmut.readthedocs.io/
+[tool.mutmut]
+source_paths = ["descuento.py"]
+pytest_add_cli_args_test_selection = ["test_descuento.py"]

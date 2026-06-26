@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/index
+titulo: "Diagnóstico de hábitos y plan de Fase 2"
+fase: fase-2
+sub_unidad: "2.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar el punto de partida real por sub-unidad (2.1–2.13), distinguiendo 'lo sé hacer sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de estudio de Fase 2 con bloques semanales concretos, interleaving de DSA y un ritual de active recall / spaced repetition"
+  - "Producir un gap report de un trozo de código junior: nombrar los hábitos semi-senior faltantes (sin arreglarlos) y mapear cada uno a la sub-unidad que lo cubre"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

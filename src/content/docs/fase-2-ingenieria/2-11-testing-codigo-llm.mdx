@@ -1,0 +1,392 @@
+---
+title: Testing de código que llama a LLMs
+description: Cómo testear de forma determinista el código que rodea a una llamada a un LLM —separando la lógica del proveedor, mockeando la frontera, y verificando construcción de prompt, parseo, validación y manejo de error— sin pagar tokens, sin red y sin no-determinismo; y por qué la CALIDAD de la salida del modelo no es un unit test sino un eval (puente conceptual a la Fase 6).
+sidebar:
+  order: 11
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="intermedio" />
+
+Hasta aquí testeaste funciones que, dadas las mismas entradas, devuelven **siempre** la misma salida. Un LLM rompe esa promesa: la misma entrada puede dar respuestas distintas, tarda cientos de milisegundos, cuesta dinero y necesita red más una API key. Si metes una llamada real a un modelo dentro de un test, ese test es lento, frágil (*flaky*), caro, y —lo peor— **prueba el modelo, no tu código**. Esta lección te enseña la disciplina que resuelve eso: aislar la llamada al LLM detrás de una frontera, reemplazarla por un doble determinista en los tests, y verificar todo lo que *sí* es tuyo. Por el camino verás la línea exacta donde termina el unit test y empieza el **eval** —el "unit test de la IA"— que formalizarás en la Fase 6.
+
+:::tip[Si ya escribiste código que llama a un LLM]
+¿Ya integraste la API de OpenAI o de Claude en algo y "lo probaste a mano"? Esta lección formaliza ese instinto en una práctica que no depende de tu paciencia ni de tu saldo de tokens. La trampa del que ya integró un LLM es **testear de más o de menos**: o bien escribe un test que llama al modelo real (lento, flaky, caro), o bien no testea nada "porque la IA es no determinista". Las dos cosas están mal, y por la misma razón: confunden *tu código* (determinista, testeable) con *la salida del modelo* (no determinista, que se mide con un eval, no con un assert). Salta a los ejercicios de la sección 7: el primero te da un extractor ya escrito y te pide su suite de tests con un LLM falso; el segundo te pide clasificar afirmaciones en "unit test", "eval" o "ninguno". Si los cierras limpio, valida con el check de dominio (sección 8). Si dudas en alguna fila de la tabla, tu sección es la 5.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Separar la lógica del proveedor** inyectando la llamada al LLM como una dependencia (un callable o un *port*), de modo que el código de negocio no dependa del SDK concreto y la frontera se pueda reemplazar en los tests.
+- **O2 — Escribir tests deterministas** de código que llama a un LLM usando un *fake*/*stub* que devuelve respuestas fijas: verificando construcción del prompt, parseo de la respuesta, validación y manejo de error (JSON malformado, campos faltantes, valores fuera de rango).
+- **O3 — Distinguir un unit test de un eval**: explicar por qué la *forma* de la respuesta y el comportamiento de tu código se testean con `assert`, pero la *calidad/corrección* de la respuesta del modelo se mide con un eval (puente a la Fase 6), y decidir cuál corresponde a cada afirmación.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** todo el mercado de AI Engineering se construye sobre código que llama a LLMs, y casi nadie lo testea bien. El junior mete la llamada real en el test (o no testea); el semi-senior aísla la frontera y prueba su propio código de forma determinista, dejando la calidad del modelo para los evals. Saber dónde poner esa línea es exactamente lo que separa "le pegué a la API y a veces anda" de "tengo un pipeline de IA confiable y en producción". Es, además, el mismo músculo que en la Fase 6 te hará exigir un **eval harness** antes de confiar en un RAG o un agente: medir la calidad real, no la apariencia de calidad.
+
+Tres razones concretas:
+
+1. **Un test que llama al LLM real es deuda, no activo.** Es lento (segundos por caso), flaky (la respuesta cambia, el test falla sin que tu código cambie), caro (cada corrida quema tokens) y exige una API key en CI. Una suite así se desactiva a la semana —y entonces no tienes red de seguridad justo donde el código es más enredado.
+2. **El bug casi nunca está en el modelo: está en tu pegamento.** El modelo "dijo bien" pero tu parser explotó con un JSON envuelto en ```` ```json ````; tu validación dejó pasar una `cantidad` negativa; tu prompt no incluía el dato del usuario. Eso es código tuyo, determinista, y se testea sin tocar el modelo. Quien aísla la frontera atrapa estos bugs en milisegundos.
+3. **Es el puente a la habilidad senior que vale plata.** Entender *por qué* la calidad de la salida no es un unit test es entender *por qué* los evals existen. La Fase 6 te lo formaliza, pero el concepto nace aquí: hay dos preguntas distintas —"¿mi código hace lo correcto con *esta* respuesta?" (unit test) y "¿el modelo da buenas respuestas en general?" (eval)— y mezclarlas es el error #1.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección es testing aplicado a un caso nuevo. Reúsa lo que ya tienes:
+
+- De [`2.6` Testing: fundamentos](/fase-2-ingenieria/2-6-testing-fundamentos/): la **inyección de dependencias** y el mock **en la frontera**. La llamada al LLM es una frontera idéntica a la `tasa_usd` del módulo de envíos: una dependencia externa, no determinista, que se inyecta y se reemplaza en los tests.
+- De [`2.8` Diseño de tests](/fase-2-ingenieria/2-8-diseno-de-tests/): la **taxonomía de dobles** (dummy/stub/spy/mock/fake) y verificación de **estado** vs. **interacción**. Aquí un *stub* del LLM devuelve una respuesta fija; un *spy/mock* además te deja afirmar que se llamó con el prompt correcto.
+- De [`2.9` Coverage vs mutation](/fase-2-ingenieria/2-9-coverage-vs-mutation/): que un test sin una aserción que importe no prueba nada. Verás que mockear el LLM y "ver que no explota" es exactamente eso: teatro de testing.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="Tienes una función resumir(texto, cliente_llm) donde cliente_llm hace la llamada de red al modelo. ¿Por qué es preferible RECIBIR cliente_llm como parámetro en vez de crearlo dentro de la función?"
+  options={[
+    "Porque crear el cliente adentro es más lento en producción",
+    "Porque al inyectarlo puedes reemplazarlo en los tests por un doble determinista, sin tocar red, costo ni la API key",
+    "Porque las funciones nunca deben crear objetos en su interior",
+  ]}
+  answer={1}
+  explanation="Es inyección de dependencias en la frontera. Si la función construye el cliente internamente, queda acoplada a la red y al SDK y no hay forma de testearla sin llamar al modelo real. Al recibirlo como parámetro, en producción le pasas el cliente real y en los tests un fake/stub que devuelve lo que tú decidas: el test queda rápido, determinista y gratis."
+/>
+
+## 4. Ejemplo resuelto, pensado en voz alta
+
+Voy a construir, paso a paso, una función que clasifica el sentimiento de un comentario usando un LLM —y a hacerla testeable. **No lo leas como un resultado: léelo como me oirías razonar al lado tuyo.**
+
+El requisito: dado un comentario, devolver `"positivo"`, `"negativo"` o `"neutro"`. Le pediré al modelo que responda en JSON para poder parsearlo.
+
+### 4.1 — El primer intento (el que NO se puede testear)
+
+Mi primer borrador, el que escribe todo el mundo, mete la llamada adentro:
+
+```python
+# clasificador_malo.py  —  acoplado al SDK; NO testeable sin red
+import json
+import anthropic
+
+def clasificar(comentario: str) -> str:
+    client = anthropic.Anthropic()                      # crea el cliente adentro
+    respuesta = client.messages.create(
+        model="claude-opus-4-8",
+        max_tokens=64,
+        system='Responde SOLO un JSON: {"sentimiento": "positivo|negativo|neutro"}',
+        messages=[{"role": "user", "content": comentario}],
+    )
+    texto = respuesta.content[0].text                    # parseo frágil, sin manejo de error
+    return json.loads(texto)["sentimiento"]
+```
+
+Me detengo a pensar como tester. ¿Cómo pruebo `clasificar("me encantó")`? **No puedo, sin llamar al modelo real.** El `client = anthropic.Anthropic()` está soldado adentro. Para testearlo tendría que parchear el SDK a la fuerza (frágil) o llamar a la API de verdad (lento, caro, flaky). Además, todo lo interesante —el `json.loads` que puede explotar, el `["sentimiento"]` que puede no existir— está enredado con la red. Esto es código no testeable disfrazado de función.
+
+### 4.2 — Separar la lógica del proveedor (la jugada clave)
+
+La idea que lo cambia todo: **la llamada al modelo es una frontera; sácala afuera y recíbela como dependencia.** No le paso el SDK entero; le paso un *callable* mínimo, `generar(prompt) -> str`, que es todo lo que mi lógica necesita del modelo. Eso es un *port* (lo viste en hexagonal *light*, y lo formalizas en la Fase 3): defino la forma de la dependencia, no su implementación.
+
+```python
+# clasificador.py  —  SUT testeable. La frontera se inyecta.
+import json
+
+SISTEMA = (
+    "Clasifica el sentimiento del comentario. Responde SOLO con un JSON con la "
+    'clave "sentimiento" y valor "positivo", "negativo" o "neutro". Sin texto extra.'
+)
+VALIDOS = {"positivo", "negativo", "neutro"}
+
+class ClasificacionInvalida(ValueError):
+    """El modelo no devolvió algo utilizable con confianza."""
+
+def construir_prompt(comentario: str) -> str:
+    return f"{SISTEMA}\n\nComentario: {comentario}"
+
+def clasificar(comentario: str, generar) -> str:
+    """`generar(prompt) -> str` es la frontera (en prod, un LLM). Todo lo demás
+    es lógica pura y determinista: construir prompt, parsear, validar."""
+    respuesta = generar(construir_prompt(comentario))
+    try:
+        datos = json.loads(respuesta)
+    except json.JSONDecodeError as exc:
+        raise ClasificacionInvalida(f"el modelo no devolvió JSON: {respuesta!r}") from exc
+    sentimiento = datos.get("sentimiento")
+    if sentimiento not in VALIDOS:
+        raise ClasificacionInvalida(f"sentimiento fuera del dominio: {sentimiento!r}")
+    return sentimiento
+```
+
+Fíjate en lo que gané. `clasificar` ya no sabe nada de Anthropic, de OpenAI ni de red. Solo sabe que recibe un callable que, dado un prompt, devuelve un string. Toda la lógica frágil —parseo, validación, dominio cerrado de valores— quedó **del lado determinista de la frontera**. Y `construir_prompt` es una función pura que puedo testear sola.
+
+### 4.3 — Conectar el proveedor REAL en producción (verificado contra la API vigente 2026)
+
+La implementación real del callable vive *fuera* de la lógica, en un adaptador delgado. Esta es la forma vigente del SDK de Anthropic en 2026 (la respuesta es una lista de bloques; el texto sale de `response.content`, filtrando por `type == "text"`):
+
+```python
+# adaptador_anthropic.py  —  el ÚNICO archivo que toca el SDK
+import anthropic
+
+def hacer_generar(client: anthropic.Anthropic, model: str = "claude-opus-4-8"):
+    """Devuelve un callable generar(prompt) -> str respaldado por la API real."""
+    def generar(prompt: str) -> str:
+        respuesta = client.messages.create(
+            model=model,
+            max_tokens=64,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        # content es una lista de bloques; toma el primer bloque de texto.
+        return next(b.text for b in respuesta.content if b.type == "text")
+    return generar
+
+# En producción:
+#   client = anthropic.Anthropic()              # lee ANTHROPIC_API_KEY del entorno
+#   generar = hacer_generar(client)
+#   clasificar("me encantó el servicio", generar)
+```
+
+El SDK queda confinado a un archivo. Si mañana cambias de proveedor, reescribes *este* adaptador y nada más. Y —el punto de esta lección— tus tests de `clasificar` no importan ni `anthropic` ni `adaptador_anthropic`: le pasan un callable falso.
+
+### 4.4 — Los tests deterministas (rápidos, gratis, sin red)
+
+Ahora pruebo `clasificar` con *fakes*: funciones que devuelven exactamente lo que yo decido. **Cero red, cero tokens, cero no-determinismo.**
+
+```python
+# test_clasificador.py
+import pytest
+from unittest.mock import Mock
+from clasificador import clasificar, construir_prompt, ClasificacionInvalida, SISTEMA
+
+def fake(respuesta):
+    """Stub: ignora el prompt y devuelve siempre `respuesta`."""
+    return lambda prompt: respuesta
+
+def test_clasifica_positivo():
+    # Dado que el modelo responde un JSON válido, mi código devuelve el valor.
+    assert clasificar("me encantó", fake('{"sentimiento": "positivo"}')) == "positivo"
+
+def test_respuesta_no_json_lanza_error():
+    # El modelo divagó en vez de devolver JSON: mi código NO debe explotar con
+    # un JSONDecodeError crudo, sino con mi error de dominio.
+    with pytest.raises(ClasificacionInvalida):
+        clasificar("...", fake("Claro, el sentimiento es positivo :)"))
+
+def test_valor_fuera_de_dominio_lanza_error():
+    # El modelo inventó una etiqueta que no está en mi dominio cerrado.
+    with pytest.raises(ClasificacionInvalida):
+        clasificar("...", fake('{"sentimiento": "eufórico"}'))
+
+def test_el_prompt_incluye_el_comentario():
+    # Spy: verifico la INTERACCIÓN con la frontera, no solo el resultado.
+    espia = Mock(return_value='{"sentimiento": "neutro"}')
+    clasificar("envío lento pero llegó", espia)
+    prompt_enviado = espia.call_args.args[0]
+    assert "envío lento pero llegó" in prompt_enviado
+    assert SISTEMA in prompt_enviado
+```
+
+Mira lo que estoy verificando: que **mi código** construye bien el prompt, parsea bien, y se defiende de un modelo que devuelve basura. Cada test corre en microsegundos y da el mismo resultado siempre. Lo que **no** estoy verificando aquí —y es deliberado— es si el modelo *acierta* el sentimiento de "me encantó". Esa es otra pregunta, y la respondo en la sección 6.5.
+
+### 4.5 — La alternativa de bajo nivel: parchear el SDK con `monkeypatch`
+
+¿Y si heredas el código `clasificador_malo.py` de 4.1, que no inyecta nada, y no puedes refactorizarlo todavía? Entonces parcheas el SDK directamente con `monkeypatch` (o `mocker.patch`):
+
+```python
+# test_clasificador_malo.py  —  cuando NO puedes inyectar (código heredado)
+from unittest.mock import MagicMock
+import clasificador_malo
+
+def test_clasifica_positivo(monkeypatch):
+    bloque = MagicMock(); bloque.text = '{"sentimiento": "positivo"}'
+    respuesta = MagicMock(); respuesta.content = [bloque]
+    cliente = MagicMock(); cliente.messages.create.return_value = respuesta
+    # Reemplaza la CLASE del SDK por una fábrica que devuelve nuestro cliente falso.
+    monkeypatch.setattr(clasificador_malo.anthropic, "Anthropic", lambda: cliente)
+
+    assert clasificador_malo.clasificar("me encantó") == "positivo"
+```
+
+Funciona, pero compara el costo: tuve que reconstruir a mano la forma del objeto de respuesta del SDK (`content` → lista de bloques → `.text`). Ese test queda **acoplado a los detalles internos del SDK**: si Anthropic cambia la forma de la respuesta, el test se rompe aunque tu lógica sea correcta. Por eso la inyección de 4.2 es superior: el test no sabe nada del SDK. Usa `monkeypatch` solo cuando no puedes cambiar el diseño; cuando sí puedes, **separa la frontera**.
+
+## 5. Non-examples y errores de concepto
+
+:::caution[Podrías pensar que… (y por qué está mal)]
+**"Como el LLM es no determinista, este código no se puede testear."**
+Falso. El LLM no es determinista, pero *tu código alrededor del LLM sí*. Construir el prompt, parsear el JSON, validar campos, manejar errores: todo eso es determinista y es justo donde viven los bugs. Lo que aíslas con el fake es exactamente la parte no determinista, para poder probar todo el resto.
+
+**"Voy a mockear el LLM y verificar que la clasificación es correcta."**
+Mezclaste dos preguntas. Con un fake que devuelve `'{"sentimiento": "positivo"}'`, tu test que afirma `== "positivo"` **no prueba que el modelo clasifique bien** —tú escribiste esa respuesta. Prueba que tu código *parsea y propaga* esa respuesta. Que el modelo *acierte* en "me encantó" es un **eval** (sección 6.5), no un unit test.
+
+**"Le pego al modelo real en el test, así pruebo de verdad."**
+Ese test es lento, flaky, caro y necesita API key en CI. Y cuando falla, no sabes si fue tu código o el modelo teniendo un mal día. Mezcla dos señales en una. La llamada real tiene su lugar —un smoke test manual, o el eval harness— pero **no** en la suite unitaria que corre en cada commit.
+
+**"Mockeo TODO: el cliente, el parser, el validador."**
+Sobre-mockeo. Si reemplazas `json.loads` o tu propia validación por un mock, tu test deja de probar el parseo y la validación —justo lo que querías cubrir. Mockea **solo la frontera** (la llamada de red). La lógica pura se prueba real, por su valor de retorno. (Es el mismo pecado que viste en [`2.8`](/fase-2-ingenieria/2-8-diseno-de-tests/): el mock acopla a la implementación.)
+
+**"Mi fake devuelve un dict de Python, listo."**
+La frontera real devuelve **texto** (un string, a menudo con el JSON envuelto en ```` ```json ... ``` ````, o con un "Claro, aquí está:" delante). Si tu fake devuelve un dict ya parseado, tu test nunca ejercita tu parser —y el parser es donde más se rompe en producción. El fake debe imitar la forma cruda de la respuesta real: un string.
+:::
+
+## 6. Práctica con andamiaje
+
+### 6.1 — PREDICE (sin ejecutar)
+
+Mira este test con un fake y predice qué pasa. El SUT es el `clasificar` de la sección 4.2.
+
+```python
+def fake(respuesta):
+    return lambda prompt: respuesta
+
+def test_misterio():
+    resultado = clasificar("buenísimo", fake('```json\n{"sentimiento": "positivo"}\n```'))
+    assert resultado == "positivo"
+```
+
+¿Este test pasa o falla? Decídelo **antes** de leer la respuesta.
+
+<Solucion title="Ver qué pasa y por qué">
+
+**Falla** —y revela un bug real de producción. El fake imita algo que los modelos hacen todo el tiempo: envolver el JSON en un *fence* de Markdown (```` ```json ... ``` ````). Pero `json.loads("```json\n{...}\n```")` lanza `json.JSONDecodeError` porque el string no es JSON puro: empieza con `` ``` ``. Como `clasificar` captura ese error y lo convierte en `ClasificacionInvalida`, el test que esperaba `"positivo"` falla con `ClasificacionInvalida`.
+
+La lección: **el modelo "respondió bien" pero tu código se cae.** Este es exactamente el tipo de bug que un test determinista atrapa en microsegundos y que un test contra el modelo real atraparía solo *a veces* (cuando al modelo se le ocurra usar el fence). En producción, lo arreglarías limpiando el fence antes de `json.loads` —y escribirías un test con este mismo fake para fijar el arreglo.
+
+</Solucion>
+
+### 6.2 — MODIFICA (Parsons / completar)
+
+Aquí tienes un test al que le faltan dos piezas. Complétalo para que verifique que, ante un campo faltante, `clasificar` lanza `ClasificacionInvalida`. Las piezas correctas, en desorden, son: `pytest.raises(ClasificacionInvalida)` · `fake('{"otra_clave": "x"}')` · `with` · `clasificar("...", ...)`.
+
+```python
+def test_campo_faltante():
+    ___ ___:                      # (1) contexto que espera la excepción
+        clasificar("...", ___)    # (2) fake cuyo JSON NO tiene "sentimiento"
+```
+
+<Solucion title="Ver el test completo">
+
+```python
+def test_campo_faltante():
+    with pytest.raises(ClasificacionInvalida):
+        clasificar("...", fake('{"otra_clave": "x"}'))
+```
+
+El fake devuelve un JSON **válido sintácticamente** pero **sin la clave `sentimiento`**. Tu código hace `datos.get("sentimiento")` → `None`, y `None not in VALIDOS` → lanza `ClasificacionInvalida`. Verificas la rama de validación, no la de parseo. Nota que un caso así (clave faltante) es distinto del JSON malformado (sección 6.1): son dos ramas de error separadas y cada una merece su test.
+
+</Solucion>
+
+### 6.3 — La distinción que lo organiza todo: unit test vs eval
+
+Antes de los ejercicios sin andamiaje, fija la línea con esta tabla. Es el corazón de la lección y el puente a la Fase 6:
+
+| Pregunta que te haces | ¿Qué es? | ¿Cómo se verifica? | ¿Dónde corre? |
+|---|---|---|---|
+| ¿Mi código arma el prompt con el dato del usuario? | unit test | `assert dato in prompt` | en cada commit (CI) |
+| ¿Mi código parsea bien un JSON válido del modelo? | unit test | `assert` con fake | en cada commit (CI) |
+| ¿Mi código maneja JSON malformado / campo faltante / valor fuera de rango? | unit test | `pytest.raises` con fake | en cada commit (CI) |
+| ¿Mi código reintenta o degrada ante un error de la API? | unit test | `assert` con fake que falla | en cada commit (CI) |
+| ¿El modelo clasifica "me encantó" como `positivo`? | **eval** | dataset etiquetado + métrica (accuracy) | en un eval harness (Fase 6) |
+| ¿El resumen captura las ideas del documento? | **eval** | LLM-as-judge / rúbrica | en un eval harness (Fase 6) |
+| ¿El modelo filtra el system prompt si el usuario insiste? | **eval / seguridad** | red-team, muestreo repetido | suite de seguridad (Fase 6, OWASP LLM) |
+
+:::tip[GLaDOS dice — la regla mnemotécnica]
+**El unit test prueba tu pegamento; el eval prueba el modelo.** Si la pregunta empieza con "¿mi código…?" es un assert. Si empieza con "¿el modelo…?" es un eval. Mezclarlas es escribir un test que parece probar la IA y en realidad solo prueba el string que *tú* escribiste en el fake.
+:::
+
+Un *eval*, conceptualmente, es un test cuya entrada es un **dataset etiquetado** (comentarios con su sentimiento correcto), que llama al **modelo real**, y cuya salida no es verde/rojo sino un **número** (p. ej. accuracy 0.92) comparado contra un umbral. No corre en cada commit —es lento y cuesta— sino como *gate* del pipeline de IA. Por eso es "el unit test de la IA": cumple el mismo rol (red de seguridad contra regresiones) pero mide *calidad estadística*, no *corrección puntual*. La Fase 6 te enseña a construirlo (ragas, LLM-as-judge, promptfoo/DeepEval en CI). Aquí solo necesitas saber **dónde termina uno y empieza el otro**.
+
+### 6.4 — El hilo de costo y latencia
+
+Que estos tests no llamen al modelo no es solo por determinismo: es **económico**. Una suite unitaria corre cientos de veces al día (en cada guardado, en cada commit, en CI). Si cada caso llamara al modelo real, pagarías tokens cientos de veces por día por probar tu propio parser —y tu CI tardaría minutos en vez de segundos. Mockear la frontera mantiene la suite **rápida y gratis**, y reserva el gasto de tokens para donde aporta señal real: el eval harness, que corre *ocasionalmente* como gate. Esta separación —barato y constante vs. caro y ocasional— es la misma que verás en costo/latencia de LLMOps (Fase 6).
+
+## 7. Ejercicios Primero-Sin-IA
+
+Trabaja **a mano, sin IA**. La IA solo revisa al final, con `.ai/`. Cada ejercicio vive en su carpeta del repo; ábrela en tu editor.
+
+<Reto title="Mockear el LLM: suite para un extractor de pedidos" timebox="40 min">
+
+Carpeta: `ejercicios/fase-2/mockear-llm-extractor/`
+
+Tienes un módulo `solucion.py` (el SUT) ya escrito y correcto: `extraer_pedido(mensaje, generar)` usa un callable inyectado `generar(prompt) -> str` (la frontera del LLM) para extraer un `Pedido` estructurado desde texto libre, parseando y **validando** la respuesta. Tu trabajo es escribir la **suite de tests** en `test_solucion.py` usando *fakes* deterministas —**no modifiques `solucion.py`**.
+
+Hecho significa:
+
+- Tienes un **happy path** con un fake que devuelve JSON válido y afirma el `Pedido` correcto.
+- Verificas la **construcción del prompt** con un `Mock` como spy: el prompt enviado contiene el mensaje del cliente.
+- Cubres tres ramas de error con `pytest.raises(ExtraccionInvalida)`: respuesta **no-JSON**, **cantidad inválida** (≤ 0 o no entera), y **mensaje vacío** (que además **no debe llamar** al modelo: afírmalo con `assert_not_called`).
+- **Autochequeo (obligatorio):** apunta el import de `test_solucion.py` a `from mutantes.mutante_a import ...`, corre `pytest` y confirma que tu suite se pone **ROJA** (el mutante omite la validación de cantidad). Luego **revierte** a `from solucion import ...`. Si el mutante deja tu suite verde, te falta el caso de cantidad inválida.
+- Puedes **explicar sin notas** por qué ninguno de tus tests prueba que el modelo "extraiga bien", y qué tipo de prueba sí lo haría.
+
+</Reto>
+
+<Reto title="La frontera: unit test, eval o ninguno" timebox="30 min">
+
+Carpeta: `ejercicios/fase-2/unit-test-vs-eval-frontera/`
+
+Ejercicio de **diseño/razonamiento** (no se ejecuta; el entregable es `analisis.md`). Te damos una feature de IA y ocho afirmaciones que alguien quiere "testear". Para cada una, clasifícala como **unit test determinista**, **eval**, o **ninguno de los dos** (no testeable de forma útil / propio de integración), y justifica en una frase. Luego diseñas la frontera de la feature: qué inyectas y mockeas, qué dejas real.
+
+Hecho significa:
+
+- Las **ocho** afirmaciones tienen veredicto **y** justificación de una frase.
+- Identificas correctamente qué se prueba con `assert` + fake y qué necesita un dataset etiquetado + métrica.
+- Marcas al menos una afirmación como "ninguno" (p. ej. "con temperatura alta, ¿da la misma respuesta dos veces?") y explicas por qué no se debe afirmar eso.
+- Defines la **frontera**: el callable/port que inyectarías, qué mockeas en los unit tests y qué queda para el eval.
+- Puedes **explicar sin notas** la frase: "el unit test prueba mi pegamento; el eval prueba el modelo".
+
+</Reto>
+
+## 8. Check de dominio
+
+<CheckDominio
+  items={[
+    "Explicar por qué un test que llama al LLM real es lento, flaky, caro y mezcla dos señales.",
+    "Refactorizar una función que crea el cliente del LLM adentro para que reciba la frontera inyectada como un callable.",
+    "Escribir, con un fake, tests para: happy path, prompt correcto (spy), JSON malformado, campo faltante y valor fuera de dominio.",
+    "Predecir que json.loads de una respuesta envuelta en ```json ... ``` falla, y testearlo.",
+    "Decidir, dada una afirmación, si es un unit test (assert + fake), un eval (dataset + métrica) o ninguno.",
+    "Justificar por qué mockear el parser/validador es sobre-mockeo y solo se mockea la frontera.",
+    "Explicar en qué se parece y en qué se diferencia un eval de un unit test, y por qué un eval no corre en cada commit.",
+  ]}
+/>
+
+<Quiz
+  question="Tu colega dice: 'agregué un test que mockea el LLM para que devuelva {\"sentimiento\": \"positivo\"} y verifica que clasificar() retorna positivo. Con eso ya sé que el modelo clasifica bien.' ¿Cuál es la corrección correcta?"
+  options={[
+    "Tiene razón: el test prueba que el modelo clasifica positivo correctamente.",
+    "El test es válido pero debería además llamar al modelo real para confirmar.",
+    "El test prueba que SU CÓDIGO parsea y propaga la respuesta; no prueba nada sobre la calidad del modelo, porque la respuesta 'positivo' la escribió él en el fake. Medir si el modelo acierta es un eval, no un unit test.",
+  ]}
+  answer={2}
+  explanation="El fake devuelve una respuesta que el colega mismo escribió. El assert solo confirma que el código toma esa respuesta y la propaga (parseo + retorno) — útil y correcto, pero es un unit test de SU pegamento. Si el modelo realmente clasifica bien 'me encantó' es una pregunta estadística sobre el modelo que se responde con un dataset etiquetado y una métrica: un eval (Fase 6)."
+/>
+
+## 9. Recursos
+
+Documentación oficial primero:
+
+- **pytest — monkeypatch** (parchear en la frontera cuando no puedes inyectar): https://docs.pytest.org/en/stable/how-to/monkeypatch.html
+- **pytest — fixtures** (inyectar dobles de forma reutilizable): https://docs.pytest.org/en/stable/how-to/fixtures.html
+- **`unittest.mock`** (`Mock`/`MagicMock`, `assert_called_once`, `call_args`): https://docs.python.org/3/library/unittest.mock.html
+- **Anthropic — Python SDK** (forma vigente de `messages.create` y de la respuesta): https://docs.claude.com/en/api/client-sdks
+- **Vitest — `vi.fn()` y mocking** (equivalente en TS/Node): https://vitest.dev/api/vi.html
+
+## 10. Conexión con el proyecto
+
+El [Capstone de la Fase 2](/fase-2-ingenieria/proyecto/) es *refactor + suite de tests*. Si tu app toca un LLM en algún punto, esta lección define cómo lo testeas sin ensuciar la suite: aíslas la llamada detrás de un *port*, la inyectas, y construyes tests deterministas con fakes para la construcción de prompt, el parseo, la validación y el manejo de error. En el `ARQUITECTURA.md` del capstone, esa frontera es una decisión de diseño que documentas (un ADR: "la llamada al LLM se inyecta como callable para mantener la lógica testeable y el SDK confinado a un adaptador"). Y deja sembrado el hilo que recoges en la Fase 6: lo que *no* cubre la suite unitaria —la calidad de la salida del modelo— es justo lo que un eval harness vendrá a medir.
+
+## 11. Reflexión y repaso espaciado
+
+Cierra escribiendo, en 3–4 frases, tu respuesta a: **"¿Dónde está, exactamente, la línea entre lo que pruebo con un assert y lo que mido con un eval, y por qué es un error cruzarla?"** Si no puedes trazarla sin mirar la tabla de la sección 6.3, vuelve a esa sección.
+
+:::note[Repaso espaciado]
+- **Mañana:** reescribe de memoria el `clasificador.py` testeable (4.2) y un test con `Mock` que verifique el prompt (4.4). Si no te sale el spy con `call_args`, repasa la sección 4.4.
+- **En una semana:** sin mirar, completa la tabla unit-test-vs-eval (6.3) con cinco filas tuyas, inventadas a partir de una feature de IA distinta (un extractor de facturas, por ejemplo).
+- **Gatillo de conexión:** cuando llegues a `6.9 Eval-driven development` en la Fase 6, vuelve a esta lección y comprueba que el eval que ahí construyes es exactamente la columna derecha de la tabla 6.3.
+:::
+
+:::tip[GLaDOS says]
+Probaste tu código contra un LLM falso y todo pasó en verde. Reconfortante, ¿no? Casi tanto como un pastel. La diferencia es que tu suite determinista no es mentira: el día que el modelo devuelva basura envuelta en un *fence* de Markdown, tu parser ya sabrá defenderse. Eso sí es para la ciencia. Y por ciencia, otra vez, me refiero a tu estabilidad en producción.
+:::

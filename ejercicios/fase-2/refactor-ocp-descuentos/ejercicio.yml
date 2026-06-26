@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/refactor-ocp-descuentos
+titulo: "Refactor a Open/Closed con red de tests"
+fase: fase-2
+sub_unidad: "2.4"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Refactorizar una cadena de if/elif (smell switch statements) a un diseño Open/Closed, preservando el comportamiento con tests verdes"
+  - "Diseñar una abstracción (abc/Protocol) y una clase por caso, de modo que agregar un tipo sea escribir una clase, no editar código existente"
+  - "Demostrar 'cerrado a modificación' agregando un caso nuevo sin tocar las clases ni la lógica de despacho existentes"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

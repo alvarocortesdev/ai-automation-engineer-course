@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/clean-code-refactor-nombres-funciones
+titulo: "Refactor: nombres con intención + funciones pequeñas"
+fase: fase-2
+sub_unidad: "2.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Renombrar variables y funciones para revelar intención (sin nombres crípticos ni índices mágicos) sin cambiar el comportamiento"
+  - "Reemplazar números mágicos por constantes con nombre"
+  - "Descomponer una función que hace varias cosas en funciones con una sola responsabilidad, manteniendo los tests en verde"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

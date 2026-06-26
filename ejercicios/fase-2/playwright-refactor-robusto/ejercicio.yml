@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/playwright-refactor-robusto
+titulo: "Estabiliza un e2e flaky (refactor robusto + Page Object) con Playwright"
+fase: fase-2
+sub_unidad: "2.10"
+ruta_critica: false          # 2.10 es opcional/profundización
+modalidad: codigo
+objetivos:
+  - "Diagnosticar los antipatrones de un e2e flaky: selectores CSS, waitForTimeout (sleep) y textContent + expect manual"
+  - "Reescribir el test con selectores por rol/label (getByRole/getByLabel/getByText) y web-first assertions con auto-waiting, sin un solo sleep"
+  - "Extraer un Page Object que deje las aserciones en el test y las interacciones en la clase"
+hilos_transversales: [testing, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # el alumno ESCRIBE el spec (es el entregable); no hay tests provistos que él haga pasar

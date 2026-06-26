@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/patrones-juicio-cual-patron
+titulo: "El juicio: ¿qué patrón, o ninguno?"
+fase: fase-2
+sub_unidad: "2.5"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Reconocer qué patrón de diseño (Strategy/Factory/Repository/Adapter/Observer) convoca un smell dado, o si ninguno aplica (YAGNI)"
+  - "Justificar cada decisión nombrando el smell presente o ausente, con una fuerza a favor y un argumento en contra (Rule of Three / costo de indirección / control de flujo invisible)"
+  - "Distinguir un eje de variación real y presente de uno especulado, y definir el gatillo observable que cambiaría la decisión"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: la entrega es decisiones.md, no una suite

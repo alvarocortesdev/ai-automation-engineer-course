@@ -1,0 +1,15 @@
+{
+  "name": "vitest-suite-validador",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ejercicio 2.6 — escribe una suite Vitest para el validador del SUT. Usa pnpm.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

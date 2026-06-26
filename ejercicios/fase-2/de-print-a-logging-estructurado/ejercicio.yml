@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/de-print-a-logging-estructurado
+titulo: "De print-spam a logging estructurado (niveles + contexto)"
+fase: fase-2
+sub_unidad: "2.12"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Reemplazar print() de depuración por logging estándar con niveles (debug/info/warning) que se puedan filtrar sin tocar el código"
+  - "Emitir logs estructurados con contexto (pedido_id, correlation_id) vía extra=, configurando el logging una sola vez con salida a stdout"
+  - "Justificar por qué print() es un antipatrón de observabilidad en producción y qué resuelve el logging estructurado (puente a la observabilidad de la Fase 5)"
+hilos_transversales: [observabilidad, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

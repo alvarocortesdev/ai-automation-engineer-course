@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/que-no-testear-y-umbral
+titulo: "Qué NO testear + tu política de umbral honesta"
+fase: fase-2
+sub_unidad: "2.9"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Decidir, con justificación de valor/costo, qué código merece test unitario, cuál no, y cuál se prueba en integración"
+  - "Explicar la Ley de Goodhart aplicada a 'coverage como meta' y proponer qué medir en su lugar"
+  - "Diseñar una política de calidad honesta: umbral defendible + cadencia de mutation testing acorde a su costo"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: no hay suite; la entrega son dos write-ups

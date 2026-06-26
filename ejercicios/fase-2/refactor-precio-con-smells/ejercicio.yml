@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/refactor-precio-con-smells
+titulo: "Refactoriza una función con smells (red ya puesta)"
+fase: fase-2
+sub_unidad: "2.3"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Identificar al menos seis code smells en una función real y nombrar el refactoring del catálogo de Fowler que cada uno gatilla"
+  - "Refactorizar en pasos pequeños y reversibles, corriendo la suite después de cada paso, sin alterar el comportamiento observable"
+  - "Eliminar la duplicación (descuento vip/frecuente) vía Extract Function preservando los montos exactos"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

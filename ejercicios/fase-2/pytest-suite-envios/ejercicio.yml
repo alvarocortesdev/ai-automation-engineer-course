@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-2/pytest-suite-envios
+titulo: "Suite pytest para un módulo de envíos (parametrize + fixture + mock en la frontera)"
+fase: fase-2
+sub_unidad: "2.6"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una suite pytest con @pytest.mark.parametrize (incluyendo bordes) y pytest.raises sobre lógica pura"
+  - "Usar una @pytest.fixture para inyectar un doble de prueba en la frontera"
+  - "Mockear solo la frontera (tasa_usd) y dejar la lógica (costo_envio) real, demostrándolo al cazar dos mutantes"
+hilos_transversales: [testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

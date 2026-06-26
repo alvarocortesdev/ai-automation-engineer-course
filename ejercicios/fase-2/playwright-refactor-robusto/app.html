@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!--
+  Ejercicio 2.10 — App bajo prueba (SUT). NO la modifiques.
+  Es una mini-app autocontenida de "agregar gasto". Funciona correctamente.
+  Nota de diseño para el test:
+   - El mensaje de éxito aparece tras una LATENCIA VARIABLE (~150-450 ms): por eso un
+     test que lee el texto de inmediato falla, y un waitForTimeout es frágil/lento.
+   - El form es accesible: usa <label> y <button>, así que getByLabel / getByRole funcionan.
+   - El error de validación vive en un elemento con role="alert".
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Gastos</title>
+</head>
+<body>
+  <main>
+    <h1>Gastos</h1>
+
+    <form id="form-gasto">
+      <div class="campo">
+        <label for="desc">Descripción</label>
+        <input id="desc" name="desc" type="text" />
+      </div>
+      <div class="campo">
+        <label for="monto">Monto</label>
+        <input id="monto" name="monto" type="text" />
+      </div>
+      <button type="submit" class="btn btn-add">Agregar</button>
+    </form>
+
+    <!-- Mensaje de validación (inmediato) -->
+    <div id="error" role="alert"></div>
+
+    <!-- Mensaje de éxito (aparece tras la latencia) -->
+    <p id="msg" class="toast" role="status" aria-live="polite"></p>
+
+    <h2>Lista</h2>
+    <ul id="lista"></ul>
+    <p id="total">Total: $0</p>
+  </main>
+
+  <script>
+    (function () {
+      var form = document.getElementById("form-gasto");
+      var error = document.getElementById("error");
+      var msg = document.getElementById("msg");
+      var lista = document.getElementById("lista");
+      var totalEl = document.getElementById("total");
+      var total = 0;
+
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        // Limpia mensajes previos
+        error.textContent = "";
+        msg.textContent = "";
+
+        var desc = document.getElementById("desc").value.trim();
+        var montoRaw = document.getElementById("monto").value.trim();
+        var monto = Number(montoRaw);
+
+        // Validación: monto debe ser un número positivo
+        if (montoRaw === "" || Number.isNaN(monto) || monto <= 0) {
+          error.textContent = "Monto inválido";
+          return;
+        }
+        if (desc === "") {
+          error.textContent = "La descripción es obligatoria";
+          return;
+        }
+
+        // Éxito, pero con latencia variable (simula una llamada de red)
+        var demora = 150 + Math.floor(Math.random() * 300);
+        setTimeout(function () {
+          var li = document.createElement("li");
+          li.textContent = desc + ": $" + monto;
+          lista.appendChild(li);
+
+          total += monto;
+          totalEl.textContent = "Total: $" + total;
+
+          msg.textContent = "Gasto agregado: " + desc;
+
+          form.reset();
+        }, demora);
+      });
+    })();
+  </script>
+</body>
+</html>
