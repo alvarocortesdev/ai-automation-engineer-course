@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ejercicio 4.2 — Tarjeta con Tailwind</title>
+
+    <!-- Tailwind v4 de navegador: compila en vivo, sin instalar nada. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Dark mode con toggle manual: declara el variant una sola vez. -->
+    <style type="text/tailwindcss">
+      @custom-variant dark (&:where(.dark, .dark *));
+    </style>
+  </head>
+
+  <!-- El fondo de la página adapta el tema (ya hecho). Tu trabajo va más abajo. -->
+  <body class="flex min-h-screen flex-col items-center gap-6 bg-gray-100 p-6 dark:bg-gray-900">
+    <button
+      id="toggle-tema"
+      class="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200"
+    >
+      Cambiar tema
+    </button>
+
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <!-- TU TARJETA: empieza  (escribe tu marcado entre estos comentarios) -->
+    <!-- ──────────────────────────────────────────────────────────────── -->
+
+    <article>
+      <!-- TODO: reemplaza esto por tu tarjeta de producto, hecha SOLO con
+           clases de utilidad de Tailwind.
+           Debe tener: bloque de imagen/color, título, descripción, precio y botón.
+           Debe cumplir: flex/grid + escala de espaciado, un prefijo responsive
+           (md:), un estado hover:, y dark mode (dark:).
+           Prohibido: style="..." inline y @apply. -->
+      Reemplázame.
+    </article>
+
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <!-- TU TARJETA: termina                                               -->
+    <!-- ──────────────────────────────────────────────────────────────── -->
+
+    <script>
+      // Toggle de tema (ya hecho — no necesitas tocarlo).
+      document.getElementById("toggle-tema").addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+      });
+    </script>
+  </body>
+</html>

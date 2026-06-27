@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/landing-semantica-responsive
+titulo: "Landing semántica y responsive (sin frameworks)"
+fase: fase-4
+sub_unidad: "4.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Estructurar una página con HTML semántico (landmarks, un solo h1, alt, lang) que se lea bien sin CSS"
+  - "Construir un layout responsive mobile-first con Flexbox y Grid, rem y una media query"
+  - "Justificar cuándo usar Flexbox (1D) y cuándo Grid (2D) en el layout construido"
+hilos_transversales: [spec-driven, seguridad]   # mini-spec antes de codear; a11y/landmarks como base de WCAG
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  solucion_referencia: .ai/soluciones/fase-4/landing-semantica-responsive/

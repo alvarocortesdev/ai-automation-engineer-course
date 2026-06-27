@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/depurar-efectos-react
+titulo: "Depura un panel lleno de useEffect"
+fase: fase-4
+sub_unidad: "4.5"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Depurar antipatrones de useEffect: estado derivado disfrazado de efecto, dependencia faltante, falta de cleanup (race condition) y efecto que debió ser event handler"
+  - "Distinguir un uso legítimo de useEffect (sincronización con un sistema externo) de uno injustificado"
+  - "Explicar la consecuencia observable de cada antipatrón y proponer el arreglo mínimo"
+hilos_transversales: [observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es el write-up del alumno, no una suite

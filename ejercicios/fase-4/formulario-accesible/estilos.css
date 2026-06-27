@@ -1,0 +1,39 @@
+/*
+  Estilos de partida. Puedes cambiarlos a tu gusto.
+  El test NO evalúa el CSS: el contraste y el foco visible los juzga la rúbrica
+  (y tu propia prueba con teclado). Aun así, hacerlo bien aquí es parte del "hecho".
+
+  RECUERDA:
+  - NUNCA `outline: none` sin reemplazo. Usa :focus-visible.
+  - El foco visible debe contrastar >= 3:1 contra su fondo (SC 1.4.11).
+  - Objetivos táctiles (botón): apunta a >= 44x44 px (SC 2.5.8 pide >= 24x24).
+*/
+
+.card {
+  max-width: 56ch;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Texto de error: hoy depende SOLO del color (mal). Acompáñalo de ícono/texto. */
+.error {
+  color: #c0392b;
+}
+
+/* Este "botón" es un div. Cámbialo por <button> en el HTML. */
+.btn {
+  display: inline-block;
+  background: #1d4ed8;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}

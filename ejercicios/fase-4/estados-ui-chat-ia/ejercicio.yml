@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/estados-ui-chat-ia
+titulo: "Diseña los estados y la seguridad de una UI de chat de IA"
+fase: fase-4
+sub_unidad: "4.11"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Inventariar y diseñar los seis estados de primera clase de una UI de chat de IA (vacío, enviando, streaming, completado, error, cancelado) y sus transiciones"
+  - "Diagnosticar los riesgos de seguridad y accesibilidad de renderizar salida de un LLM en el navegador (XSS por HTML no confiable, aria-live, foco, affordance de cancelar)"
+  - "Justificar optimistic UI y el trade-off de latencia/UX del streaming frente a esperar la respuesta completa"
+hilos_transversales: [seguridad, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: la entrega es diseno-chat.md, no hay suite

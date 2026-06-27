@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aprobar acción</title>
+    <link rel="stylesheet" href="estilos.css" />
+  </head>
+  <body>
+    <!--
+      Esta tarjeta funciona con mouse, pero es INACCESIBLE.
+      El test (tests/a11y.test.js) arranca en ROJO a propósito.
+      Tu trabajo: arreglarla por capas (semántica → teclado → ARIA → form)
+      hasta dejar el test en verde, SIN romper lo que ya hace.
+
+      NO cambies los nombres de los archivos (formulario.html / estilos.css):
+      el test lee formulario.html.
+    -->
+    <div class="card">
+      <div class="title">Revisar acción detectada por la IA</div>
+
+      <img src="check.svg" />
+      <div class="desc">Renegociar contrato de logística antes de Q1.</div>
+
+      <!-- Campo nota (requerido): sin label, con placeholder como "etiqueta" -->
+      <input type="text" placeholder="Tu nota para el aprobador" />
+      <div class="error">Escribe una nota antes de aprobar.</div>
+
+      <!-- Campo email del aprobador: sin label -->
+      <input type="email" placeholder="Email del aprobador" />
+
+      <!-- "Botón" que en realidad es un div, con un tabindex positivo -->
+      <div class="btn" tabindex="3" onclick="aprobar()">Aprobar</div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/ux-formulario-prevencion-errores
+titulo: "Rediseña la UX de un formulario hostil"
+fase: fase-4
+sub_unidad: "4.10"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Reescribir mensajes de error con la estructura qué/por qué/cómo, sin culpar al usuario, y decidir el timing de validación por campo"
+  - "Aplicar prevención de errores (H5), affordances y feedback, modelando el envío como una máquina de estados (loading/error/success)"
+  - "Conectar las decisiones de UX del formulario con la accesibilidad (errores anunciados, labels, foco, contraste)"
+hilos_transversales: [seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: [7] # estados completos del submit + a11y, parte del DoD único
+paths:
+  tests: null # ejercicio a-mano: no hay suite; la verificación es el rediseño escrito

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/auditoria-a11y-teclado
+titulo: "Auditoría de accesibilidad: traza el foco y nombra el SC violado"
+fase: fase-4
+sub_unidad: "4.4"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Trazar el orden de foco de una pantalla a mano e identificar elementos inalcanzables y trampas de foco"
+  - "Diagnosticar problemas de accesibilidad nombrando el Success Criterion concreto de WCAG 2.2 que cada uno viola"
+  - "Distinguir ARIA mal usada de HTML semántico correcto y priorizar arreglos por impacto"
+hilos_transversales: [seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null # ejercicio a-mano: se entrega un write-up (auditoria.md), no hay suite

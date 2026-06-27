@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/fase-4-index
+titulo: "Diagnóstico, plan y mapa al capstone de Fase 4"
+fase: fase-4
+sub_unidad: "4.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar con honestidad el nivel de partida en las 11 sub-unidades de la Fase 4"
+  - "Diseñar un plan de estudio realista que decida explícitamente sobre la sub-unidad opcional (4.9 design systems) según el rol objetivo"
+  - "Mapear cada punto del Definition of Done del Capstone F4 a las sub-unidades que lo enseñan (constructive alignment)"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: repaso
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/planificación: no hay suite automatizable
+</content>

@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio (capstone de fase)
+id: fase-4/capstone-frontend-ia
+titulo: "Capstone Fase 4 — Frontend de una app de IA"
+fase: fase-4
+sub_unidad: "4.P"
+ruta_critica: true
+modalidad: mixto                     # código (Next.js/TS) + documentos (SPEC, ADR, README) + infra (CI, env)
+objetivos:
+  - "Construir un frontend Next.js + TypeScript de producción sobre una API REST real: App Router, Server/Client Components, server-state con TanStack Query y formularios con React Hook Form + zod, reservando Zustand solo para client-state global"
+  - "Implementar una UI de chat de IA con streaming token por token (optimistic UI, estados pensando/streaming/error/cancelar) y las defensas de seguridad de renderizar salida de un LLM (nunca HTML no confiable)"
+  - "Pasar el gate de calidad de la fase: accesibilidad WCAG 2.2 (teclado, foco, contraste, aria-live) y los cuatro estados de primera clase (empty/loading/error/success) en cada vista, con demo que corre, README en inglés y write-up de trade-offs"
+hilos_transversales: [spec-driven, testing, seguridad, observabilidad, ingles]
+primero_sin_ia:
+  novedad: repaso                    # integra toda la Fase 4: Primero-Sin-IA de entrada (andamiaje del proceso, no del código)
+  timebox_min: 1200                  # ~15-25 h repartidas en 1-2 semanas; presupuesto orientativo, no corte
+definition_of_done: [1, 2, 3, 4, 7, 8, 9]   # puntos del DoD único (§B) que aplican en F4 (5/6 = eval IA/agente, llegan en F6)
+paths:
+  tests: ejercicios/fase-4/capstone-frontend-ia/tests/
+  solucion_referencia: .ai/soluciones/fase-4/capstone-frontend-ia/

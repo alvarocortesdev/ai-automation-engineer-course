@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/route-handler-modelos
+titulo: "Route Handler con validación de entrada"
+fase: fase-4
+sub_unidad: "4.6"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un Route Handler GET con APIs web estándar (Request/Response) que filtra un catálogo por query params"
+  - "Validar la entrada en el servidor (acotar q, validar limit) y devolver los status codes correctos (200/400)"
+  - "Devolver una respuesta JSON con forma estable { query, count, items } verificada por tests"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

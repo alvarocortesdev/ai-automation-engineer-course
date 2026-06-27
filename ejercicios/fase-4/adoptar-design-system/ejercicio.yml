@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/adoptar-design-system
+titulo: "¿Tailwind directo, shadcn/ui o design system? (mini-ADR)"
+fase: fase-4
+sub_unidad: "4.9"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Decidir y justificar, por escenario, la estrategia de UI (Tailwind directo / shadcn+tokens / design system publicado) según el trade-off costo-de-montar vs costo-de-inconsistencia"
+  - "Explicar por qué shadcn/ui no es una dependencia (modelo open code: código que posees)"
+  - "Explicar qué da Radix por defecto (accesibilidad) y por qué reimplementar un modal/menú accesible a mano es mala idea"
+hilos_transversales: [seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: la corrección la hace la IA con la rúbrica, no una suite

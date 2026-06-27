@@ -1,0 +1,15 @@
+{
+  "name": "ej-4-6-route-handler-modelos",
+  "private": true,
+  "type": "module",
+  "description": "Ejercicio 4.6 A — Route Handler de Next.js con validación de entrada. Request/Response web estándar, testeable sin Next.js.",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
+}

@@ -1,0 +1,540 @@
+---
+title: Estado y datos (TanStack Query, RHF + zod)
+description: "Server state vs client state: por qué fetch en useEffect es un antipatrón, cómo TanStack Query maneja caché, invalidación y optimistic updates, y cómo validar formularios con React Hook Form + zod compartiendo el contrato con el backend."
+sidebar:
+  order: 7
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="intermedio" />
+
+En [4.5 React + TypeScript](/fase-4-frontend/4-5-react-typescript/) aprendiste a manejar el estado que vive **dentro** de tu app: un contador, el texto de un input, una pestaña activa. Pero la mayoría de las apps reales muestran datos que **no son tuyos**: viven en una base de datos, detrás de la API que construiste en la Fase 3, y llegan por la red. Esos datos son otra bestia. Llegan tarde, fallan, se quedan viejos, los comparten varias pantallas, y mientras esperas tienes que dibujar "cargando". Esta lección trata sobre la distinción más importante del frontend moderno —**server state vs client state**— y sobre las dos herramientas que en 2026 todo equipo serio usa para domarlos: **TanStack Query** para los datos del servidor y **React Hook Form + zod** para los formularios. La enseña desde cero, sin asumir que ya tocaste ninguna de las dos.
+
+> La trampa de esta lección: pensar que traer datos del servidor es "solo un `fetch` dentro de un `useEffect`". Lo es, en el sentido en que cruzar el océano es "solo nadar". Funciona en la demo del tutorial y se desmorona en cuanto hay dos pantallas que muestran lo mismo, una conexión lenta, o un usuario que hace clic dos veces. El 80% del código frágil de un frontend junior es **server state manejado a mano**. Aprender a delegarlo es lo que separa una UI que se siente sólida de una que parpadea, se desincroniza y pierde datos.
+
+:::tip[Si ya lo tocaste]
+Si ya usaste TanStack Query y React Hook Form, no te saltes la lección: úsala como diagnóstico. Salta a los **dos ejercicios Primero-Sin-IA** (sección 7). Si en el ejercicio A logras una `useMutation` con **optimistic update + rollback + invalidación** que pasa los tests (incluido el de fallo), y en el B clasificas cada pieza de estado como server o client **y nombras los cinco problemas** del `useEffect`-fetch sin titubear, valida con el check de dominio (sección 8) y avanza a [4.8 Estado global](/fase-4-frontend/4-8-estado-global/). Si dudaste con "por qué `invalidateQueries` y no `setQueryData` a mano", vuelve a la sección 4.5.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Implementar** la capa de datos de servidor con TanStack Query v5: `useQuery` para leer (con estados `isPending`/`isError`), `useMutation` para escribir, **invalidación de caché** tras mutar, y un **optimistic update con rollback** ante error.
+- **O2 — Explicar y justificar** la distinción **server state vs client state**, y por qué hacer `fetch` dentro de `useEffect` + `useState` es un antipatrón para datos del servidor (qué cinco cosas te regala TanStack Query que tú tendrías que reinventar).
+- **O3 — Construir** un formulario con **React Hook Form + zod** que valide contra un **esquema compartido** con el contrato del backend, muestre errores por campo y **bloquee el submit inválido**.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** un AI Engineer que monta la UI de su propia demo vale más que el que depende de alguien. Pero la demo se cae en el primer detalle de datos reales: el chat que muestra mensajes viejos, el botón "guardar" que dispara dos requests, la lista que no se actualiza tras crear un item. Saber **manejar server state** es exactamente lo que convierte una demo de juguete en algo que un cliente usaría. Y es pregunta de entrevista garantizada: "¿por qué no usas `useEffect` para traer datos?".
+
+Concreto, y sin vender humo:
+
+- **El server state es el problema central del frontend, y casi nadie lo nombra.** Caché, deduplicación de requests, refetch al volver a la pestaña, reintentos, datos viejos vs frescos: TanStack Query resuelve todo eso con una API pequeña. Reescribirlo a mano es la fuente #1 de bugs y de código que no se puede mantener.
+- **Optimistic updates es lo que hace que una app "se sienta rápida".** Cuando marcas una tarea como hecha y la UI responde al instante (sin esperar al servidor) pero **sabe deshacer el cambio si el servidor falla**, eso es ingeniería de frontend de nivel. Es el patrón detrás de cada app que se siente fluida.
+- **Los formularios son donde entran los datos sucios.** Validar en el cliente con el **mismo contrato** que el servidor (zod en el cliente espejando tu modelo de pydantic en FastAPI) es defensa en profundidad: el usuario recibe feedback inmediato y el servidor nunca confía en el cliente. Esto conecta directo con OWASP (validación de entrada) que ya viste en el backend.
+- **Es la mitad del capstone.** El [Capstone F4](/fase-4-frontend/proyecto/) es una UI de chat que consume tu backend de la Fase 3: la lista de mensajes es una query, enviar un mensaje es una mutación (optimista), y el formulario de entrada se valida con zod. Esta lección **es** ese capstone.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección se apoya en cosas que ya sabes:
+
+- De [4.5 React + TypeScript](/fase-4-frontend/4-5-react-typescript/): `useState`, el modelo de re-render, **estado derivado** (calcular en el render, no en un efecto) y, sobre todo, las **trampas de `useEffect`**. Aquí vas a ver que para datos del servidor, la respuesta correcta casi nunca es un efecto a mano.
+- De la **Fase 3** (backend con FastAPI): construiste una API REST con endpoints como `GET /tareas`, `POST /tareas`, `PATCH /tareas/{id}`, validada con **pydantic**, con status codes y errores JSON. Esa API es la fuente de verdad que el frontend va a consumir. El contrato (qué campos, qué tipos) es el mismo que vas a redeclarar en zod.
+- De **TypeScript** (Fase 1, sub-unidad 1.8): `interface`, `type`, generics y, en particular, **zod** —ya lo viste como validador en TS—. Aquí lo usas para validar formularios y para inferir tipos con `z.infer`.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="En React, un `fetch` dentro de un `useEffect` con deps `[id]` se dispara cuando cambia `id`. Si el usuario cambia `id` muy rápido (de 1 a 2), ¿qué problema clásico puede ocurrir?"
+  options={[
+    "Ninguno: React cancela el fetch viejo automáticamente",
+    "Una race condition: la respuesta de id=1 puede llegar DESPUÉS de la de id=2 y pintar datos viejos",
+    "Un error de compilación de TypeScript",
+  ]}
+  answer={1}
+  explanation="React no cancela nada por ti. Las dos peticiones viajan en paralelo y el orden de llegada no está garantizado; la del id=1 puede resolver de última y pisar la del id=2. Lo viste en 4.5 (cleanup con flag `ignorar`). TanStack Query resuelve esto de raíz: identifica cada petición por su queryKey y solo la respuesta de la query vigente actualiza la UI."
+/>
+
+## 4. Ejemplo resuelto, pensado en voz alta
+
+Voy a construir la capa de datos de una mini-app de tareas que consume el backend de la Fase 3, razonando en voz alta. **No lo leas como reglas sueltas: léelo como me oirías pensar al lado tuyo.** Empiezo por el malentendido que hay que matar, y de ahí sale todo lo demás.
+
+### 4.1 La distinción que lo cambia todo: server state vs client state
+
+Pienso en voz alta: *"Antes de tocar una librería, separo el estado de mi app en dos cubetas, porque se comportan de forma completamente distinta."*
+
+| | **Client state** | **Server state** |
+|---|---|---|
+| Quién es dueño | Tu componente | El servidor (la DB) |
+| Cuándo está disponible | Al instante (síncrono) | Tarde, por la red (asíncrono) |
+| Puede fallar | No | **Sí** (red, 500, timeout) |
+| Se queda viejo | No | **Sí** (otro usuario lo cambió) |
+| Lo comparten varias pantallas | Raro | **Casi siempre** |
+| Herramienta | `useState` / `useReducer` / Zustand | **TanStack Query** |
+
+*"El texto de un input, una pestaña activa, si un modal está abierto: eso es client state, vive y muere en mi UI, `useState` basta. Pero la lista de tareas que viene de `GET /tareas` es server state: no es mía, llega tarde, puede fallar, y si la muestro en dos lugares quiero que ambos vean lo mismo. Tratar server state como si fuera client state —guardarlo en un `useState` y sincronizarlo a mano— es el error de origen. Necesita una herramienta que entienda que es una **copia en caché de algo remoto**."*
+
+### 4.2 El antipatrón: `fetch` en `useEffect` (y por qué se rompe)
+
+*"Casi todos empiezan así. Voy a escribirlo y luego a contar todo lo que le falta."*
+
+```tsx
+// 🐛 El patrón que parece razonable y se desmorona en producción.
+function ListaTareas() {
+  const [tareas, setTareas] = useState<Tarea[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCargando(true);
+    fetch("/api/tareas")
+      .then((r) => r.json())
+      .then((data) => setTareas(data))
+      .catch((e) => setError(String(e)))
+      .finally(() => setCargando(false));
+  }, []);
+
+  if (cargando) return <p>Cargando...</p>;
+  if (error) return <p>Error: {error}</p>;
+  return <ul>{tareas.map((t) => <li key={t.id}>{t.titulo}</li>)}</ul>;
+}
+```
+
+*"Funciona en la demo. Pero cuento lo que NO hace, y cada punto es código que tendría que escribir a mano:"*
+
+1. **No hay caché ni deduplicación.** Si dos componentes piden `/api/tareas`, hago dos requests. Si navego fuera y vuelvo, pido todo de nuevo desde cero, pantalla en blanco incluida.
+2. **No hay manejo de race conditions.** Como vimos en 4.5, si la dependencia cambia rápido, las respuestas pueden llegar desordenadas. Aquí falta el `cleanup` con flag, y casi nadie lo pone.
+3. **No hay reintentos ni refetch.** Si el request falla por un parpadeo de red, se queda en error para siempre. No vuelve a intentar, no refresca al volver a la pestaña.
+4. **No hay forma de invalidar.** Cuando creo una tarea nueva con `POST`, ¿cómo le digo a esta lista "estás vieja, vuelve a pedir"? A mano: levantar el estado, pasar callbacks, un enredo.
+5. **El boilerplate se repite en cada pantalla.** Tres `useState` (`datos`/`cargando`/`error`) y un efecto, copiados una y otra vez. Es ruido que oculta la lógica real.
+
+*"TanStack Query me regala las cinco cosas gratis. Por eso no es 'una librería más': es la herramienta correcta para una categoría de estado que React por sí solo no maneja."*
+
+### 4.3 `useQuery`: leer datos del servidor
+
+*"Primero, una vez en la raíz de la app, instalo el proveedor de caché. Es como el `<Provider>` de cualquier contexto: crea la caché que todas las queries comparten."*
+
+```tsx
+// main.tsx — se hace UNA vez, en la raíz.
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
+createRoot(document.getElementById("root")!).render(
+  <QueryClientProvider client={queryClient}>
+    <App />
+  </QueryClientProvider>,
+);
+```
+
+*"Ahora la query. Necesito una `queryFn` que traiga los datos y —detalle crítico— que **lance** (throw) si la respuesta no es OK, porque TanStack Query detecta el error por la excepción."*
+
+```tsx
+interface Tarea {
+  id: string;
+  titulo: string;
+  hecha: boolean;
+}
+
+// La función de fetch: lanza si el servidor responde mal.
+async function obtenerTareas(): Promise<Tarea[]> {
+  const res = await fetch("/api/tareas");
+  if (!res.ok) throw new Error(`HTTP ${res.status}`); // ← clave: sin esto isError nunca se activa
+  return res.json();
+}
+
+function ListaTareas() {
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["tareas"],   // identidad de esta query en la caché
+    queryFn: obtenerTareas, // cómo se traen los datos
+  });
+
+  if (isPending) return <p>Cargando tareas...</p>;
+  if (isError) return <p role="alert">Error: {error.message}</p>;
+
+  return (
+    <ul>
+      {data.map((t) => <li key={t.id}>{t.titulo}</li>)}
+    </ul>
+  );
+}
+```
+
+Tres cosas que decir despacio:
+
+- **`queryKey` es la identidad del dato en la caché.** `["tareas"]` es una lista; `["tareas", id]` sería una tarea concreta. Dos componentes con la misma key comparten **una** petición y **un** resultado: ahí está la deduplicación y la caché, gratis.
+- **`isPending` (no `isLoading`).** En TanStack Query v5 el estado inicial sin datos se llama `isPending`. Después de ese guard, TypeScript **sabe** que `data` ya no es `undefined`: por eso `data.map(...)` compila sin un `?`. Los guards ordenan los tipos.
+- **`queryFn` debe lanzar en error.** Si te tragas el error y devuelves `[]`, `isError` nunca se activa y la UI miente diciendo "no hay tareas" cuando en realidad el servidor está caído.
+
+### 4.4 Caché, datos viejos (`staleTime`) e invalidación
+
+*"La idea mental de la caché: un dato recién traído está **fresco** (`fresh`); pasado un tiempo (`staleTime`) pasa a **viejo** (`stale`). Viejo no significa borrado: se sigue mostrando al instante desde la caché, pero TanStack Query lo **refresca en segundo plano** en ciertos disparadores (volver a la pestaña, reconectar la red, montar el componente). Por defecto `staleTime` es 0: todo se considera viejo de inmediato y se refresca agresivamente. Para datos que no cambian cada segundo, subir `staleTime` evita refetches innecesarios."*
+
+```tsx
+useQuery({
+  queryKey: ["tareas"],
+  queryFn: obtenerTareas,
+  staleTime: 30_000, // 30 s frescos: no refetchea de más en ese rato
+});
+```
+
+*"¿Y cuándo YO sé que el dato cambió —porque acabo de crear una tarea? No espero a que `staleTime` venza: **invalido** la query a mano. Invalidar marca esa key como vieja y dispara un refetch. Esta es la pieza que el `useEffect`-fetch no tenía."*
+
+```tsx
+import { useQueryClient } from "@tanstack/react-query";
+
+const queryClient = useQueryClient();
+// "la lista de tareas quedó desactualizada, vuelve a pedirla":
+queryClient.invalidateQueries({ queryKey: ["tareas"] });
+```
+
+### 4.5 `useMutation`: escribir, y luego invalidar
+
+*"Leer es `useQuery`; crear/editar/borrar es `useMutation`. La mutación no se cachea (no es un dato, es una acción), pero me da `isPending`/`isError` y, sobre todo, ganchos de ciclo de vida. El patrón base: muto en el servidor, y al terminar **invalido** la lista para que se refresque sola."*
+
+```tsx
+async function crearTarea(titulo: string): Promise<Tarea> {
+  const res = await fetch("/api/tareas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ titulo }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function FormularioRapido() {
+  const queryClient = useQueryClient();
+  const mutacion = useMutation({
+    mutationFn: crearTarea,
+    onSuccess: () => {
+      // El servidor confirmó: la lista quedó vieja → refréscala.
+      queryClient.invalidateQueries({ queryKey: ["tareas"] });
+    },
+  });
+
+  return (
+    <button
+      disabled={mutacion.isPending}
+      onClick={() => mutacion.mutate("Nueva tarea")}
+    >
+      {mutacion.isPending ? "Creando..." : "Crear"}
+    </button>
+  );
+}
+```
+
+*"`invalidateQueries` (refetch tras confirmar) es la opción por defecto, segura: la UI siempre termina mostrando lo que el servidor realmente tiene. Pero tiene un costo: hay un instante entre el clic y la actualización. Para acciones frecuentes (marcar hecho, dar like) ese retraso se nota. Ahí entra el optimistic update."*
+
+### 4.6 Optimistic updates con rollback (el patrón que se siente rápido)
+
+*"La idea: actualizo la caché **antes** de que el servidor responda, asumiendo que va a salir bien. Si sale bien, perfecto, ya estaba pintado. Si falla, **deshago** (rollback) al valor anterior. El truco está en los tres ganchos: `onMutate` (antes: actualizo y guardo el valor previo), `onError` (si falla: restauro), `onSettled` (pase lo que pase: invalido para acabar sincronizado con el servidor)."*
+
+```tsx
+function useToggleTarea() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: toggleTareaApi, // PATCH /api/tareas/{id} → devuelve la tarea
+    // 1) ANTES de llamar al servidor:
+    onMutate: async (id: string) => {
+      // Cancelo refetches en vuelo para que no pisen mi update optimista.
+      await queryClient.cancelQueries({ queryKey: ["tareas"] });
+      // Snapshot del valor actual, por si hay que deshacer.
+      const previas = queryClient.getQueryData<Tarea[]>(["tareas"]);
+      // Actualizo la caché optimistamente (inmutable: copio, no muto).
+      queryClient.setQueryData<Tarea[]>(["tareas"], (viejas) =>
+        (viejas ?? []).map((t) =>
+          t.id === id ? { ...t, hecha: !t.hecha } : t,
+        ),
+      );
+      // Lo que retorno aquí llega como `contexto` a onError/onSettled.
+      return { previas };
+    },
+    // 2) Si el servidor falla: restauro el snapshot.
+    onError: (_err, _id, contexto) => {
+      if (contexto?.previas) {
+        queryClient.setQueryData(["tareas"], contexto.previas);
+      }
+    },
+    // 3) Pase lo que pase: invalido para terminar igual al servidor.
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tareas"] });
+    },
+  });
+}
+```
+
+*"Léelo como un seguro: `onMutate` apuesta a que va a funcionar y guarda el recibo; `onError` cobra el seguro y revierte; `onSettled` reconcilia con la verdad del servidor. El detalle que casi todos olvidan es `cancelQueries`: sin él, un refetch que ya estaba en vuelo puede aterrizar con datos viejos justo después de tu update y deshacerlo visualmente. Y la actualización es **inmutable** (`.map` que crea un array nuevo, spread `{ ...t }`): mutar la caché en sitio rompe la detección de cambios de React, igual que con `useState`."*
+
+### 4.7 Formularios = client state: React Hook Form + zod
+
+*"Cambio de cubeta. El texto que el usuario escribe en un formulario **mientras** lo llena es client state puro: vive en la UI, no ha tocado el servidor. ¿Por qué no un `useState` por campo? Porque un formulario de verdad tiene validación por campo, mensajes de error, estado 'enviando', y cada tecleo en un input controlado re-renderiza todo. React Hook Form usa inputs **no controlados** (lee con refs) para no re-renderizar en cada tecla, y delega la validación a un esquema. Con zod, ese esquema es además mi tipo de TypeScript."*
+
+```tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// El esquema ES la fuente de verdad: valida Y define el tipo.
+const esquemaTarea = z.object({
+  titulo: z.string().min(1, "El título es obligatorio").max(80, "Máximo 80 caracteres"),
+  prioridad: z.enum(["baja", "media", "alta"]),
+  estimacionMin: z.number().int().positive("Debe ser un número positivo"),
+});
+
+type NuevaTarea = z.infer<typeof esquemaTarea>; // { titulo: string; prioridad: ...; estimacionMin: number }
+
+function FormularioTarea({ onCrear }: { onCrear: (t: NuevaTarea) => void }) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<NuevaTarea>({
+    resolver: zodResolver(esquemaTarea),
+    defaultValues: { prioridad: "media" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onCrear)} noValidate>
+      <label htmlFor="titulo">Título</label>
+      <input id="titulo" {...register("titulo")} />
+      {errors.titulo && <p role="alert">{errors.titulo.message}</p>}
+
+      <label htmlFor="estimacionMin">Estimación (min)</label>
+      {/* valueAsNumber: el input devuelve string; esto lo convierte a number para zod */}
+      <input id="estimacionMin" type="number" {...register("estimacionMin", { valueAsNumber: true })} />
+      {errors.estimacionMin && <p role="alert">{errors.estimacionMin.message}</p>}
+
+      <button type="submit" disabled={isSubmitting}>Crear tarea</button>
+    </form>
+  );
+}
+```
+
+Cosas que decir despacio:
+
+- **`handleSubmit(onCrear)`** corre el resolver primero. Si la validación falla, **`onCrear` no se llama**: los errores aparecen en `errors` y listo. Tu callback solo recibe datos **ya válidos y tipados** como `NuevaTarea`.
+- **`{ valueAsNumber: true }`** es el detalle que muerde a todos: un `<input type="number">` devuelve un **string** (`"30"`), y `z.number()` lo rechazaría. Esa opción lo convierte a `number` antes de validar.
+- **`z.infer`** evita declarar el tipo dos veces. El esquema valida en runtime y, además, **es** el tipo en tiempo de compilación. Una sola fuente de verdad.
+- **`z.email()`** es la forma de validar email en zod v4 (la vieja `z.string().email()` quedó deprecada). No la usamos aquí, pero tenla presente.
+
+### 4.8 Reusar el contrato zod con el backend
+
+*"Pregunta honesta: ¿puedo usar literalmente el mismo zod en cliente y servidor? Depende del stack."*
+
+- **Si el backend es TypeScript** (Next.js Route Handlers, como verás en [4.6 Next.js](/fase-4-frontend/4-6-nextjs/)): sí, pones `esquemaTarea` en un archivo compartido y lo importas en ambos lados. **Una** definición valida el formulario en el cliente y el body en el servidor. Eso es el sueño de un solo contrato.
+- **Si el backend es FastAPI** (tu Fase 3, Python): no puedes importar pydantic en TS. Pero el contrato es el mismo modelo en dos idiomas. La forma profesional de mantenerlos en sync no es copiar a mano: es **generar** los tipos del cliente desde el **OpenAPI schema** que FastAPI publica (herramientas como `openapi-zod-client` u `orval`). Así, si el backend cambia un campo, el cliente deja de compilar. El espíritu es el mismo de spec-driven: una sola fuente de verdad para el contrato.
+
+*"En cualquier caso, la regla de seguridad no cambia: validar en el cliente es para UX (feedback inmediato); el servidor **siempre** re-valida. Nunca confíes en que el cliente mandó datos limpios —es exactamente OWASP de la Fase 3 aplicado al frontend."*
+
+## 5. Errores y malentendidos comunes
+
+:::caution[Podrías pensar... pero está mal]
+
+**"TanStack Query es un cliente HTTP, reemplaza a `fetch`/`axios`."**
+Mal. No hace requests por ti: tú escribes la `queryFn` con `fetch`. Lo que gestiona es el **estado asíncrono** alrededor de esos datos: caché, staleness, reintentos, invalidación, deduplicación. Es un *manejador de server state*, no un cliente HTTP.
+
+**"Tras una mutación, actualizo la lista llamando `setQueryData` a mano para no refetchear."**
+Casi siempre prefiere `invalidateQueries`. `setQueryData` manual asume que tu cálculo del nuevo estado coincide exactamente con lo que el servidor guardó (¿y si el servidor calculó un campo, asignó un id, aplicó una regla?). Invalidar y refetchear te da la **verdad del servidor**. El `setQueryData` manual solo se justifica en el optimistic update (donde es temporal y `onSettled` invalida igual).
+
+**"Guardo la respuesta de `useQuery` en un `useState` para 'tenerla a mano'."**
+El antipatrón clásico. Copiar server state a un `useState` lo congela: cuando la query refresca, tu copia se queda vieja. Los datos del servidor viven en la caché de TanStack Query; léelos desde `data`, no los dupliques.
+
+**"Hago el input controlado con `useState` y valido a mano en el `onSubmit`."**
+Funciona para un campo, pero no escala: re-renderizas en cada tecla, reinventas mensajes de error, estados touched/dirty, y la validación se desincroniza del tipo. RHF + zod te da todo eso y el esquema **es** el tipo.
+
+**"`valueAsNumber` es opcional, igual valida."**
+No. Sin él, un `<input type="number">` entrega el string `"30"` y `z.number()` falla con "expected number, received string". Es el bug #1 de formularios numéricos con RHF + zod.
+
+**"Validar en el cliente con zod ya protege el backend."**
+No. El cliente es manipulable (DevTools, curl directo a tu API). La validación de cliente es UX; el servidor **debe** re-validar siempre. Defensa en dos capas.
+
+:::
+
+Un *non-example* que parece correcto pero no lo es —léelo y detecta el bug antes de seguir:
+
+```tsx
+// 🐛 ¿Qué tiene de malo este "optimistic update"?
+function useBorrarTarea() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: borrarTareaApi,
+    onMutate: (id) => {
+      queryClient.setQueryData<Tarea[]>(["tareas"], (viejas) =>
+        (viejas ?? []).filter((t) => t.id !== id),
+      );
+      // (sin cancelQueries, sin snapshot, sin return)
+    },
+    onError: () => {
+      // ¿restaurar a qué? no guardé nada
+    },
+  });
+}
+```
+
+Tiene tres bugs: (1) **no hay snapshot** del valor previo, así que `onError` no tiene a qué volver —si el `DELETE` falla, la tarea desaparece para siempre de la UI aunque siga en la DB—. (2) **falta `cancelQueries`**: un refetch en vuelo puede repintar la tarea borrada justo después. (3) **falta `onSettled` con invalidación**: la UI nunca se reconcilia con el servidor. El patrón completo de la sección 4.6 los cubre los tres; este es **exactamente** el músculo que entrenas en el ejercicio A.
+
+## 6. Práctica con andamiaje (PRIMM)
+
+Antes de construir desde cero, practica con código que ya existe, usando el ciclo **PRIMM**: *Predict → Run → Investigate → Modify → Make*.
+
+### 6.1 Predice (antes de ejecutar nada)
+
+Lee esta mutación y **predice en voz alta o en papel** qué se ve en pantalla en los dos escenarios:
+
+```tsx
+const mutacion = useMutation({
+  mutationFn: crearTarea, // POST que tarda ~1s
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tareas"] }),
+});
+// El botón: <button onClick={() => mutacion.mutate("X")}>Crear</button>
+// La lista de arriba usa useQuery(["tareas"]).
+```
+
+Preguntas: (1) Justo tras el clic y **antes** de que el `POST` responda, ¿aparece ya "X" en la lista? (2) ¿Cuándo aparece "X"?
+
+<Solucion title="Ver respuesta (después de predecir)">
+
+(1) **No** aparece de inmediato: esto NO es optimista. La caché de `["tareas"]` no se toca hasta que la mutación termina. (2) "X" aparece **después** de que el `POST` responde con éxito → `onSuccess` invalida → TanStack Query refetchea `GET /tareas` → llega la lista nueva (que ya incluye "X"). Hay un retraso visible de ~1s + el tiempo del refetch. Para que aparezca al instante, necesitarías un optimistic update (sección 4.6). Este es el trade-off `invalidateQueries` (simple y siempre correcto) vs optimistic (rápido pero más código).
+
+</Solucion>
+
+### 6.2 Parsons: reordena los ganchos de un optimistic update
+
+Estas líneas forman el `onMutate` de un optimistic update, pero están **desordenadas**. Reescríbelas en el orden correcto (a mano):
+
+```text
+A)   const previas = queryClient.getQueryData<Tarea[]>(["tareas"]);
+B)   return { previas };
+C)   await queryClient.cancelQueries({ queryKey: ["tareas"] });
+D)   queryClient.setQueryData<Tarea[]>(["tareas"], (v) => /* ...update... */);
+```
+
+<Solucion title="Ver orden correcto (después de intentarlo)">
+
+`C → A → D → B`:
+
+1. **`C` cancelar** los refetches en vuelo (para que no pisen el update).
+2. **`A` snapshot** del valor actual (para poder revertir).
+3. **`D` actualizar** la caché optimistamente.
+4. **`B` retornar** el snapshot como contexto para `onError`/`onSettled`.
+
+El orden importa: si actualizaras (`D`) antes de tomar el snapshot (`A`), guardarías el valor **ya modificado** y el rollback no serviría de nada. Y cancelar (`C`) debe ir primero, antes de tocar la caché.
+
+</Solucion>
+
+### 6.3 Modifica
+
+Toma el `FormularioTarea` de la sección 4.7 y, en papel, modifícalo para: (a) agregar un campo `etiquetas` que sea un array de strings con **al menos una** etiqueta (pista: `z.array(z.string()).min(1, ...)`); y (b) mostrar el botón "Crear" deshabilitado **y** con texto "Guardando..." mientras `isSubmitting` sea verdadero. Luego estás listo para el ejercicio A, donde construyes la capa de mutaciones desde cero.
+
+## 7. Ejercicios Primero-Sin-IA
+
+Dos ejercicios complementarios. El A es de código (lo construyes y lo validas con tests, incluido el de fallo); el B es de diseño/razonamiento (clasificas estado y diseñas la capa de datos por escrito). Las carpetas viven en tu repo: `ejercicios/fase-4/mutacion-optimista-tareas/` y `ejercicios/fase-4/server-state-vs-client-state/`. Ábrelas en tu editor.
+
+<Reto title="A — useToggleTarea con optimistic update y rollback" timebox="45 min">
+
+Implementa un custom hook `useToggleTarea` con **TanStack Query v5** que marque/desmarque una tarea como hecha, con **optimistic update**, **rollback ante error** e **invalidación al terminar**. El hook recibe una función `toggleApi(id)` por configuración (para poder testearlo con una API falsa).
+
+Hecho significa:
+- Usa `useMutation` con `onMutate`, `onError` y `onSettled` (el patrón completo de la sección 4.6).
+- En `onMutate`: cancela las queries de `["tareas"]`, toma un **snapshot**, actualiza la caché de forma **inmutable** (voltea `hecha` de la tarea con ese `id`), y **retorna** el snapshot.
+- En `onError`: restaura el snapshot (si el `PATCH` falla, la UI vuelve al estado anterior).
+- En `onSettled`: invalida `["tareas"]`.
+- Los tests (`pnpm install && pnpm test`) pasan en verde, **incluido** el test que fuerza un fallo de la API y verifica el rollback.
+- Puedes explicar sin notas por qué `cancelQueries` es necesario y qué pasaría sin el snapshot.
+
+Sigue el ciclo Primero-Sin-IA: intenta a mano, luego consulta la [documentación oficial de TanStack Query](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates), y solo al final usa IA para *revisar*, no para *generar*.
+
+<Solucion title="Pista (ábrela solo si te trabaste de verdad)">
+
+El esqueleto es exactamente el de la sección 4.6, parametrizando la `mutationFn`. Dentro del hook: `const queryClient = useQueryClient()`. En `onMutate` el orden es `cancelQueries` → `getQueryData` (guarda en `previas`) → `setQueryData` con un `.map` que devuelve `{ ...t, hecha: !t.hecha }` solo para el `id` que matchea → `return { previas }`. En `onError`, `if (contexto?.previas) queryClient.setQueryData(["tareas"], contexto.previas)`. En `onSettled`, `invalidateQueries({ queryKey: ["tareas"] })`. El test del rollback monta el hook con un `toggleApi` que rechaza la promesa; tras el fallo, la caché debe volver a las tareas originales. Esto es una pista, no la solución.
+
+</Solucion>
+
+</Reto>
+
+<Reto title="B — Diagnostica y diseña la capa de datos (server vs client)" timebox="35 min">
+
+Te entregamos `componente-buggy.md` (un componente `PanelTareas` que trae datos con `fetch` en `useEffect`, guarda la respuesta en `useState`, y maneja un formulario con `useState` por campo) y un `spec-api.md` con los endpoints del backend de la Fase 3. **No escribes código**: produces un documento de diseño, como harías en una revisión de arquitectura.
+
+Hecho significa, en tu archivo `diseno-datos.md`:
+- **Tabla de clasificación**: lista cada pieza de estado del componente y clasifícala como **server state** o **client state**, justificando en una línea.
+- **Los cinco problemas**: nombra los cinco déficits del enfoque `fetch`-en-`useEffect` (sección 4.2) y, para cada uno, **qué mecanismo concreto de TanStack Query** lo resuelve (caché/queryKey, cancelQueries, retry/refetch, invalidateQueries, eliminación de boilerplate).
+- **Diseño de la capa**: define las `queryKey` que usarías, qué es `useQuery` y qué es `useMutation`, y describe el **flujo de invalidación** tras crear una tarea (qué key invalidas y por qué).
+- **Decisión de optimistic**: para "marcar tarea como hecha", argumenta si usarías optimistic update o solo `invalidateQueries`, y nombra el trade-off.
+- **Nota de seguridad**: una línea sobre por qué validar con zod en el cliente **no** exime al backend de validar.
+
+Clasificar bien server vs client es el músculo central de la lección: si lo tienes claro, las herramientas son detalles. Es exactamente la conversación que tendrías en una entrevista de frontend.
+
+<Solucion title="Pista (ábrela solo si te trabaste de verdad)">
+
+Para clasificar cada pieza, pregúntate: *¿el dueño de este dato es el servidor o mi UI?* La lista de tareas y la info de cada tarea son **server state** (vienen de la DB, pueden quedar viejas, las comparten pantallas). El texto del input del formulario, qué tarea está expandida, si un modal está abierto: **client state**. Para el mapeo de los cinco problemas, relee la sección 4.2 punto por punto y empareja cada uno con la herramienta de las secciones 4.3-4.6. Para el trade-off de optimistic: rápido vs simple/siempre-correcto (sección 4.5 vs 4.6). Esto es una pista, no la solución.
+
+</Solucion>
+
+</Reto>
+
+## 8. Check de dominio
+
+<CheckDominio items={[
+  "Explicar, sin notas, la diferencia entre server state y client state, y dar dos ejemplos de cada uno",
+  "Nombrar los cinco problemas del fetch-en-useEffect y qué mecanismo de TanStack Query resuelve cada uno",
+  "Escribir de memoria una useQuery con queryKey/queryFn y manejar isPending/isError",
+  "Explicar la diferencia entre invalidateQueries y setQueryData, y cuándo usar cada uno",
+  "Reconstruir el patrón optimistic update (onMutate/onError/onSettled) y decir por qué se cancela y por qué se hace snapshot",
+  "Explicar por qué valueAsNumber es necesario y por qué validar en cliente no exime al backend",
+]} />
+
+Y un último quiz de predicción:
+
+<Quiz
+  question="En un optimistic update, olvidas poner `await queryClient.cancelQueries(...)` en `onMutate`. ¿Qué bug puede aparecer?"
+  options={[
+    "Ninguno: cancelQueries es opcional y solo mejora el rendimiento",
+    "Un refetch que ya estaba en vuelo puede llegar después y pisar tu update optimista, revirtiéndolo visualmente",
+    "TypeScript no compila porque onMutate debe ser async",
+  ]}
+  answer={1}
+  explanation="cancelQueries no es decorativo: si una query de ['tareas'] ya estaba refetcheando cuando el usuario hizo clic, su respuesta (con datos viejos, previos al cambio) puede aterrizar en la caché justo después de tu setQueryData optimista y deshacerlo en pantalla. Cancelar las queries en vuelo evita esa carrera. (onMutate puede ser async pero no está obligado; el bug real es la race condition.)"
+/>
+
+## 9. Recursos
+
+Documentación oficial primero. El resto es ruido.
+
+- [TanStack Query — Overview](https://tanstack.com/query/latest/docs/framework/react/overview) — empieza aquí; explica server state mejor que nadie.
+- [TanStack Query — Queries](https://tanstack.com/query/latest/docs/framework/react/guides/queries) y [Mutations](https://tanstack.com/query/latest/docs/framework/react/guides/mutations) — el modelo de `useQuery`/`useMutation`.
+- [TanStack Query — Optimistic Updates](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates) — el patrón `onMutate`/`onError`/`onSettled` que usas en el ejercicio A.
+- [TanStack Query — Query Invalidation](https://tanstack.com/query/latest/docs/framework/react/guides/query-invalidation) — `invalidateQueries` a fondo.
+- [React Hook Form — Get Started](https://react-hook-form.com/get-started) y [useForm](https://react-hook-form.com/docs/useform) — la API de formularios.
+- [@hookform/resolvers — zod](https://github.com/react-hook-form/resolvers#zod) — cómo se conecta zod con RHF.
+- [Zod v4 — docs](https://zod.dev/) — esquemas, `z.infer`, `z.email()` y validadores top-level.
+
+## 10. Conexión con el capstone
+
+El [Capstone F4 — Frontend de una app de IA](/fase-4-frontend/proyecto/) **es** esta lección aplicada sobre tu backend de la Fase 3:
+
+- La **lista de mensajes** del chat es una `useQuery(["mensajes", conversacionId])`: server state cacheado, con `isPending`/`isError`.
+- **Enviar un mensaje** es una `useMutation` con **optimistic update**: el mensaje del usuario aparece al instante en la lista (igual que el toggle del ejercicio A), y si el backend falla, se revierte con un aviso.
+- El **input del chat** y cualquier formulario de configuración (elegir modelo, ajustar parámetros) se validan con **React Hook Form + zod**, espejando el contrato que tu API de FastAPI ya valida con pydantic.
+- En [4.10 Usabilidad + estados de primera clase](/fase-4-frontend/4-10-usabilidad-estados/) verás que los `isPending`/`isError` de tus queries son justo los estados empty/loading/error/success que toda UI seria debe dibujar; y en [4.11 UI para apps de IA](/fase-4-frontend/4-11-ui-apps-ia/), cómo el streaming token por token convive con esta capa de datos.
+
+Todo lo que aquí dejes limpio (server state delegado, formularios validados contra el contrato), allá se paga en una UI que se siente sólida. Todo lo que metas en un `useEffect`-fetch a mano, allá parpadea y se desincroniza.
+
+## 11. Reflexión + repaso espaciado
+
+Cierra escribiendo, en dos o tres líneas, una respuesta honesta a esto: **antes de esta lección, ¿cuántas de las cinco cosas que regala TanStack Query habrías reinventado a mano sin darte cuenta de que eran un problema resuelto?** Nombrar lo que no sabías que no sabías es el aprendizaje real de hoy.
+
+Gancho de repaso espaciado:
+- **Mañana:** sin mirar la lección, reescribe de memoria el `onMutate` completo de un optimistic update (los cuatro pasos en orden). Si te falta `cancelQueries` o el snapshot, no lo aprendiste: vuelve a la sección 4.6.
+- **En 3 días:** explícale a alguien (o al espejo) la diferencia entre server state y client state con dos ejemplos de cada uno, en menos de un minuto. Es la pregunta de apertura de cualquier entrevista de frontend moderno.
+- **En 1 semana:** retoma el `FormularioTarea` y reconstruye el esquema zod + `useForm` de memoria, incluido el `valueAsNumber`. La meta es que el patrón RHF + zod te salga sin pensar, como le sale a quien lo usa a diario.
+
+> [!tip] GLaDOS dice
+> Acabas de descubrir que la mitad del frontend "difícil" era un problema que alguien ya resolvió por ti, y que llevabas reinventándolo en cada `useEffect`. Hay una lección incómoda ahí: el ingeniero competente no es el que escribe más código, es el que reconoce qué código **no** debería estar escribiendo. Delegar bien es una habilidad. Para un humano, una sorprendentemente difícil de aprender.

@@ -1,0 +1,40 @@
+{
+  "//": "Plantilla de dependencias. Usa pnpm. Las versiones 'latest' son para que instales las vigentes; fija (pin) las que te resuelva el lockfile y commitea el pnpm-lock.yaml. Genera el proyecto real con 'pnpm create next-app' y añade lo que falte.",
+  "name": "mi-frontend-ia",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "@tanstack/react-query": "latest",
+    "react-hook-form": "latest",
+    "@hookform/resolvers": "latest",
+    "zod": "latest",
+    "zustand": "latest",
+    "ai": "latest",
+    "@ai-sdk/react": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/react": "latest",
+    "@types/node": "latest",
+    "tailwindcss": "latest",
+    "vitest": "latest",
+    "@testing-library/react": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/user-event": "latest",
+    "jsdom": "latest",
+    "axe-core": "latest",
+    "jest-axe": "latest",
+    "eslint": "latest"
+  }
+}

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/tailwind-tarjeta-responsive
+titulo: "Tarjeta responsive con estados y dark mode (utility-first)"
+fase: fase-4
+sub_unidad: "4.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Construir un componente de UI con utility-first usando la escala de espaciado y de color de Tailwind"
+  - "Aplicar variantes responsive (sm:/md:/lg:), de estado (hover:/focus:) y dark mode (dark:) componiendo utilidades"
+  - "Estilar sin CSS propio: sin estilos inline ni @apply, todo el aspecto desde utilidades"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

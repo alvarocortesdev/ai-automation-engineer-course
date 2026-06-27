@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/especificidad-cascada-a-mano
+titulo: "Especificidad y box model a mano"
+fase: fase-4
+sub_unidad: "4.1"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Predecir el color final de un elemento aplicando especificidad (a,b,c) y, solo ante empate, el orden de origen"
+  - "Calcular el ancho total de una caja bajo content-box y bajo border-box"
+  - "Diagnosticar el propio error contrastando predicción vs. lo que muestran las DevTools"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null                 # ejercicio a-mano: la verificación la hace el alumno con las DevTools
+  solucion_referencia: .ai/soluciones/fase-4/especificidad-cascada-a-mano/

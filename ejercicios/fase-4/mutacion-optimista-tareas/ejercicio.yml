@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/mutacion-optimista-tareas
+titulo: "useToggleTarea con optimistic update y rollback"
+fase: fase-4
+sub_unidad: "4.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una useMutation de TanStack Query v5 con onMutate/onError/onSettled"
+  - "Aplicar un optimistic update inmutable sobre la caché con cancelQueries y snapshot, y revertirlo (rollback) ante error"
+  - "Invalidar la query afectada al terminar la mutación para reconciliar con el servidor"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

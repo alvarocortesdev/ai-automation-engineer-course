@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/tailwind-cuando-extraer
+titulo: "Criterio: utilidades, componente o @apply"
+fase: fase-4
+sub_unidad: "4.2"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Decidir entre componer utilidades, extraer un componente o usar @apply según el caso"
+  - "Defender el trade-off usando '¿controlo el marcado?' y '¿se repite la estructura?' como ejes"
+  - "Reconocer que usar @apply para limpiar HTML propio cargado es un anti-patrón"
+hilos_transversales: []
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: la entrega es decisiones.md, no hay suite

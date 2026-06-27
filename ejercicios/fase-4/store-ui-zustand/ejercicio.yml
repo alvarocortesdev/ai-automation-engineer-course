@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/store-ui-zustand
+titulo: "Store de UI con Zustand (persist + selectores atómicos)"
+fase: fase-4
+sub_unidad: "4.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un store de Zustand v5 en TypeScript con la forma currificada create<T>()() y actions inmutables"
+  - "Configurar el middleware persist con createJSONStorage y partialize para guardar solo el estado que debe durar"
+  - "Leer el store con selectores atómicos desde un componente, evitando re-renders innecesarios"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

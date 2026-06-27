@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/server-state-vs-client-state
+titulo: "Diagnostica y diseña la capa de datos (server vs client)"
+fase: fase-4
+sub_unidad: "4.7"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Clasificar cada pieza de estado de un componente como server state o client state, con justificación"
+  - "Nombrar los cinco déficits del fetch-en-useEffect y emparejarlos con el mecanismo de TanStack Query que los resuelve"
+  - "Diseñar por escrito la capa de datos (queryKey, useQuery/useMutation, invalidación) y justificar optimistic vs invalidateQueries"
+hilos_transversales: [seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: la entrega es diseno-datos.md, no hay suite

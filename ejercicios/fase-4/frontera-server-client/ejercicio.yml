@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/frontera-server-client
+titulo: "Decide la frontera servidor/cliente y el modo de render"
+fase: fase-4
+sub_unidad: "4.6"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Clasificar cada pieza de una página como Server Component, Client Component, Route Handler o Server Action, y justificarlo"
+  - "Colocar la frontera 'use client' lo más abajo posible en el árbol y explicar por qué no en la raíz"
+  - "Elegir el modo de render de la página (estático/ISR/dinámico) justificando el trade-off de frescura vs. costo/latencia"
+hilos_transversales: [seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: la verificación es la calidad del razonamiento, no una suite

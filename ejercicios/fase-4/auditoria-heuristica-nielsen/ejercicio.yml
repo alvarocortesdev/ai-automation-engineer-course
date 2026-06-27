@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/auditoria-heuristica-nielsen
+titulo: "Auditoría de usabilidad: nombra la heurística de Nielsen, no el gusto"
+fase: fase-4
+sub_unidad: "4.10"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Auditar una interfaz nombrando, por cada problema, la heurística de Nielsen concreta que viola (número + nombre), no un juicio de gusto"
+  - "Detectar al menos un estado faltante (empty/loading/error) y atarlo a su heurística"
+  - "Priorizar las correcciones por impacto (qué bloquea o engaña a todos vs. molestia menor)"
+hilos_transversales: [seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null # ejercicio a-mano: no hay suite; la "verificación" es el razonamiento escrito

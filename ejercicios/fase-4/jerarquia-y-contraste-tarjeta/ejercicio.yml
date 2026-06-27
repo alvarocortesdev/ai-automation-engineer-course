@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/jerarquia-y-contraste-tarjeta
+titulo: "Rediseña una tarjeta de IA: jerarquía, escala y contraste AA"
+fase: fase-4
+sub_unidad: "4.3"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Rediseñar un componente con jerarquía visual (tamaño + peso + contraste): tres niveles distinguibles con el squint test"
+  - "Aplicar una escala de espaciado consistente y una escala tipográfica, agrupando por proximidad"
+  - "Verificar que la paleta cumple el contraste mínimo WCAG 2.2 AA (texto 4.5:1, UI 3:1)"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: [7]   # a11y mínima (WCAG 2.2) del DoD único: el contraste AA
+paths: {}

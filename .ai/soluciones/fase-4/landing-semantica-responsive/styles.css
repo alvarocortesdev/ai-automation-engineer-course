@@ -1,0 +1,111 @@
+/* ── Reset: la caja mide lo que dices ───────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto; /* la imagen escala sin deformarse */
+}
+
+/* ── Base = MÓVIL (mobile-first; sin media queries todavía) ──────── */
+
+.site-header {
+  display: flex;
+  flex-direction: column; /* en móvil, el menú se apila */
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #2563eb;
+}
+
+main {
+  padding: 1rem;
+}
+
+.hero {
+  padding: 1.5rem 0;
+}
+
+.hero h2 {
+  font-size: 1.75rem;
+  margin-top: 0;
+}
+
+.cta {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 0.5rem;
+  text-decoration: none;
+}
+
+/* Tarjetas: en móvil, una sola columna (apiladas en el flujo normal). */
+.tarjetas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.tarjeta {
+  border: 1px solid #e5e5e5;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.tarjeta h3 {
+  margin: 0.75rem 0 0.25rem;
+}
+
+.site-footer {
+  padding: 1rem;
+  border-top: 1px solid #e5e5e5;
+  font-size: 0.875rem;
+  color: #555;
+}
+
+/* ── A partir de 700px: tablet / desktop ────────────────────────── */
+@media (min-width: 700px) {
+  .site-header {
+    flex-direction: row; /* el menú pasa a fila */
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  /* Grid 2D: tantas columnas como quepan, mínimo 220px cada una. */
+  .tarjetas {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}

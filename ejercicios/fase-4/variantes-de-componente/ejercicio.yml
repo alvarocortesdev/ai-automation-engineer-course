@@ -1,0 +1,16 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/variantes-de-componente
+titulo: "Reconstruye el motor de variantes (mini-cva)"
+fase: fase-4
+sub_unidad: "4.9"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar un mapeo de props a clases basado en tokens (el motor que hay debajo de class-variance-authority): base + variantes + defaults"
+  - "Explicar cómo cva hace consistente un componente y qué añade el cva real (compoundVariants, VariantProps, tailwind-merge) sobre esta versión mínima"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

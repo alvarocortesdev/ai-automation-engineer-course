@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/chat-reducer-streaming
+titulo: "chatReducer: la máquina de estados de un chat de IA con streaming"
+fase: fase-4
+sub_unidad: "4.11"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Modelar el estado de un chat de IA (mensajes, estado de la petición, error) como una máquina de estados con un reducer puro e inmutable"
+  - "Implementar optimistic UI: el mensaje del usuario aparece al instante y un mensaje de asistente vacío crece chunk por chunk"
+  - "Manejar las transiciones del streaming (enviando -> streaming -> idle) y los caminos de error y cancelación sin perder el texto parcial"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

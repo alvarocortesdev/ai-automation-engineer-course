@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/formulario-accesible
+titulo: "Haz accesible un formulario y deja el test de a11y en verde"
+fase: fase-4
+sub_unidad: "4.4"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Construir una interfaz operable solo con teclado (orden de foco lógico, foco visible, sin trampas) usando HTML semántico"
+  - "Aplicar ARIA solo donde el HTML no llega (error con role=alert + aria-describedby), siguiendo la Primera Regla de ARIA"
+  - "Hacer accesible un formulario (labels asociados, error anunciado, contraste AA, alt correcto) mapeando cada arreglo a su SC de WCAG 2.2"
+hilos_transversales: [testing, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: [7] # a11y mínima (WCAG 2.2) del DoD único
+paths: {}

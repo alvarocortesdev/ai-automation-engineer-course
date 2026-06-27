@@ -1,0 +1,34 @@
+/* Reset recomendado: la caja mide exactamente lo que dices (no lo borres). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Quita los márgenes por defecto del body (opcional pero recomendado). */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+/*
+  TODO (mobile-first) — estilos BASE para pantalla pequeña.
+  Pensados para móvil; aquí NO uses media queries todavía.
+    - tipografía y espaciado en rem (no todo en px)
+    - la <nav> en columna: display: flex; flex-direction: column; gap: ...
+    - el contenedor de tarjetas en una sola columna (apiladas)
+*/
+
+/*
+  TODO (responsive) — a partir de cierto ancho, reacomoda el layout.
+  Descomenta y completa:
+
+@media (min-width: 700px) {
+    - la <nav> en fila: flex-direction: row;
+    - el contenedor de tarjetas en GRID de varias columnas:
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+}
+*/

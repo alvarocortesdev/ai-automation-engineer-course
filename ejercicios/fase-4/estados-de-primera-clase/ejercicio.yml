@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/estados-de-primera-clase
+titulo: "Los cuatro estados de primera clase en React (deja el test en verde)"
+fase: fase-4
+sub_unidad: "4.10"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar los cuatro estados de primera clase (empty/loading/error/success) de una vista que carga datos, modelando el estado como una máquina de estados"
+  - "Renderizar cada rama de forma visual y semánticamente distinta, anunciando loading (role=status) y error (role=alert) a lectores de pantalla"
+  - "Chequear el estado vacío DENTRO del éxito (length === 0) y ofrecer salida en error (reintentar) y en vacío (CTA)"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: [7] # estados completos (empty/loading/error/success) del DoD único
+paths: {}

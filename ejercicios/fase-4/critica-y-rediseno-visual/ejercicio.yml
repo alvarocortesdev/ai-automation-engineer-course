@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/critica-y-rediseno-visual
+titulo: "Crítica de diseño: nombra la heurística, no el gusto"
+fase: fase-4
+sub_unidad: "4.3"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diagnosticar una interfaz nombrando la palanca y la heurística concreta que viola cada problema (no juicio de gusto)"
+  - "Proponer una corrección accionable por problema, con valor o regla concreta"
+  - "Priorizar problemas por impacto en legibilidad y accesibilidad"
+hilos_transversales: [spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: no hay suite, se evalúa el razonamiento escrito

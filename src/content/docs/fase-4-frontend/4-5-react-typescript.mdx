@@ -1,0 +1,447 @@
+---
+title: React + TypeScript
+description: "Componentes, props tipadas, estado y hooks de React 19 con TypeScript desde cero: el modelo de render, las trampas de useEffect y cuándo useMemo/useCallback importan de verdad."
+sidebar:
+  order: 5
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="intermedio" />
+
+Hasta aquí pintabas pantallas con HTML, CSS y Tailwind: marcado estático que tú escribes una vez. React es otra cosa. Es una forma de describir **qué se ve en pantalla en función del estado**, y dejar que la librería se encargue de actualizar el DOM cuando ese estado cambia. Tú no dices "cambia este `<span>`": dices "cuando el contador vale 5, la pantalla se ve así", y React calcula la diferencia. Ese cambio de mentalidad —de *manipular el DOM* a *declarar la UI*— es todo el juego. Esta lección lo enseña desde cero, con TypeScript pegado desde la primera línea, porque en 2026 React sin tipos es código que nadie en un equipo serio va a aprobar.
+
+> La trampa de esta lección: tratar a React como "HTML con superpoderes" y a los hooks como cajas mágicas que copias de Stack Overflow. El 80% de los bugs de React de un junior salen de **no entender cuándo se vuelve a renderizar un componente** y de **meter en `useEffect` cosas que no son efectos**. Si entiendes esos dos modelos mentales, el resto son detalles de sintaxis.
+
+:::tip[Si ya lo tocaste]
+Si ya escribiste componentes con hooks, no te saltes la lección: úsala como diagnóstico de huecos. Salta a los **dos ejercicios Primero-Sin-IA** (sección 7). Si en el ejercicio A logras un componente con props tipadas, input controlado y lista filtrada **sin un solo `useEffect`** (y sabes explicar por qué no hace falta), y en el B nombras el bug exacto de cada efecto roto (dependencia faltante, falta de cleanup, efecto que debió ser estado derivado), valida con el check de dominio (sección 8) y avanza a [4.6 Next.js](/fase-4-frontend/4-6-nextjs/). Si dudaste con "por qué el estado derivado va en el render y no en un efecto", vuelve a la sección 5.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Implementar** un componente funcional en React 19 + TypeScript con **props tipadas**, estado con `useState` y un **input controlado**, renderizando una lista con `key` estables.
+- **O2 — Explicar y aplicar** el modelo de re-render de React: qué dispara un render, por qué el **estado derivado se calcula durante el render** (no en un `useEffect`), y cuándo `useMemo`/`useCallback` importan de verdad.
+- **O3 — Depurar** los antipatrones de `useEffect`: dependencias faltantes o sobrantes, falta de *cleanup* que provoca *race conditions*, y efectos que en realidad deberían ser estado derivado o *event handlers*.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** React es el **segundo skill más pedido** del mercado fullstack, y un AI Engineer que también monta la UI de su propia demo vale más que el que depende de otro para mostrar su trabajo. Pero hay un matiz que separa al que cobra junior del que cobra semi-senior: cualquiera arma un `useState` que funciona en la demo; pocos saben **por qué** su app re-renderiza de más, por qué un `useEffect` entra en bucle infinito, o por qué la lista parpadea al reordenar. Ese "por qué" es exactamente lo que se pregunta en entrevista.
+
+Concreto, y sin vender humo:
+
+- **React es el lenguaje común del frontend moderno.** Next.js (la siguiente sub-unidad), React Native, Remix, Astro con islas: todos hablan React. Aprenderlo bien es la inversión de mayor alcance de toda la Fase 4.
+- **El bug más caro de un junior es el re-render que no entiende.** Una app que se siente lenta, un `useEffect` que dispara llamadas a la API en bucle, un formulario que pierde el foco a cada tecla: todos son el mismo malentendido sobre cuándo y por qué React vuelve a ejecutar tu función. Dominar el modelo te ahorra días de depuración.
+- **TypeScript en React es el filtro de contratación.** En 2026, las ofertas dicen "React + TypeScript", no "React". Las props tipadas son un **contrato** entre componentes: el compilador atrapa el `<Boton onClick={...} />` mal usado antes de que llegue al navegador. Es el mismo hábito de spec-driven que vienes practicando, aplicado a la UI.
+- **Es la base del capstone y de toda app de IA.** La interfaz de chat con streaming que construirás en [4.11](/fase-4-frontend/4-11-ui-apps-ia/) y en el [capstone](/fase-4-frontend/proyecto/) es, en el fondo, estado (`mensajes`, `cargando`, `error`) + componentes que reaccionan a ese estado. Si el modelo mental no está claro aquí, ahí se cae.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección se apoya en cosas que ya sabes:
+
+- De [4.1 HTML semántico + CSS](/fase-4-frontend/4-1-html-css/): el **DOM** como árbol de nodos. React mantiene una representación de ese árbol y lo actualiza por ti; entender que al final todo es DOM evita pensar que React es magia.
+- De [4.2 Tailwind](/fase-4-frontend/4-2-tailwind/): las clases utility-first. En React las pondrás con el atributo `className` (no `class`), porque `class` es palabra reservada de JavaScript.
+- De **TypeScript** (sub-unidad 1.8 de la Fase 1): `interface`, `type`, generics, narrowing. Aquí los usas para tipar props, estado y eventos. Si esto te suena lejano, repásalo: esta lección lo asume.
+- De **JavaScript moderno** (sub-unidad 1.7 de la Fase 1): arrow functions, destructuring, `map`/`filter`, closures. JSX es JavaScript; sin esas piezas, el código de React se ve como jeroglíficos.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="En JavaScript, ¿qué devuelve `['a','b','c'].map(x => x.toUpperCase())`?"
+  options={[
+    "Muta el array original a mayúsculas y no devuelve nada",
+    "Un array NUEVO ['A','B','C'], dejando el original intacto",
+    "Un string 'ABC'",
+  ]}
+  answer={1}
+  explanation="`map` devuelve un array nuevo aplicando la función a cada elemento, sin mutar el original. Esto es la base de cómo React renderiza listas: tomas un array de datos y lo mapeas a un array de elementos JSX. La inmutabilidad (no mutar, sino crear copias nuevas) también es la regla de oro al actualizar estado en React."
+/>
+
+## 4. Ejemplo resuelto, pensado en voz alta
+
+Te voy a construir un componente real de principio a fin, razonando en voz alta. **No lo leas como reglas sueltas: léelo como me oirías pensar al lado tuyo.** Vamos a hacer un panel mínimo para una app de IA: un selector de modelo y un contador de mensajes enviados. Empiezo por lo más simple y voy agregando capas, explicando cada decisión.
+
+### 4.1 El componente más pequeño posible
+
+Pienso en voz alta: *"Un componente de React es solo una función que devuelve JSX. JSX parece HTML pero es JavaScript: el compilador lo convierte en llamadas a funciones. La función recibe sus datos de entrada como un único argumento, `props`, y yo lo destructuro."*
+
+```tsx
+// Un componente es una función que devuelve JSX. Nombre en PascalCase (obligatorio:
+// si empieza en minúscula, React lo trata como una etiqueta HTML literal).
+function Saludo() {
+  return <h2>Panel de IA</h2>;
+}
+```
+
+JSX no es HTML: fíjate que más abajo usaré `className` en vez de `class`, y `onClick` en vez de `onclick`. Son props de JavaScript, en camelCase. Y todo lo que va entre `{ }` dentro del JSX es **una expresión de JavaScript** que se evalúa: `{2 + 2}` renderiza `4`.
+
+### 4.2 Props tipadas: el contrato de entrada
+
+*"Quiero que el panel reciba de afuera la lista de modelos disponibles y un título. Eso son sus props. En TypeScript defino una `interface` que describe la forma exacta de esas props: es un contrato. Si alguien usa `<Panel />` sin pasar `modelos`, el compilador se queja antes de ejecutar nada."*
+
+```tsx
+interface PanelProps {
+  titulo: string;
+  modelos: string[];        // arreglo de nombres de modelo
+  porDefecto?: string;      // el `?` lo hace opcional
+}
+
+function Panel({ titulo, modelos, porDefecto }: PanelProps) {
+  return (
+    <section>
+      <h2>{titulo}</h2>
+      <p>{modelos.length} modelos disponibles</p>
+    </section>
+  );
+}
+```
+
+Esto es lo mismo que escribir una mini-spec de la función antes de codearla, solo que el compilador la verifica por ti. La interface `PanelProps` es la documentación viva del componente.
+
+### 4.3 Estado con `useState`: lo que cambia en el tiempo
+
+*"Las props vienen de afuera y el componente no las modifica. Pero el modelo seleccionado y el número de mensajes cambian con la interacción del usuario: eso es **estado**. Para que React vuelva a dibujar la pantalla cuando el estado cambia, no puedo usar una variable normal —una variable normal se reinicia en cada render y React no se entera de que cambió—. Uso el hook `useState`."*
+
+```tsx
+import { useState } from "react";
+
+function Panel({ titulo, modelos, porDefecto }: PanelProps) {
+  // useState devuelve [valorActual, funciónParaActualizarlo].
+  // El tipo del estado se infiere del valor inicial; aquí lo anoto explícito.
+  const [modelo, setModelo] = useState<string>(porDefecto ?? modelos[0]);
+  const [enviados, setEnviados] = useState(0);
+
+  return (
+    <section>
+      <h2>{titulo}</h2>
+      <p>Modelo activo: {modelo}</p>
+      <p>Mensajes enviados: {enviados}</p>
+      <button onClick={() => setEnviados(enviados + 1)}>Enviar</button>
+    </section>
+  );
+}
+```
+
+Modelo mental clave, y di esto despacio: **cada llamada a una función `setX` le pide a React que re-ejecute la función del componente con el nuevo valor.** No es que React "vigile" la variable; es que `setEnviados` agenda un nuevo render, y en ese render `useState` te devuelve el valor actualizado. El estado es una **foto fija** dentro de cada render: durante un render dado, `enviados` no cambia de valor aunque llames a `setEnviados` mil veces.
+
+### 4.4 La trampa del estado como "foto": actualizadores funcionales
+
+*"Si quiero subir el contador de dos en dos con un solo clic, lo intuitivo es llamar dos veces a `setEnviados(enviados + 1)`. Pero falla: ambas llamadas leen el mismo `enviados` (la foto de este render, digamos 0), así que las dos calculan 1. El contador sube a 1, no a 2."*
+
+La solución es pasarle a `setX` una **función actualizadora** que recibe el valor más reciente:
+
+```tsx
+// ❌ Sube solo 1: ambas leen el mismo `enviados` de este render.
+setEnviados(enviados + 1);
+setEnviados(enviados + 1);
+
+// ✅ Sube 2: cada actualizador recibe el resultado del anterior.
+setEnviados((n) => n + 1);
+setEnviados((n) => n + 1);
+```
+
+Esta es de las preguntas de entrevista más comunes sobre React. La regla práctica: **si el nuevo estado depende del anterior, usa la forma funcional `setX(prev => ...)`.**
+
+### 4.5 Listas y `key`: renderizar un arreglo
+
+*"Quiero mostrar todos los modelos como botones para elegir. Mapeo el arreglo de strings a un arreglo de elementos JSX. React me va a pedir un `key` por elemento."*
+
+```tsx
+<ul>
+  {modelos.map((nombre) => (
+    <li key={nombre}>
+      <button onClick={() => setModelo(nombre)}>{nombre}</button>
+    </li>
+  ))}
+</ul>
+```
+
+El `key` no es decorativo: es **cómo React identifica cada elemento entre renders** para saber cuál se mantuvo, cuál se movió y cuál se eliminó, sin volver a crear todo el DOM. Debe ser **único entre hermanos y estable** (que no cambie de un render a otro para el mismo dato). Aquí el nombre del modelo sirve porque es único. Lo que **no** debes hacer es usar el índice del `map` como key cuando la lista se reordena o filtra: si el orden cambia, React asocia el estado del elemento al índice equivocado y aparecen bugs sutiles (un input que conserva el texto de otra fila).
+
+### 4.6 Estado derivado: se calcula en el render, NO en un efecto
+
+*"Quiero mostrar 'eres usuario avanzado' cuando se enviaron 10+ mensajes. Esto NO es estado nuevo: es algo que se **deriva** del estado que ya tengo. El error de principiante es crear otro `useState` y un `useEffect` para 'sincronizarlo'. No. Lo calculo directo en el cuerpo del componente, en cada render."*
+
+```tsx
+function Panel({ titulo, modelos, porDefecto }: PanelProps) {
+  const [enviados, setEnviados] = useState(0);
+
+  // ✅ Estado derivado: una variable normal calculada en el render.
+  // Siempre está sincronizada porque se recalcula cada vez que el componente se ejecuta.
+  const esAvanzado = enviados >= 10;
+
+  return (
+    <section>
+      <p>Mensajes: {enviados}</p>
+      {esAvanzado && <span>Usuario avanzado</span>}
+    </section>
+  );
+}
+```
+
+Graba esta frase: **si puedes calcularlo a partir de props y estado existentes durante el render, no es estado y no necesita un efecto.** Un `useEffect` que solo llama a `setOtroEstado` para mantenerlo "en sync" es casi siempre un error: agrega un render extra y una fuente de bugs.
+
+### 4.7 Custom hook: extraer lógica reutilizable
+
+*"El par `[enviados, setEnviados]` más la lógica de incrementar es algo que podría reutilizar en otro componente. Lo extraigo a un **custom hook**: una función cuyo nombre empieza por `use` y que puede llamar a otros hooks. No es magia; es solo una función que compone hooks."*
+
+```tsx
+// useContador.ts — un custom hook. La regla: el nombre DEBE empezar por "use".
+import { useState, useCallback } from "react";
+
+function useContador(inicial = 0) {
+  const [valor, setValor] = useState(inicial);
+  const incrementar = useCallback(() => setValor((n) => n + 1), []);
+  const reiniciar = useCallback(() => setValor(inicial), [inicial]);
+  return { valor, incrementar, reiniciar };
+}
+
+// En el componente, la lógica desaparece detrás de una línea legible:
+function Panel(props: PanelProps) {
+  const { valor: enviados, incrementar, reiniciar } = useContador(0);
+  // ...usas enviados, incrementar, reiniciar
+}
+```
+
+Un custom hook **no comparte estado** entre componentes: cada componente que lo llama obtiene su propia copia del estado. Lo que se comparte es la **lógica**, no los datos. (Para compartir datos entre componentes lejanos verás `useContext` en [4.8 Estado global](/fase-4-frontend/4-8-estado-global/).)
+
+### 4.8 `useEffect`: solo para sincronizar con sistemas externos
+
+*"Hasta aquí no usé ningún `useEffect`, y eso es buena señal. `useEffect` es para una sola cosa: **sincronizar tu componente con algo que vive fuera de React** —el título del documento, una suscripción a un WebSocket, un `fetch`—. Quiero que el título de la pestaña refleje los mensajes enviados. Eso sí es un efecto: estoy tocando el `document`, que es un sistema externo."*
+
+```tsx
+import { useEffect } from "react";
+
+useEffect(() => {
+  // 1) "setup": corre DESPUÉS de que React pinta la pantalla.
+  document.title = `(${enviados}) Panel de IA`;
+}, [enviados]); // 2) "deps": vuelve a correr solo si `enviados` cambió.
+```
+
+Tres cosas que debes interiorizar del array de dependencias:
+
+- **Sin array** → el efecto corre **después de cada render**. Casi nunca es lo que quieres.
+- **Array vacío `[]`** → corre **una sola vez al montar** (y limpia al desmontar).
+- **`[enviados]`** → corre al montar y cada vez que `enviados` cambie (React compara con `Object.is`).
+
+Y el caso que más se equivoca todo el mundo: un efecto que hace `fetch` necesita **cleanup** para no provocar una *race condition*. Pienso en voz alta: *"Si el usuario cambia de modelo rápido, se disparan dos fetch; el primero puede llegar después del segundo y pintar datos viejos. Devuelvo una función de limpieza que marca la respuesta vieja como 'ignórala'."*
+
+```tsx
+useEffect(() => {
+  let ignorar = false;
+  fetchInfoModelo(modelo).then((data) => {
+    if (!ignorar) setInfo(data); // solo el fetch vigente actualiza el estado
+  });
+  return () => {
+    ignorar = true; // cleanup: corre antes del próximo efecto y al desmontar
+  };
+}, [modelo]);
+```
+
+> Detalle de React 19 que confunde a todos: en desarrollo, con `<StrictMode>` activo, React **monta, desmonta y vuelve a montar** cada componente una vez. Verás tus efectos correr dos veces. No es un bug: es React presionando para que escribas el *cleanup* correctamente. En producción corre una sola vez.
+
+## 5. Errores y malentendidos comunes
+
+:::caution[Podrías pensar... pero está mal]
+
+**"Si quiero que algo cambie cuando el estado cambia, va en un `useEffect`."**
+Mal. Si lo puedes **calcular** durante el render, es estado derivado (sección 4.6) y va como variable normal. Si es una **respuesta a una interacción** (un clic envía analytics), va en el *event handler*, no en un efecto que observa el estado. `useEffect` es solo para sincronizar con sistemas **fuera** de React. Regla de Dan Abramov: *"si no estás sincronizando con un sistema externo, probablemente no necesitas un efecto."*
+
+**"Muto el estado y luego llamo a `setX` para avisar."**
+Mal y peligroso. `estado.push(x)` o `objeto.campo = y` mutan en sitio; React compara por **identidad de referencia** (`Object.is`) y, al ver el mismo objeto, puede no re-renderizar. Siempre crea una copia nueva: `setLista([...lista, nuevo])`, `setObj({ ...obj, campo: y })`.
+
+**"`useMemo` y `useCallback` hacen mi app más rápida, los pongo en todo."**
+Mal. Memoizar tiene un costo (guardar el valor, comparar deps). Solo valen la pena cuando: (a) el cálculo es **genuinamente caro** (filtrar 50.000 filas), o (b) pasas una **referencia** a un componente memoizado o al array de deps de un efecto y necesitas que sea estable. Para todo lo demás, el render normal de React ya es rápido. Y en 2026 el **React Compiler** (estable desde octubre 2025) memoiza automáticamente por ti, así que escribir `useMemo`/`useCallback` a mano es cada vez menos necesario. Mídelo antes de optimizar.
+
+**"El índice del `map` sirve de `key`."**
+Solo si la lista **nunca** se reordena, filtra ni inserta en medio. En cuanto eso pasa, el índice deja de identificar al mismo dato y React mezcla el estado de las filas (el caso clásico: filtras una lista de inputs y el texto salta de fila). Usa un id estable del dato.
+
+**"Uso `useRef` para guardar estado que se ve en pantalla."**
+Mal. Cambiar `ref.current` **no** dispara un re-render. `useRef` es para valores que persisten entre renders pero que **no** se muestran (un id de timer, el nodo del DOM de un input para hacerle `.focus()`). Si quieres que la UI reaccione, es `useState`.
+
+:::
+
+Un *non-example* que parece correcto pero no lo es —léelo y detecta el bug antes de seguir:
+
+```tsx
+// 🐛 ¿Qué tiene de malo?
+function Buscador({ items }: { items: string[] }) {
+  const [query, setQuery] = useState("");
+  const [filtrados, setFiltrados] = useState(items);
+
+  useEffect(() => {
+    setFiltrados(items.filter((i) => i.includes(query)));
+  }, [query, items]);
+
+  return (
+    <input value={query} onChange={(e) => setQuery(e.target.value)} />
+    // ...renderiza `filtrados`
+  );
+}
+```
+
+El bug: `filtrados` es estado derivado disfrazado de estado real. Este código hace **dos renders** por cada tecla (uno por `setQuery`, otro por `setFiltrados`), puede pintar resultados desfasados un frame, y duplica la fuente de verdad. Lo correcto es borrar el `useState` de `filtrados` y el `useEffect`, y calcular `const filtrados = items.filter(i => i.includes(query))` directo en el render. Este es **exactamente** el músculo que entrenas en el ejercicio A.
+
+## 6. Práctica con andamiaje (PRIMM)
+
+Antes de construir desde cero, practica con código que ya existe, usando el ciclo **PRIMM**: *Predict → Run → Investigate → Modify → Make*.
+
+### 6.1 Predice (antes de ejecutar nada)
+
+Lee este componente y **predice en voz alta o en papel** qué imprime la pantalla tras hacer clic UNA vez en el botón:
+
+```tsx
+function Doble() {
+  const [n, setN] = useState(0);
+  function alClic() {
+    setN(n + 1);
+    setN(n + 1);
+    console.log("n dentro del handler:", n);
+  }
+  return <button onClick={alClic}>n = {n}</button>;
+}
+```
+
+Preguntas para tu predicción: (1) ¿qué número muestra el botón tras un clic? (2) ¿qué imprime el `console.log` en ese mismo clic? Escribe tus dos respuestas antes de seguir.
+
+<Solucion title="Ver respuesta (después de predecir)">
+
+(1) El botón muestra **`n = 1`**, no 2: las dos llamadas `setN(n + 1)` leen el mismo `n` (la foto del render actual, 0) y ambas calculan 1. (2) El `console.log` imprime **`0`**: dentro del handler, `n` sigue siendo la foto de **este** render; el nuevo valor solo existe en el **próximo** render. Para que suba a 2, usa `setN(prev => prev + 1)` en ambas (sección 4.4).
+
+</Solucion>
+
+### 6.2 Parsons: reordena para crear un input controlado
+
+Estas líneas forman un input controlado con TypeScript, pero están **desordenadas**. Reescríbelas en el orden correcto (a mano, en papel):
+
+```text
+A)   return <input value={texto} onChange={(e) => setTexto(e.target.value)} />;
+B) import { useState } from "react";
+C)   const [texto, setTexto] = useState<string>("");
+D) function CampoNombre() {
+E) }
+```
+
+<Solucion title="Ver orden correcto (después de intentarlo)">
+
+`B → D → C → A → E`:
+
+```tsx
+import { useState } from "react";
+function CampoNombre() {
+  const [texto, setTexto] = useState<string>("");
+  return <input value={texto} onChange={(e) => setTexto(e.target.value)} />;
+}
+```
+
+Lo esencial de un input **controlado**: el `value` viene del estado y el `onChange` lo actualiza. React es la única fuente de verdad del valor; por eso siempre van juntos. Si pones `value` sin `onChange`, el input queda de solo lectura.
+
+</Solucion>
+
+### 6.3 Modifica
+
+Toma el `CampoNombre` de arriba y, sin ejecutarlo aún, modifícalo en papel para que: (a) muestre debajo `Hola, {texto}` solo si `texto` no está vacío (pista: estado derivado + render condicional con `&&`), y (b) tipe el evento explícitamente como `React.ChangeEvent<HTMLInputElement>`. Luego ya estás listo para el ejercicio A, donde construyes desde cero.
+
+## 7. Ejercicios Primero-Sin-IA
+
+Dos ejercicios complementarios. El A es de código (lo construyes y lo validas con tests); el B es de razonamiento (depuras y escribes tu diagnóstico). Las carpetas viven en tu repo: `ejercicios/fase-4/filtro-buscable-react/` y `ejercicios/fase-4/depurar-efectos-react/`. Ábrelas en tu editor.
+
+<Reto title="A — Filtro buscable tipado (sin un solo useEffect)" timebox="40 min">
+
+Construye un componente `FiltroBuscable` en React 19 + TypeScript que reciba una lista de strings por props y un input de búsqueda que la filtre en vivo, **sin distinguir mayúsculas**. La clave del ejercicio: el resultado filtrado es **estado derivado** —se calcula en el render— y por tanto **no debe haber ningún `useEffect` ni un segundo `useState` para la lista filtrada**.
+
+Hecho significa:
+- Props tipadas con una `interface` (`items: string[]`, `placeholder?: string`).
+- Un input **controlado** (`value` + `onChange`) cuyo placeholder viene de la prop.
+- La lista filtrada se calcula en el render (substring, case-insensitive contra la consulta).
+- Se renderiza como `<ul>`/`<li>` con `key` estable (el propio string del item).
+- Cuando ningún item coincide, se muestra un elemento con el texto exacto `Sin resultados`.
+- Cero `useEffect`, cero estado redundante. Los tests (`pnpm install && pnpm test`) pasan en verde.
+- Puedes explicar sin notas por qué este componente no necesita `useEffect`.
+
+Sigue el ciclo Primero-Sin-IA: intenta a mano, luego consulta la [documentación oficial de React](https://react.dev/learn), y solo al final usa IA para *revisar*, no para *generar*.
+
+<Solucion title="Pista (ábrela solo si te trabaste de verdad)">
+
+El esqueleto es: un `useState<string>("")` para la consulta, una constante `const visibles = items.filter(i => i.toLowerCase().includes(query.toLowerCase()))` calculada en el cuerpo, y el JSX que mapea `visibles` a `<li key={i}>`. El render condicional de "Sin resultados" es `{visibles.length === 0 && <p>Sin resultados</p>}`. Nota que `visibles` se recalcula en cada render automáticamente: ahí está el punto del ejercicio. Esto es una pista, no la solución.
+
+</Solucion>
+
+</Reto>
+
+<Reto title="B — Depura un panel lleno de useEffect" timebox="30 min">
+
+Te entregamos `PanelBuggy.tsx`: un componente con **cinco** usos de `useEffect`. **Cuatro tienen un problema distinto** (estado derivado disfrazado de efecto, dependencia faltante, falta de cleanup que causa race condition, y un efecto que debería ser un event handler) y **uno está correcto**: tu trabajo es separarlos. **No lo ejecutes**: diagnostícalo leyendo, como en una revisión de código.
+
+Hecho significa, en tu archivo `diagnostico.md`, para cada uno de los cinco efectos:
+- Veredicto: ¿está bien o mal?
+- Si está mal, **nombra el antipatrón exacto** (no "se ve raro").
+- Explica la consecuencia observable (bucle infinito, render de más, datos viejos en pantalla, fuga de recursos, etc.).
+- Describe el arreglo en palabras + el mínimo código necesario (no reescribas todo el componente).
+- Para el que está bien, explica **por qué** es un uso legítimo de `useEffect`.
+
+Reconocer el efecto correcto es tan importante como cazar los rotos: te entrena a no "ver bugs" donde no los hay. Es exactamente el ejercicio que harías en una entrevista técnica de React.
+
+<Solucion title="Pista (ábrela solo si te trabaste de verdad)">
+
+Para cada efecto pregúntate, en este orden: (1) ¿esto se podría **calcular en el render** en vez de guardarlo en estado? (estado derivado). (2) ¿el array de deps incluye **todo** lo que el efecto lee? (dependencia faltante). (3) ¿el efecto arranca algo asíncrono o una suscripción que habría que **cancelar**? (falta cleanup). (4) ¿esto ocurre como **respuesta a una interacción** del usuario y no como sincronización con un sistema externo? (debió ser event handler). Una de las preguntas da "está bien": no todos los efectos están rotos. Esto es una pista, no la solución.
+
+</Solucion>
+
+</Reto>
+
+## 8. Check de dominio
+
+<CheckDominio items={[
+  "Explicar, sin notas, qué dispara un re-render en React y por qué el estado es una 'foto' dentro de cada render",
+  "Predecir la salida de setN(n+1) llamado dos veces vs setN(prev => prev+1) llamado dos veces",
+  "Decidir, ante un dato nuevo, si es props, estado, estado derivado o un ref — y justificarlo",
+  "Escribir un useEffect con cleanup correcto para un fetch y explicar la race condition que evita",
+  "Nombrar las tres formas del array de dependencias (sin array / [] / [deps]) y cuándo se usa cada una",
+  "Explicar cuándo useMemo/useCallback importan de verdad y por qué no van en todo",
+]} />
+
+Y un último quiz de predicción de salida:
+
+<Quiz
+  question="Un useEffect tiene como dependencias `[]` (array vacío) y dentro hace `setContador(contador + 1)`. ¿Qué pasa?"
+  options={[
+    "Bucle infinito: setContador re-renderiza, el efecto vuelve a correr",
+    "El contador sube a 1 una sola vez, al montar el componente",
+    "Error de compilación: no puedes llamar setState dentro de useEffect",
+  ]}
+  answer={1}
+  explanation="Con deps `[]` el efecto corre solo una vez al montar, así que sube el contador a 1 y no se repite (el array vacío significa 'no dependo de nada, no vuelvas a correr'). Cuidado: el linter de hooks marcará que `contador` es una dependencia faltante; el bucle infinito aparecería si quitaras el array por completo (entonces correría tras cada render, y cada setContador dispara un render). Llamar setState en un efecto es legal; lo que casi nunca es correcto es usarlo para 'derivar' estado."
+/>
+
+## 9. Recursos
+
+Documentación oficial primero. El resto es ruido.
+
+- [react.dev — Learn React](https://react.dev/learn) — el tutorial oficial, reescrito alrededor de hooks. Empieza por "Describing the UI" y "Adding Interactivity".
+- [react.dev — You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) — lectura **obligatoria**; cura el malentendido #1 de esta lección.
+- [react.dev — Synchronizing with Effects](https://react.dev/learn/synchronizing-with-effects) — el modelo correcto de `useEffect` y el cleanup.
+- [react.dev — Using TypeScript](https://react.dev/learn/typescript) — cómo tipar props, estado y eventos.
+- [react.dev — Blog: React 19](https://react.dev/blog/2024/12/05/react-19) — qué cambió: `ref` como prop (adiós `forwardRef`), Actions, el hook `use`.
+- [React Compiler 1.0](https://react.dev/blog/2025/10/07/react-compiler-1) — la memoización automática que reduce el `useMemo`/`useCallback` a mano.
+
+## 10. Conexión con el capstone
+
+El [Capstone F4 — Frontend de una app de IA](/fase-4-frontend/proyecto/) **es** esta lección aplicada. La interfaz de chat es: estado (`mensajes: Mensaje[]`, `cargando: boolean`, `error: string | null`) + componentes tipados que reaccionan a ese estado. El input del chat es un input controlado idéntico al del ejercicio A. La lista de mensajes es un `map` con `key` estable. El "está pensando..." es un render condicional sobre estado derivado. Y la llamada al backend con streaming vivirá en un `useEffect` (o un custom hook) con cleanup correcto, justo como practicaste en el ejercicio B. Todo lo que construyas aquí limpio, allá se paga; todo lo que dejes confuso, allá explota. En [4.6 Next.js](/fase-4-frontend/4-6-nextjs/) llevas estos componentes a un framework de producción.
+
+## 11. Reflexión + repaso espaciado
+
+Cierra escribiendo, en dos o tres líneas, una respuesta honesta a esto: **¿cuál de los modelos mentales de hoy te costó más —el estado como "foto" del render, o saber cuándo NO usar un `useEffect`— y por qué?** Nombrar tu punto débil es el primer paso para cerrarlo.
+
+Gancho de repaso espaciado:
+- **Mañana:** sin mirar la lección, reescribe de memoria el componente `FiltroBuscable` del ejercicio A. Si no te sale el filtrado sin `useEffect`, no lo aprendiste todavía: vuelve a la sección 4.6.
+- **En 3 días:** explícale a alguien (o al espejo) por qué `setN(n+1)` dos veces sube solo 1. Si titubeas, repasa la sección 4.4.
+- **En 1 semana:** retoma `PanelBuggy.tsx` y diagnostica los cuatro efectos otra vez, sin tus notas del ejercicio B. La meta es que las cuatro categorías de bug te salgan de memoria, como le salen a un revisor de código senior.
+
+> [!tip] GLaDOS dice
+> Felicidades: aprendiste que la mitad de tu trabajo con React es **no** escribir `useEffect`. La otra mitad es resistir las ganas de meter `useMemo` en todo "por si acaso". Hay una elegancia perversa en una herramienta cuyo dominio se mide por lo poco que la usas. Para ser un humano, no está nada mal.

@@ -1,0 +1,42 @@
+/*
+  Estado inicial: amateur a propósito.
+  - Sin jerarquía: todo el texto pesa igual.
+  - Espaciado arbitrario (10px) sin escala.
+  - Paleta que NO pasa contraste -> el test arranca en ROJO.
+
+  Tu trabajo:
+  1) Define una escala de espaciado (base 4px) y una escala tipográfica como tokens.
+  2) Construye tres niveles de jerarquía (título / cuerpo / metadata).
+  3) Ajusta la paleta --color-* hasta que el test de contraste pase en verde.
+*/
+
+:root {
+  /* --- Paleta con roles. AJÚSTALA hasta que `pnpm test` pase en verde. ---
+     El test lee estos cinco tokens (no les cambies el nombre).
+     Pista: texto casi-negro sobre fondo casi-blanco pasa siempre; el acento debe
+     ser lo bastante oscuro para que el texto blanco encima dé >= 4.5:1. */
+  --color-fondo: #ffffff;
+  --color-texto: #1a1a1a;               /* ya pasa AA */
+  --color-texto-tenue: #b0b0b0;         /* TODO: NO pasa AA (~2.2:1) */
+  --color-acento: #8db4f5;              /* TODO: NO se distingue del fondo (~1.7:1) */
+  --color-texto-sobre-acento: #ffffff;  /* TODO: no pasa sobre un acento tan claro */
+
+  /* TODO: define aquí tu escala de espaciado (base 4px) y tu escala tipográfica.
+     Ej:  --espacio-1: 0.25rem;  --texto-base: 1rem;  ... */
+}
+
+.tarjeta {
+  border: 1px solid gray;
+  padding: 10px;
+}
+
+.tarjeta span {
+  display: block;
+}
+
+button {
+  background: var(--color-acento);
+  color: var(--color-texto-sobre-acento);
+  border: none;
+  padding: 6px;
+}

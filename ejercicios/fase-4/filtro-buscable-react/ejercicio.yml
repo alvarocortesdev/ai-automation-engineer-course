@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-4/filtro-buscable-react
+titulo: "Filtro buscable tipado (sin un solo useEffect)"
+fase: fase-4
+sub_unidad: "4.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un componente funcional React 19 + TypeScript con props tipadas, estado con useState y un input controlado"
+  - "Renderizar una lista con keys estables a partir de un arreglo de datos"
+  - "Calcular la lista filtrada como estado derivado en el render, sin useEffect ni estado redundante"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}
