@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/diseno-multiagente-hitl
+titulo: "Diseño: sistema agéntico con patrón, framework y HITL"
+fase: fase-6
+sub_unidad: "6.8"
+ruta_critica: true
+modalidad: a-mano                    # diseño/razonamiento: entregable es diseno.md, sin tests
+objetivos:
+  - "Elegir patrón (single/orchestrator-worker/supervisor/handoffs) por la restriccion dominante"
+  - "Elegir framework por restriccion y nombrar que se pierde con esa eleccion"
+  - "Ubicar HITL en acciones irreversibles y definir un techo de costo"
+  - "Distinguir memoria de corto y largo plazo; nombrar 3 riesgos OWASP LLM/Agentic con mitigacion"
+hilos_transversales: [seguridad, costo-latencia, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo                     # patrones cubiertos en worked example -> diseño propio
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths:
+  tests: null                        # ejercicio de diseño: la verificación la hace el corrector

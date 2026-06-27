@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/precision-recall-f1
+titulo: "Precision, recall y F1 desde una verdad de referencia"
+fase: fase-6
+sub_unidad: "6.0"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Contar TP/FP/FN comparando etiquetas reales contra predichas"
+  - "Calcular precision, recall y F1 a partir de esos conteos, con sus casos borde (denominador cero)"
+  - "Explicar el trade-off precision/recall y cuándo priorizar cada uno"
+hilos_transversales: [testing, evals]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

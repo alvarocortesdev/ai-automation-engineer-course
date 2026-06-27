@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/break-even-finetuning-vs-prompt
+titulo: "¿A qué volumen se paga el fine-tuning? (break-even por costo)"
+fase: fase-6
+sub_unidad: "6.13"
+ruta_critica: false                  # lección opcional/profundización
+modalidad: mixto                     # a-mano (predicción del equilibrio) + codigo (funciones puras)
+objetivos:
+  - "Calcular el costo por request de un baseline (prompt largo) y de un modelo fine-tuneado (prompt corto, precio por token posiblemente distinto)"
+  - "Calcular el punto de equilibrio en requests donde el fine-tuning (costo fijo de entrenamiento + costo por request menor) iguala al baseline"
+  - "Explicar por qué si el modelo fine-tuneado cuesta MÁS por request que el baseline, el fine-tuning nunca se paga por costo, sin importar el volumen"
+hilos_transversales: [costo-latencia, testing]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención

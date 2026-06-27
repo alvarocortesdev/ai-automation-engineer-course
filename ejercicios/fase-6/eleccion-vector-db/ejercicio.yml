@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/eleccion-vector-db
+titulo: "Decisión: vector DB + índice + métrica + filtrado para tres escenarios"
+fase: fase-6
+sub_unidad: "6.6"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Elegir una vector DB (pgvector/Qdrant/Chroma/Azure AI Search) según la restricción dominante"
+  - "Justificar HNSW vs IVFFlat por el trade-off velocidad/recall/memoria y la métrica de distancia adecuada"
+  - "Identificar un riesgo de vector/embedding weakness (envenenamiento, fuga, multi-tenant) y su mitigación"
+hilos_transversales: [seguridad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: no hay suite; la entrega es decisiones.md

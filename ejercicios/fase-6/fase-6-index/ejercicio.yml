@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/fase-6-index
+titulo: "Diagnóstico de Fase 6 + decisión de capstone"
+fase: fase-6
+sub_unidad: "6.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar los prerrequisitos de la fase (Python+pydantic, FastAPI, UI streaming, deploy+observabilidad) y el punto de partida por sub-unidad (6.0–6.16), distinguiendo 'lo sé hacer sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de Fase 6 con bloques semanales concretos, ritual de active recall / spaced repetition, y una decisión explícita de qué diferir (6.12/6.13 profundización)"
+  - "Decidir la estrella de portafolio (capstone RAG de F6 vs agéntico de F7) con un trade-off defendible, reconociendo qué puntos del Definition of Done de IA costarán más"
+hilos_transversales: [evals, costo-latencia, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

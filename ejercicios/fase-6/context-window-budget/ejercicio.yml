@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/context-window-budget
+titulo: "Token budget: arma el contexto que cabe"
+fase: fase-6
+sub_unidad: "6.2"
+ruta_critica: true
+modalidad: mixto                     # a-mano (predicción) + codigo (política de budget)
+objetivos:
+  - "Implementar una política de token budgeting que conserve el system y los turnos más recientes"
+  - "Predecir qué turnos entran y cuáles se descartan sin ejecutar"
+  - "Explicar por qué descartar los turnos viejos mitiga el context rot"
+hilos_transversales: [costo-latencia, testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención

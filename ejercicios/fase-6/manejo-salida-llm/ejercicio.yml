@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/manejo-salida-llm
+titulo: "Output handling: trata la salida del LLM como no confiable"
+fase: fase-6
+sub_unidad: "6.14"
+ruta_critica: true
+modalidad: codigo                    # gate puro de salida; tests con pytest, sin API
+objetivos:
+  - "Implementar un gate de salida de tres capas (fuga -> presupuesto -> codificacion) sobre la salida de un LLM"
+  - "Distinguir cuando codificar para el sink (HTML) de cuando bloquear (fuga de secreto)"
+  - "Mapear cada capa a su riesgo OWASP LLM (LLM05 Improper Output Handling, LLM07/LLM02, LLM10)"
+  - "Explicar por que la salida del LLM es no confiable y se trata como input no confiable"
+hilos_transversales: [seguridad, testing, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []               # ejercicio atomico, no capstone
+paths: {}                            # rutas por convencion (tests en la carpeta del ejercicio)

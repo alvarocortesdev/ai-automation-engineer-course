@@ -1,0 +1,26 @@
+# .ai contract v1 — un ejercicio (capstone)
+id: fase-6/capstone-rag-produccion
+titulo: "Capstone Fase 6 — Plataforma RAG de producción"
+fase: fase-6
+sub_unidad: "6.P"
+ruta_critica: true
+modalidad: mixto                     # codigo + diseño + write-up
+objetivos:
+  - "Diseñar e implementar una plataforma RAG de producción end-to-end (ingest → vector DB → hybrid search + reranking → generación con streaming) servida a usuarios reales"
+  - "Tratar el eval harness como entregable de primera clase: dataset versionado, número (faithfulness + context recall/precision), gate de regresión en CI y budget de costo/latencia con techo"
+  - "Aplicar y defender seguridad (OWASP LLM + web), observabilidad (traza del call-chain con tokens/latencia/costo por paso) y los trade-offs elegidos, mapeados al Definition of Done"
+hilos_transversales: [testing, evals, seguridad, observabilidad, spec-driven, costo-latencia, ingles]
+primero_sin_ia:
+  novedad: repaso                    # capstone = consolidación: Primero-Sin-IA de entrada en el diseño
+  timebox_min: 1200                  # proyecto ~12–20 h; el diseño (spec + ADRs + decisiones) va sin IA primero
+definition_of_done:                  # puntos del DoD único (§B) que el corrector verifica
+  - dod-1   # Spec + ADRs
+  - dod-2   # Tests verdes + lint en CI; aserciones reales (incl. eval), no coverage%
+  - dod-3   # Seguridad: OWASP web + OWASP LLM + secret/dependency scanning
+  - dod-4   # Observabilidad: logs + correlation IDs + trazas; IA con tokens/latencia/costo por paso
+  - dod-5   # (IA) eval harness versionado + número + gate de regresión + budget
+  # dod-6 (agente que ejecuta acciones) NO APLICA: el RAG solo recupera y genera. Declarar explicitamente.
+  - dod-7   # a11y mínima (WCAG 2.2) + estados completos
+  - dod-8   # Demo que corre + README en inglés + write-up de trade-offs
+  - dod-9   # Conventional Commits
+paths: {}                            # convención: rúbrica y solución de referencia en rutas estándar; tests en tests/

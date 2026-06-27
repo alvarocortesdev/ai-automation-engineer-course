@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/validacion-tool-args
+titulo: "Gate de validación de argumentos de una tool"
+fase: fase-6
+sub_unidad: "6.4"
+ruta_critica: true
+modalidad: codigo                    # pydantic + lógica del gate; tests con pytest
+objetivos:
+  - "Implementar un gate de tres capas (permiso -> forma -> semántica) sobre una tool call"
+  - "Validar argumentos con pydantic y distinguir validez de forma de validez semántica"
+  - "Decidir HITL (CONFIRMAR) para acciones irreversibles sobre el techo de monto"
+  - "Explicar por qué forma válida no es ejecución segura (Excessive Agency / least privilege)"
+hilos_transversales: [seguridad, testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención (tests en la carpeta del ejercicio)

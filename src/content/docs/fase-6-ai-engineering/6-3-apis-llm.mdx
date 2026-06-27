@@ -1,0 +1,622 @@
+---
+title: APIs de LLM
+description: "Dejar de 'pedirle cosas a una IA' y empezar a llamarla por API de verdad: estructura del request, tokens y costo en USD, rate limits, reintentos con backoff, streaming y manejo de errores — con los SDK de Anthropic y OpenAI/Azure."
+sidebar:
+  order: 5
+---
+
+import Nivel from "@components/Nivel.astro";
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+
+<Nivel nivel="intermedio" />
+
+Hasta ahora hablaste con los modelos por una caja de texto en un navegador. Eso es
+el producto, no la materia prima. La materia prima de un AI Engineer es la **API**:
+una llamada de red a la que le mandas un request estructurado (instrucciones, mensajes,
+parámetros) y que te devuelve una respuesta, un conteo de tokens y, a fin de mes, una
+factura. Esta lección es donde dejas de _usar_ una IA y empiezas a _construir contra
+ella_: la misma llamada repetida diez mil veces al día, con un costo medible, un
+límite de velocidad que te van a tirar en la cara, y errores que tienes que sobrevivir.
+
+No necesitas haber tocado una API antes. Vamos desde la primera llamada — qué le mandas,
+qué te devuelve, cómo se lee — hasta lo que de verdad separa a un junior de un
+semi-senior: saber cuánto cuesta cada request, qué hacer cuando el servidor responde
+`429`, y por qué el streaming no es decoración sino una decisión de arquitectura.
+
+## Objetivos de esta lección
+
+Al terminar deberías ser capaz de:
+
+- **O1 — Implementar** una llamada a un LLM por API con la estructura completa del
+  request (`system`, `messages`, parámetros) en los SDK de **Anthropic** y de
+  **OpenAI/Azure**, y **leer** la respuesta y su uso de tokens.
+- **O2 — Calcular** el costo en USD de una llamada a partir de los tokens de entrada y
+  salida y el pricing del modelo, y **explicar el trade-off** costo/latencia/calidad al
+  elegir entre modelos de distinto tamaño.
+- **O3 — Depurar** las fallas de producción de una llamada: implementar **reintentos con
+  backoff exponencial + jitter** que respeten los rate limits (`429`/`Retry-After`),
+  distinguir errores reintentar-ables de los que no, y **consumir** una respuesta en
+  **streaming**.
+
+## Por qué esto importa (y paga)
+
+El "💰" de esta sub-unidad es el más concreto de toda la fase: aquí es donde la IA
+**cuesta dinero de verdad** y donde **se cae en producción**. Un junior escribe
+`client.create(...)`, ve que funciona en su laptop y hace deploy. Un semi-senior sabe
+tres cosas que el junior no:
+
+1. **La API es stateless y se paga por token, en cada llamada.** Una mala decisión de
+   modelo o de `max_tokens` multiplica la factura por 5 sin que nadie lo note hasta el
+   reporte de fin de mes.
+2. **El `429` no es opcional, es inevitable.** Todo proveedor te limita por
+   requests/minuto y tokens/minuto. Tu código tiene que sobrevivir a eso con reintentos
+   y backoff, o tu app se cae justo cuando tiene tráfico.
+3. **El streaming cambia la latencia percibida y los timeouts.** Una respuesta larga sin
+   streaming revienta el timeout de la conexión; con streaming le das al usuario el primer
+   token en menos de un segundo.
+
+La pregunta de entrevista no es "muéstrame una llamada a la API" (eso es de junior). Es:
+_"tu servicio funcionaba bien, llegó tráfico, empezó a tirar `429` intermitentes y a
+veces timeouts largos, y la factura del mes se triplicó. ¿Qué pasó y cómo lo arreglas?"_
+Esa pregunta es exactamente esta lección: rate limits, backoff, costo por token y
+streaming.
+
+> [!tip] GLaDOS dice
+> Hablar con un modelo por el navegador es como pedir comida en un restaurante. Llamarlo
+> por API es montar la cocina, pagar por cada ingrediente, lidiar con el proveedor que te
+> corta el suministro a las 200 órdenes por minuto, y servir el plato antes de que el
+> cliente se vaya. Lo segundo paga el sueldo. Lo primero lo hace cualquiera con un
+> teléfono.
+
+## Lo que ya traes (activación)
+
+Antes de seguir, recupera **de memoria** —sin abrir las notas— tres ideas previas. El
+tirón mental es parte del aprendizaje.
+
+1. De [6.1 · Fundamentos de LLMs](/fase-6-ai-engineering/6-1-fundamentos-llms/): ¿qué es
+   un **token** y por qué el costo no se mide en caracteres ni en palabras?
+2. De [6.2 · Prompt & Context Engineering](/fase-6-ai-engineering/6-2-prompt-context-engineering/):
+   los roles **system / user / assistant** y el hecho de que la API es **stateless** —
+   reenvías toda la conversación en cada llamada.
+3. De [6.00 · Matemática mínima](/fase-6-ai-engineering/6-0-matematica-minima/): la idea
+   de medir un sistema con un número. Aquí ese número va a ser **USD por request** y
+   **tokens por minuto**.
+
+La respuesta a (2) es el cimiento del costo: como reenvías todo en cada turno, el costo
+de una conversación crece **cuadráticamente** con su largo. Esta lección te da las
+herramientas para medirlo y controlarlo.
+
+## Worked example 1: tu primera llamada de verdad (Anthropic)
+
+Te muestro el razonamiento completo, en voz alta, antes de pedirte que lo hagas tú. La
+estructura mínima de **cualquier** llamada a un LLM moderno tiene cuatro piezas: el
+**modelo** (qué cerebro uso), las **instrucciones de sistema** (el contrato), los
+**mensajes** (la conversación) y un **tope de salida** (`max_tokens`).
+
+```python
+import anthropic
+
+# El cliente lee ANTHROPIC_API_KEY del entorno.
+# NUNCA escribas la API key en el código: va en una variable de entorno o un secret manager.
+client = anthropic.Anthropic()
+
+resp = client.messages.create(
+    model="claude-opus-4-8",                 # qué modelo (cerebro + precio + límites)
+    max_tokens=1024,                         # TOPE de tokens de SALIDA (no es el largo del prompt)
+    system="Eres un asistente conciso. Responde en una sola frase.",
+    messages=[
+        {"role": "user", "content": "¿Qué es una API?"},
+    ],
+)
+
+# La respuesta es una LISTA de bloques de contenido; toma el primer bloque de texto.
+texto = next(b.text for b in resp.content if b.type == "text")
+print(texto)
+print(f"in={resp.usage.input_tokens}  out={resp.usage.output_tokens}  stop={resp.stop_reason}")
+```
+
+> _Pienso en voz alta:_ cuatro decisiones, una por línea. (1) `model` no es solo "qué tan
+> listo"; fija el **precio por token** y los **límites de velocidad**. Cambiarlo es la
+> palanca de costo más grande que tienes. (2) `max_tokens` es el tope de **salida**, no el
+> largo de mi prompt — y si lo pongo muy bajo, la respuesta sale **cortada a la mitad**
+> (lo verás en `stop_reason`). (3) El `system` es mi canal de autoridad (lo de 6.2). (4)
+> `resp.content` es una **lista de bloques**, no un string: por eso filtro por `type ==
+> "text"`. Y `resp.usage` me dice cuántos tokens entraron y salieron — eso es lo que voy a
+> pagar.
+
+El `stop_reason` (Anthropic) te dice **por qué** el modelo paró:
+
+| `stop_reason` | Significa |
+|---|---|
+| `end_turn` | Terminó solo, naturalmente. Lo normal. |
+| `max_tokens` | Chocó con tu tope de salida — la respuesta está **truncada**. Sube `max_tokens` o usa streaming. |
+| `tool_use` | Quiere llamar una herramienta (eso es 6.4). |
+| `refusal` | Se negó por seguridad. |
+
+> [!warning] La API key nunca va en el código
+> Hardcodear `api_key="sk-ant-..."` en un archivo que termina en Git es la fuga de
+> secretos #1 de los principiantes. Léela del entorno (`ANTHROPIC_API_KEY`,
+> `OPENAI_API_KEY`) o de un secret manager. Esto es seguridad, no estilo — un repo público
+> con una key dentro se vacía la cuenta en minutos.
+
+## Worked example 2: el mismo concepto, otro proveedor (OpenAI / Azure)
+
+Aquí está la idea que vale oro: **los conceptos son portables, los SDK no.** Roles,
+mensajes, tokens, uso — todo eso existe en cualquier proveedor. Lo que cambia son los
+nombres de los métodos y la forma exacta de la respuesta. Una vez que tienes el modelo
+mental, cambiar de proveedor es leer su doc, no reaprender.
+
+```python
+from openai import OpenAI
+
+client = OpenAI()  # lee OPENAI_API_KEY del entorno
+
+completion = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[
+        # En OpenAI el system es UN MENSAJE MÁS con role="system", no un parámetro aparte.
+        {"role": "system", "content": "Eres un asistente conciso. Responde en una sola frase."},
+        {"role": "user", "content": "¿Qué es una API?"},
+    ],
+)
+
+print(completion.choices[0].message.content)
+u = completion.usage
+print(f"in={u.prompt_tokens}  out={u.completion_tokens}  total={u.total_tokens}")
+```
+
+> _Pienso en voz alta:_ misma intención, tres diferencias de superficie. (1) En OpenAI el
+> `system` es **un mensaje más** dentro de `messages` con `role="system"`; en Anthropic es
+> un **parámetro `system`** aparte. (2) La respuesta vive en
+> `completion.choices[0].message.content` (un string), no en una lista de bloques. (3) Los
+> tokens se llaman `prompt_tokens` / `completion_tokens` en vez de `input_tokens` /
+> `output_tokens`. Si memorizas los **conceptos** (mensajes, roles, uso) en vez de los
+> **nombres**, esto te toma cinco minutos de doc, no un curso nuevo.
+
+**Azure OpenAI** es el mismo SDK con dos cambios: cómo construyes el cliente, y que el
+"model" es el **nombre de tu deployment**, no el del modelo:
+
+```python
+from openai import AzureOpenAI
+
+client = AzureOpenAI(
+    api_version="2024-10-21",                      # versión de la API REST de Azure (verifica la vigente en la doc)
+    azure_endpoint="https://TU-RECURSO.openai.azure.com",
+    # lee AZURE_OPENAI_API_KEY del entorno
+)
+
+completion = client.chat.completions.create(
+    model="mi-deployment-gpt",                     # OJO: en Azure esto es el NOMBRE DEL DEPLOYMENT, no del modelo
+    messages=[{"role": "user", "content": "¿Qué es una API?"}],
+)
+```
+
+:::caution[Por qué importa saber esto en 2026]
+El mercado no te pide "el experto en Anthropic" o "el experto en OpenAI". Te pide a
+alguien que pueda **elegir y cambiar de proveedor según el costo, la latencia y la
+disponibilidad** — y rutear entre modelos baratos y caros según la tarea (eso es
+[6.16 · Costo/latencia + LLMOps](/fase-6-ai-engineering/6-16-costo-latencia-llmops/)).
+Eso solo se puede si tu cabeza separa el **concepto** (un request con roles y tokens) de
+la **API concreta**. Aprende uno a fondo, y el resto es traducción.
+:::
+
+## Worked example 3: ¿cuánto cuesta esto? (tokens y costo)
+
+Esta es la parte que casi nadie te enseña y que en producción es la diferencia entre un
+servicio sano y una factura que te despiden por aprobar. **El costo de una llamada se
+calcula sobre tokens, no sobre caracteres**, y la salida casi siempre cuesta **más** que
+la entrada.
+
+Primero, puedes **contar los tokens de entrada antes de enviar** (útil para estimar y para
+no pasarte de un budget). En Anthropic hay un endpoint para eso:
+
+```python
+conteo = client.messages.count_tokens(
+    model="claude-opus-4-8",
+    system="Eres un asistente conciso.",
+    messages=[{"role": "user", "content": "¿Qué es una API?"}],
+)
+print(conteo.input_tokens)   # tokens de ENTRADA, calculados antes de gastar nada
+```
+
+> _Pienso en voz alta:_ no uses `tiktoken` ni un contador casero para estimar tokens de
+> Claude — `tiktoken` es el tokenizador de OpenAI y subcuenta los tokens de Claude (y de
+> cualquier modelo) por un 15-20% en texto normal, más en código o en español. Cada modelo
+> tiene **su** tokenizador; usa el del proveedor.
+
+La fórmula del costo es directa. Con el pricing por **millón de tokens** (1M = 1 000 000):
+
+```
+costo_usd = (tokens_entrada / 1e6) * precio_entrada
+          + (tokens_salida  / 1e6) * precio_salida
+```
+
+Pongamos números. Una llamada con **10 000 tokens de entrada** y **2 000 de salida**, en
+tres modelos de la familia Claude (precios de referencia 2026 — **verifica siempre la
+página de precios, cambian**):
+
+| Modelo | $/1M entrada | $/1M salida | Costo de esta llamada |
+|---|---|---|---|
+| `claude-opus-4-8` | $5 | $25 | 0.05 + 0.05 = **$0.10** |
+| `claude-sonnet-4-6` | $3 | $15 | 0.03 + 0.03 = **$0.06** |
+| `claude-haiku-4-5` | $1 | $5 | 0.01 + 0.01 = **$0.02** |
+
+> _Pienso en voz alta:_ la misma llamada cuesta **5x** más en Opus que en Haiku. Ahora
+> multiplica por escala: 100 000 requests al día son **$10 000/día** en Opus contra
+> **$2 000/día** en Haiku. Esa es la palanca: para clasificar o extraer datos simples,
+> Haiku hace el trabajo por un quinto del precio; reservas Opus para lo que de verdad
+> necesita el cerebro grande. Elegir modelo **por tarea** (model routing) es una de las
+> habilidades mejor pagadas de la fase, y empieza por saber hacer esta cuenta.
+
+> [!tip] GLaDOS dice
+> "Más caro = mejor" es la trampa del principiante. El modelo correcto es el **más barato
+> que pasa tu eval** (eso lo medirás en 6.9). Pagar Opus para clasificar reseñas en
+> "positivo/negativo" es como usar un superordenador para sumar dos más dos. Funciona, sí.
+> También funciona quemar billetes para calentarte las manos.
+
+## Worked example 4: lo que falla en producción (rate limits, reintentos, errores)
+
+Tu llamada va a fallar. No "quizás": **va a fallar**, y seguido. El proveedor te limita
+por requests/minuto y tokens/minuto, y cuando te pasas responde `429 Too Many Requests`.
+También hay caídas temporales del servidor (`500`, `529`). Sobrevivir a esto es lo que
+hace que tu servicio sea confiable.
+
+La regla de oro: **clasifica el error antes de reaccionar.**
+
+| Código | Qué es | ¿Reintentar? |
+|---|---|---|
+| `429` | Rate limit: fuiste muy rápido. | **Sí**, esperando lo que diga el header `Retry-After`. |
+| `500` / `503` / `529` | El servidor tuvo un problema temporal. | **Sí**, con backoff. |
+| `400` | Tu request está mal armado. | **No** — reintentar manda el mismo request roto. Arréglalo. |
+| `401` | API key inválida o ausente. | **No** — reintentar no la arregla. |
+| `404` | Modelo o endpoint que no existe (typo en el `model`). | **No.** |
+
+Para los reintentables, la técnica es **backoff exponencial con jitter**: esperas cada vez
+más entre intentos (1s, 2s, 4s, 8s...) y le sumas un componente **aleatorio** (jitter). El
+backoff evita martillar al servidor que ya está saturado; el jitter evita el **thundering
+herd** — que mil clientes que fallaron al mismo segundo reintenten todos exactamente al
+mismo segundo siguiente y vuelvan a tumbarlo.
+
+```python
+import time
+import random
+import anthropic
+
+client = anthropic.Anthropic(max_retries=0)   # apagamos el reintento del SDK para verlo a mano
+
+def llamar_con_reintentos(max_intentos=5, base=1.0, tope=60.0):
+    for intento in range(max_intentos):
+        try:
+            return client.messages.create(
+                model="claude-opus-4-8", max_tokens=256,
+                messages=[{"role": "user", "content": "hola"}],
+            )
+        except anthropic.RateLimitError as e:            # 429: respeta Retry-After si viene
+            espera = float(e.response.headers.get("retry-after") or min(tope, base * 2 ** intento))
+        except anthropic.APIStatusError as e:            # otros HTTP: 5xx reintenta, 4xx no
+            if e.status_code < 500:
+                raise                                    # 400/401/404: el request es inválido, reintentar no ayuda
+            espera = min(tope, base * 2 ** intento)
+        espera += random.uniform(0, espera)              # jitter: rompe el thundering herd
+        time.sleep(espera)
+    raise RuntimeError("se agotaron los reintentos")
+```
+
+> _Pienso en voz alta:_ tres decisiones de diseño. (1) Si el `429` trae `Retry-After`, ese
+> número **gana** sobre mi backoff calculado — el servidor sabe mejor que yo cuándo volver.
+> (2) `min(tope, ...)` evita que el backoff crezca al infinito (esperar 17 minutos no sirve
+> a nadie). (3) El jitter no es opcional: sin él, todos los clientes reintentan
+> sincronizados y el `429` se vuelve eterno.
+
+> [!warning] El SDK ya reintenta — entiéndelo igual
+> Tanto el SDK de Anthropic como el de OpenAI **ya reintentan** `429` y `5xx` con backoff
+> por defecto (`max_retries=2`). En producción muchas veces basta con subir ese número:
+> `anthropic.Anthropic(max_retries=5)`. Aquí lo apagamos a mano (`max_retries=0`) para que
+> **entiendas el mecanismo** — y porque algún día vas a necesitar lógica que el SDK no te
+> da (un circuit breaker, métricas por intento, un fallback a otro modelo). El
+> Primero-Sin-IA: primero lo construyes tú, después usas la herramienta.
+
+## Worked example 5: streaming (no es decoración)
+
+Por defecto, una llamada **espera a que el modelo termine toda la respuesta** y te la
+devuelve completa. Para una respuesta larga eso significa que el usuario mira una pantalla
+en blanco varios segundos — y, peor, que la conexión HTTP puede **expirar por timeout**
+antes de que llegue la respuesta. El **streaming** entrega la respuesta **token a token**,
+a medida que el modelo la genera.
+
+Dos razones para usarlo, y la segunda es técnica, no estética:
+
+1. **UX:** el usuario ve el primer token en menos de un segundo (como en ChatGPT).
+2. **Timeouts:** una salida larga sin streaming puede chocar con el timeout de la conexión
+   (los SDK incluso te obligan a streamear cuando `max_tokens` es muy grande).
+
+```python
+# Anthropic
+with client.messages.stream(
+    model="claude-opus-4-8",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Escribe un haiku sobre las APIs"}],
+) as stream:
+    for fragmento in stream.text_stream:        # llega texto a pedacitos
+        print(fragmento, end="", flush=True)
+    final = stream.get_final_message()          # el mensaje completo + el uso de tokens
+print(f"\n[salida: {final.usage.output_tokens} tokens]")
+```
+
+```python
+# OpenAI: stream=True y recorres "chunks"
+stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "Escribe un haiku sobre las APIs"}],
+    stream=True,
+    stream_options={"include_usage": True},     # SIN esto, el uso de tokens llega vacío al streamear
+)
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+> _Pienso en voz alta:_ dos gotchas que muerden a todos. (1) En Anthropic, el `usage` final
+> sale de `stream.get_final_message()`, no de los fragmentos. (2) En OpenAI, si streameas
+> **no recibes el conteo de tokens** a menos que pidas `stream_options={"include_usage":
+> True}` — y entonces llega en el último chunk. Si tu dashboard de costos marca cero al
+> streamear, ese es el bug.
+
+## Lo que parece cierto pero no lo es
+
+:::caution[Misconception 1 — "max_tokens es el largo de mi prompt"]
+Falso, y es el error #1 con respuestas cortadas. `max_tokens` es el tope de la **salida**
+del modelo, no el tamaño de tu entrada. Si pides un ensayo de 300 palabras con
+`max_tokens=50`, el modelo se corta a media frase y verás `stop_reason: "max_tokens"`
+(Anthropic) o `finish_reason: "length"` (OpenAI). Tu entrada tiene su propio límite: la
+**context window** del modelo (6.1).
+:::
+
+:::caution[Misconception 2 — "un 429 significa que mi código está mal"]
+Falso. Un `429` significa que fuiste más rápido que tu cuota de requests/minuto o
+tokens/minuto — es **esperado** bajo tráfico, no un bug. La respuesta correcta no es
+"arreglar el código", es **reintentar con backoff** respetando `Retry-After`. Lo que sí es
+un bug de tu código es un `400` (request mal armado) o un `401` (key mala): esos no se
+reintentan, se arreglan.
+:::
+
+:::caution[Misconception 3 — "reintentar de inmediato arregla el 429"]
+Falso, y contraproducente. Reintentar al instante (o sin jitter) **empeora** la saturación:
+es el thundering herd. Tienes que esperar (backoff exponencial), respetar `Retry-After`
+cuando viene, y desincronizar los reintentos (jitter). Reintentar sin backoff convierte un
+problema temporal en una caída sostenida.
+:::
+
+:::caution[Misconception 4 — "el costo lo da el número de caracteres o palabras"]
+Falso por dos razones. (1) Se mide en **tokens**, no en caracteres ni palabras — un token
+es ≈ 4 caracteres en inglés, y la proporción cambia en español y en código. (2) La **salida
+cuesta más que la entrada** (mira la tabla: $25 vs $5 en Opus). Una respuesta corta sobre un
+prompt largo, y una respuesta larga sobre un prompt corto, cuestan distinto aunque tengan
+el "mismo número de palabras" en total.
+:::
+
+:::caution[Misconception 5 — "el streaming es solo para que se vea bonito"]
+Falso. Sí mejora la UX, pero su razón técnica es **evitar timeouts** en respuestas largas y
+darte control sobre el flujo. Los SDK incluso **te obligan** a streamear cuando `max_tokens`
+es grande, justamente porque un request no-streaming de esa duración chocaría con el timeout
+de la conexión. Streaming es una decisión de arquitectura, no un adorno.
+:::
+
+## Práctica con andamiaje (predecir antes de construir)
+
+Aún no escribes código. Primero **predices** — el Primero-Sin-IA en miniatura. Razónalo en
+papel antes de abrir la solución.
+
+**1. Truncado (predicción).** Mandas un request pidiendo "un cuento de 500 palabras" con
+`max_tokens=40`. ¿Qué pasa con la respuesta y qué valor tendrá `stop_reason` (Anthropic) o
+`finish_reason` (OpenAI)?
+
+**2. Costo (cálculo a mano).** Con el pricing de la tabla, calcula el costo de una llamada a
+`claude-sonnet-4-6` con **20 000 tokens de entrada** y **1 000 de salida**. Luego di cuánto
+costaría la **misma** llamada en `claude-haiku-4-5`.
+
+**3. Clasificación de errores (diagnóstico).** Para cada uno, decide **reintentar o no**, y
+si la respuesta es sí, **cómo**: (a) `429` con header `Retry-After: 8`; (b) `500`; (c)
+`401`; (d) `400` por un campo mal escrito; (e) un timeout de conexión.
+
+<Solucion title="Ver razonamiento (ábrelo solo después de intentarlo)">
+1. La respuesta sale **truncada** a mitad de frase tras ~40 tokens; `stop_reason` será
+   `"max_tokens"` (Anthropic) y `finish_reason` será `"length"` (OpenAI). El arreglo es
+   subir `max_tokens` (y/o streamear), **no** acortar el prompt.
+2. Sonnet: (20000/1e6)·3 + (1000/1e6)·15 = 0.06 + 0.015 = **$0.075**. Haiku:
+   (20000/1e6)·1 + (1000/1e6)·5 = 0.02 + 0.005 = **$0.025**. Haiku cuesta **3x menos**.
+3. (a) **Sí**, espera exactamente **8 s** (el `Retry-After` gana sobre tu backoff). (b)
+   **Sí**, con backoff exponencial + jitter. (c) **No** — la key está mal; reintentar no la
+   arregla. (d) **No** — el request es inválido; arréglalo. (e) **Sí**, un timeout suele ser
+   transitorio; reintentar con backoff (los SDK ya lo hacen).
+</Solucion>
+
+## Ejercicios Primero-Sin-IA
+
+Dos entregables, ambos **código testeable sin red ni API key** (inyectamos lo que haría
+falta). Trabájalos **a mano primero**, sin IA, dentro del timebox. Las carpetas viven en tu
+repo: ábrelas en VS Code.
+
+<Reto title="Calculadora de costo y elección de modelo" timebox="40 min">
+
+Carpeta: `ejercicios/fase-6/costo-llamada-llm/`
+
+Vas a implementar el cálculo que todo AI Engineer hace de cabeza: cuánto cuesta una llamada
+y cuál es el modelo más barato para una carga dada.
+
+1. **A mano (predicción):** en `prediccion.md`, para el caso del README (unos tokens y una
+   tabla de precios dada), calcula **a mano** el costo en cada modelo y di **cuál es el más
+   barato**, con el razonamiento. **No ejecutes nada todavía.**
+2. **Código (verificación):** completa `calcular_costo(...)` y `modelo_mas_barato(...)` en
+   `costo.py`. El pricing se **inyecta** como parámetro (un dict), así no dependes de
+   ningún precio hardcodeado ni de la red. Haz pasar los tests con `pytest`.
+3. **Reflexión:** en `verificacion.md`, explica en 2-3 frases por qué la **salida** suele
+   pesar más en el costo que la entrada, y qué implica eso para un modelo que responde de
+   forma muy verbosa.
+
+**Criterios de "hecho":**
+- [ ] `prediccion.md` existe **antes** de ejecutar, con los cálculos + cuál es el más barato.
+- [ ] Todos los tests pasan (`pytest`).
+- [ ] `calcular_costo` usa la fórmula por millón de tokens, maneja 0 tokens, y lanza
+      `KeyError`/`ValueError` ante un modelo que no está en la tabla de precios.
+- [ ] `verificacion.md` conecta el precio de salida con el costo de una respuesta verbosa.
+
+Cuando termines, pídele a tu IA que lo corrija con el framework de `.ai/`.
+
+</Reto>
+
+<Solucion title="Pista (NO la solución): si te traba la fórmula">
+El costo es **lineal** en cada lado: divides los tokens por un millón (`/ 1e6`) y
+multiplicas por el precio por millón de ese lado; sumas los dos lados. Para
+`modelo_mas_barato`, calcula el costo de **cada** modelo de la tabla con la misma carga y
+quédate con el de menor costo — `min(..., key=...)` es tu amigo. El modelo desconocido debe
+fallar fuerte (excepción), no devolver `0` en silencio.
+</Solucion>
+
+<Reto title="Reintentos con backoff exponencial + jitter" timebox="45 min">
+
+Carpeta: `ejercicios/fase-6/reintentos-backoff/`
+
+Vas a implementar el corazón de la resiliencia: una función que reintenta una operación que
+falla de forma transitoria, con backoff exponencial, jitter y respeto al `Retry-After`.
+
+1. **A mano (predicción):** en `prediccion.md`, para el caso del README (una operación que
+   falla N veces y luego funciona, con `base`, `tope` y un `aleatorio` dados), predice
+   **la lista exacta de esperas** que se acumularían. **No ejecutes nada todavía.**
+2. **Código (verificación):** completa `reintentar_con_backoff(...)` en `backoff.py`. El
+   reloj (`dormir`) y el jitter (`aleatorio`) se **inyectan** como parámetros, así los
+   tests son **deterministas y sin red**. Haz pasar los tests con `pytest`.
+3. **Reflexión:** en `verificacion.md`, explica en 2-3 frases por qué reintentar un `400`
+   (request inválido) está mal, y por qué el jitter importa cuando hay **muchos** clientes.
+
+**Criterios de "hecho":**
+- [ ] `prediccion.md` existe **antes** de ejecutar, con la lista de esperas + razonamiento.
+- [ ] Todos los tests pasan (`pytest`).
+- [ ] La función: reintenta solo el error reintentable, respeta `retry_after` cuando viene,
+      aplica el tope al backoff, y **re-lanza** la última excepción al agotar los intentos.
+- [ ] Un error **no** reintentable se propaga **de inmediato** (sin dormir, sin reintentar).
+- [ ] `verificacion.md` distingue reintentar-able de no, y justifica el jitter a escala.
+
+</Reto>
+
+<Solucion title="Pista (NO la solución): si te traba el bucle">
+Recorre los intentos con un índice (0, 1, 2...). En cada vuelta, **intenta** la operación;
+si devuelve, listo. Si lanza el error **no** reintentable, re-lánzalo de una. Si lanza el
+reintentable: la espera base es `min(tope, base * 2 ** indice)` — salvo que el error traiga
+`retry_after`, que **gana**. Suma el jitter (con el `aleatorio` inyectado) **solo** al
+backoff calculado, no al `Retry-After`. `dormir(espera)` y sigue. Si sales del bucle sin
+éxito, re-lanza la última excepción reintentable.
+</Solucion>
+
+## Check de dominio
+
+<CheckDominio
+  title="Marca solo lo que puedes EXPLICAR sin notas"
+  items={[
+    "Nombrar las cuatro piezas de un request a un LLM (modelo, system, messages, max_tokens) y qué controla cada una.",
+    "Explicar la diferencia entre el system de Anthropic (parámetro) y el de OpenAI (mensaje con role=system).",
+    "Calcular el costo en USD de una llamada dados los tokens de entrada/salida y el pricing por millón.",
+    "Explicar por qué la salida cuesta más que la entrada y cómo el modelo es la mayor palanca de costo.",
+    "Clasificar 429, 500, 401 y 400 en reintentar-able o no, y decir cómo se reintenta.",
+    "Explicar qué es el backoff exponencial con jitter y por qué el jitter evita el thundering herd.",
+    "Explicar las dos razones (UX y timeouts) por las que se usa streaming.",
+  ]}
+/>
+
+Y dos preguntas rápidas de recuperación:
+
+<Quiz
+  question="Tu servicio funcionaba bien. Llegó tráfico y empezó a tirar errores 429 intermitentes; algunos requests también daban timeout. La factura del mes se triplicó. ¿Cuál es el diagnóstico + arreglo correcto?"
+  options={[
+    "El código está roto: hay que reescribir las llamadas a la API desde cero.",
+    "Estás pegando contra el rate limit (429) bajo carga y, sin streaming, respuestas largas chocan con el timeout. Arreglo: reintentos con backoff+jitter respetando Retry-After, streaming para salidas largas, y revisar el modelo/max_tokens que disparó el costo.",
+    "El proveedor está caído; no hay nada que hacer salvo esperar.",
+  ]}
+  answer={1}
+  explanation="Es el caso clásico de producción: 429 = rate limit (se sobrevive con backoff+jitter y Retry-After, no reescribiendo código), timeouts en salidas largas se mitigan con streaming, y la factura triplicada apunta a un modelo caro o un max_tokens alto. Tres palancas distintas, todas de esta lección."
+/>
+
+<Quiz
+  question="Una llamada a claude-opus-4-8 con 10.000 tokens de entrada y 2.000 de salida cuesta $0.10 (precios $5/$25 por millón). Tu tarea es clasificar reseñas en positivo/negativo, y haces 100.000 requests al día. ¿Cuál es la mejor jugada?"
+  options={[
+    "Quedarte en Opus: es el modelo más capaz y la calidad lo justifica siempre.",
+    "Probar claude-haiku-4-5 ($1/$5 por millón): la misma carga cuesta ~$0.02 por request (5x menos, ~$8.000/día menos), y una clasificación binaria casi seguro no necesita el cerebro grande. Validar con una eval antes de cambiar.",
+    "Bajar max_tokens a 1 para que la salida cueste casi nada.",
+  ]}
+  answer={1}
+  explanation="Model routing: el modelo correcto es el más barato que pasa tu eval. Una clasificación binaria es tarea de Haiku; reservar Opus para eso es quemar 5x el presupuesto. Bajar max_tokens a 1 truncaría la salida (no es un arreglo de costo, es un bug). Y siempre se valida con eval (6.9) antes de cambiar de modelo en prod."
+/>
+
+:::tip[Si ya llamaste a una API de LLM antes]
+Quizás ya hiciste `client.create(...)` en algún proyecto. **Valida y salta:** ¿puedes
+**defender en una entrevista**, sin notas, (1) qué errores se reintentan y cuáles no, y por
+qué el jitter importa a escala; (2) cómo calculas el costo por request y por qué la salida
+pesa más; y (3) las dos razones técnicas para streamear? Si las tres te salen con números,
+usa los ejercicios para auditar el manejo de errores y el costo de un proyecto tuyo real. Si
+alguna se siente borrosa —sobre todo el backoff o el costo— esta lección te dice cuál.
+:::
+
+## Recursos
+
+Documentación oficial primero; los blogs y los precios caducan rápido.
+
+- **Anthropic — Messages API y SDK:**
+  [Messages API](https://platform.claude.com/docs/en/api/messages),
+  [Client SDKs](https://platform.claude.com/docs/en/api/client-sdks),
+  [Streaming](https://platform.claude.com/docs/en/build-with-claude/streaming),
+  [Rate limits](https://platform.claude.com/docs/en/api/rate-limits),
+  [Errors](https://platform.claude.com/docs/en/api/errors),
+  [Token counting](https://platform.claude.com/docs/en/build-with-claude/token-counting),
+  [Pricing](https://www.anthropic.com/pricing).
+- **OpenAI — API y SDK:**
+  [API reference](https://platform.openai.com/docs/api-reference/chat),
+  [Streaming](https://platform.openai.com/docs/guides/streaming-responses),
+  [Rate limits](https://platform.openai.com/docs/guides/rate-limits),
+  [Pricing](https://openai.com/api/pricing/).
+- **Azure OpenAI:**
+  [Quickstart y versionado de la API REST](https://learn.microsoft.com/azure/ai-services/openai/).
+- **Backoff y resiliencia (patrón general):** "Exponential Backoff And Jitter" (AWS
+  Architecture Blog) — el porqué del jitter, válido para cualquier API.
+
+> Mantén tus links vivos en `articulos.md` dentro de la carpeta de esta sub-unidad.
+
+## Conexión con el proyecto de la fase
+
+El capstone de la Fase 6 es una
+[**Plataforma RAG de producción**](/fase-6-ai-engineering/proyecto/), y esta lección es su
+capa de transporte. Cada consulta del usuario dispara llamadas reales: una al modelo de
+**embeddings** (para buscar) y otra al modelo de **generación** (para responder). El
+**costo por request** que aprendiste a calcular es justo el _budget de costo/latencia_ que
+el Definition of Done del capstone exige como entregable de primera clase; los **reintentos
+con backoff** son lo que mantiene la plataforma en pie cuando el proveedor te tira `429`
+bajo carga; y el **streaming** es lo que hace que la respuesta aparezca token a token en el
+frontend (esa UI es 4.11). Todo esto lo documentarás en un **ADR**: "elegí el modelo X para
+generación y el Y para clasificación, midiendo $Z por request" — exactamente la clase de
+decisión defendible que separa una banda salarial de la siguiente.
+
+## Reflexión y repaso espaciado
+
+Antes de cerrar, responde en tu cuaderno o en `articulos.md`:
+
+- ¿Te sorprendió cuánto cambia la factura solo con cambiar de modelo? ¿En qué tareas de tu
+  capstone usarías el modelo barato y en cuáles el caro?
+- Piensa en una app de IA que uses: ¿cómo crees que maneja un rate limit cuando hay mucha
+  gente usándola al mismo tiempo? ¿Reintenta, encola, degrada?
+
+**Gancho de spaced repetition** — agenda estos repasos:
+
+- **Mañana (+1 día):** sin mirar, escribe la fórmula del costo y calcula una llamada de
+  15k in / 3k out en los tres modelos Claude de la tabla.
+- **En 3 días:** reescribe de memoria la función `llamar_con_reintentos` y explica por qué
+  el `Retry-After` gana sobre el backoff calculado y por qué el jitter no es opcional.
+- **En 1 semana:** explícale a alguien (o a tu IA, en voz alta) las dos razones técnicas
+  para usar streaming y el gotcha del `usage` al streamear en OpenAI. Si puedes enseñarlo,
+  lo aprendiste.
+
+Siguiente parada:
+[**6.4 · Structured outputs, function calling, tool use + MCP**](/fase-6-ai-engineering/6-4-structured-tools-mcp/),
+donde la respuesta del modelo deja de ser texto libre y empieza a ser **JSON validado** y
+**llamadas a herramientas** — el salto de "un chatbot" a "un sistema que hace cosas".

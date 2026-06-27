@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/seleccion-modalidad-idp
+titulo: "Elegir la modalidad y diseñar el pipeline de IDP"
+fase: fase-6
+sub_unidad: "6.11"
+ruta_critica: true
+modalidad: a-mano                    # diseño / razonamiento: sin código ni tests
+objetivos:
+  - "Elegir el adaptador multimodal y el modo (API/local) por la restricción dominante"
+  - "Defender IDP especializado vs LLM de vision nombrando qué se pierde con la elección"
+  - "Diseñar un pipeline de IDP con gate de confianza, HITL, validación cruzada, seguridad y observabilidad"
+hilos_transversales: [seguridad, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> razonamiento propio
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths:
+  tests: null                        # ejercicio de diseño: la verificación es el write-up, no una suite

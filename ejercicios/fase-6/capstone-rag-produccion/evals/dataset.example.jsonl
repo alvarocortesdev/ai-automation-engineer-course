@@ -1,0 +1,5 @@
+{"pregunta": "Cual es la politica de devoluciones?", "respuesta_esperada": "30 dias con boleta.", "chunks_relevantes": ["doc-politicas-3"]}
+{"pregunta": "Que horario de atencion tienen los fines de semana?", "respuesta_esperada": "Sabados 10 a 14h, domingos cerrado.", "chunks_relevantes": ["doc-horarios-1"]}
+{"pregunta": "Como reseteo mi contrasena?", "respuesta_esperada": "Desde Ajustes > Seguridad > Restablecer.", "chunks_relevantes": ["doc-cuenta-7", "doc-cuenta-8"]}
+{"pregunta": "Hacen envios internacionales?", "respuesta_esperada": "No, solo dentro del pais.", "chunks_relevantes": ["doc-envios-2"]}
+{"pregunta": "Cual es el numero de soporte y como contacto a un humano?", "respuesta_esperada": "Chat en horario habil; no hay telefono.", "chunks_relevantes": ["doc-soporte-5"]}

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/decision-embeddings-chunking
+titulo: "Decisión: modelo de embeddings + chunking para tres escenarios"
+fase: fase-6
+sub_unidad: "6.5"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Elegir un modelo de embeddings (local vs API, dimensiones, idioma) según la restricción dominante"
+  - "Diseñar una estrategia de chunking (tamaño y solape) apropiada al tipo de documento"
+  - "Identificar el riesgo dominante de cada diseño (p. ej. semántica vs identificadores exactos)"
+hilos_transversales: [costo-latencia, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: no hay suite; la entrega es decisiones.md

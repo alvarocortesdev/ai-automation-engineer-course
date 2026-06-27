@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/model-card-y-audit-log
+titulo: "Model card + audit log a prueba de manipulación"
+fase: fase-6
+sub_unidad: "6.15"
+ruta_critica: true
+modalidad: mixto                     # código (audit_log.py + tests) + documento (MODEL-CARD.md)
+objetivos:
+  - "Implementar un audit log estructurado, append-only y a prueba de manipulación (hash chain) que redacte PII antes de registrar"
+  - "Escribir una model card (uso previsto, out-of-scope, datos, evaluación, limitaciones, tier de gobernanza) para el RAG del capstone"
+  - "Conectar gobernanza con observabilidad y privacidad: qué se loguea, qué NO, y por qué un hash chain detecta manipulación"
+hilos_transversales: [seguridad, observabilidad, testing, spec-driven, ingles]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []               # ejercicio atómico; alimenta el DoD del capstone
+paths: {}                            # rutas por convención (tests en la carpeta del ejercicio)

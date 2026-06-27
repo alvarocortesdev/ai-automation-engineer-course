@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/diagnostico-rag
+titulo: "Diagnóstico de un RAG que falla + elección de técnica"
+fase: fase-6
+sub_unidad: "6.7"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Ubicar la causa raíz de una falla de RAG en la etapa correcta del pipeline (chunk→embed→store→retrieve→rerank→generate)"
+  - "Elegir la técnica que arregla cada falla (hybrid, Contextual Retrieval, reranking, Agentic RAG, GraphRAG) descartando alternativas con razón"
+  - "Decidir HNSW vs IVFFlat por la restricción dominante y diseñar un filtro de metadata fail-closed"
+hilos_transversales: [evals, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: repaso
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diagnóstico/diseño: no hay suite; la entrega es diagnostico.md

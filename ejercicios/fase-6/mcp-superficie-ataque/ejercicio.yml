@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/mcp-superficie-ataque
+titulo: "Threat model: la superficie de ataque de un agente con MCP"
+fase: fase-6
+sub_unidad: "6.4"
+ruta_critica: true
+modalidad: a-mano                    # diseño/razonamiento; el entregable es amenazas.md
+objetivos:
+  - "Identificar vectores de ataque de un agente con MCP en un escenario concreto"
+  - "Mapear cada vector a OWASP LLM Top 10 (LLM01/LLM05/LLM06)"
+  - "Proponer una mitigación accionable por vector ubicada en el host"
+  - "Justificar human-in-the-loop por irreversibilidad / blast radius"
+hilos_transversales: [seguridad, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: la lección da el modelo mental primero
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths:
+  tests: null                        # ejercicio a-mano: no hay suite

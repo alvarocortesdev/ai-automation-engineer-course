@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/agente-react-a-mano
+titulo: "El agent loop ReAct, a mano"
+fase: fase-6
+sub_unidad: "6.8"
+ruta_critica: true
+modalidad: codigo                    # loop + gate + techo; tests con pytest, sin API
+objetivos:
+  - "Implementar a mano el agent loop ReAct (razonar -> observar -> gate -> actuar -> repetir)"
+  - "Imponer un techo de pasos como guardrail de costo/latencia (nunca loop infinito)"
+  - "Aplicar un gate de allowlist antes de ejecutar cada tool (least privilege / Excessive Agency)"
+  - "Devolver las observaciones como tool_result y explicar la memoria de corto plazo"
+hilos_transversales: [seguridad, testing, costo-latencia, observabilidad]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención (tests en la carpeta del ejercicio)

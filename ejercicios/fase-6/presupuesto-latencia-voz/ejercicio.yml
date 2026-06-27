@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/presupuesto-latencia-voz
+titulo: "El cerebro de un voice agent: latencia percibida + barge-in"
+fase: fase-6
+sub_unidad: "6.12"
+ruta_critica: false                  # opcional/profundización (estrella de nicho)
+modalidad: mixto                     # a-mano (predicción) + codigo (tres funciones puras)
+objetivos:
+  - "Calcular la latencia percibida (time-to-first-audio) sumando solo las etapas que cuentan, no el total de generación"
+  - "Implementar la tabla de verdad del barge-in (cuatro estados del cruce agente×usuario)"
+  - "Combinar latencia y barge-in en una decisión de turno, reusando las funciones base"
+hilos_transversales: [costo-latencia, observabilidad, testing]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención

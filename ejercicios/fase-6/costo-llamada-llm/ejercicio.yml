@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/costo-llamada-llm
+titulo: "Calculadora de costo y elección de modelo"
+fase: fase-6
+sub_unidad: "6.3"
+ruta_critica: true
+modalidad: mixto                     # a-mano (predicción del costo) + codigo (las funciones puras)
+objetivos:
+  - "Calcular el costo en USD de una llamada a partir de tokens de entrada/salida y el pricing por millón"
+  - "Predecir a mano el costo en varios modelos y cuál es el más barato, sin ejecutar"
+  - "Explicar por qué la salida pesa más que la entrada en el costo total"
+hilos_transversales: [costo-latencia, testing]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención

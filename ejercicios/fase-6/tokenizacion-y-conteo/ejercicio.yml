@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/tokenizacion-y-conteo
+titulo: "Tokenización: predice y verifica con un tokenizer real"
+fase: fase-6
+sub_unidad: "6.1"
+ruta_critica: true
+modalidad: mixto                     # a-mano (predicción) + codigo (conteo con tiktoken)
+objetivos:
+  - "Predecir el orden relativo de tokens de varias cadenas sin ejecutar"
+  - "Implementar una función que cuente tokens con tiktoken (offline)"
+  - "Diagnosticar la propia intuición comparando predicción vs realidad y nombrando la idea de fondo equivocada"
+hilos_transversales: [costo-latencia, testing]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención (rúbrica y solución se resuelven solas)

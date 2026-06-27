@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/defense-in-depth-llm
+titulo: "Defense in depth: diseña la seguridad de una feature agéntica"
+fase: fase-6
+sub_unidad: "6.14"
+ruta_critica: true
+modalidad: a-mano                    # diseño/razonamiento; el entregable es defensa.md
+objetivos:
+  - "Identificar riesgos OWASP LLM Top 10 (2025) y OWASP Agentic (ASI 2026) en un sistema concreto"
+  - "Diseñar una columna de defense in depth con una mitigacion por riesgo ubicada en su capa"
+  - "Elegir un guardrail (input/output) y nombrar su trade-off de costo/latencia/falsos positivos"
+  - "Justificar human-in-the-loop por reversibilidad / blast radius y argumentar por que ninguna capa basta sola"
+hilos_transversales: [seguridad, observabilidad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: la leccion da el modelo mental primero
+  timebox_min: 45
+definition_of_done: []               # ejercicio atomico, no capstone
+paths:
+  tests: null                        # ejercicio a-mano: no hay suite

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/decisiones-sampling-modelo
+titulo: "Decisiones de sampling, alucinación y modelo"
+fase: fase-6
+sub_unidad: "6.1"
+ruta_critica: true
+modalidad: a-mano                    # diseño/razonamiento; no hay suite de tests
+objetivos:
+  - "Elegir y justificar un setting de sampling apropiado a cada tarea"
+  - "Evaluar el riesgo de alucinación y diseñar dos mitigaciones concretas por caso"
+  - "Elegir una familia/tier de modelo 2026 nombrando la restricción dominante"
+hilos_transversales: [costo-latencia, seguridad, evals]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null                        # ejercicio de razonamiento: sin suite automatizada

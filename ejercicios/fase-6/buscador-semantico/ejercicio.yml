@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/buscador-semantico
+titulo: "Buscador semántico desde cero (chunking + ranking + dedup)"
+fase: fase-6
+sub_unidad: "6.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Partir un documento en chunks de tamaño fijo con solape, manejando casos borde"
+  - "Rankear un corpus por similitud coseno y devolver el top-k ordenado"
+  - "Deduplicar vectores casi-idénticos con una estrategia greedy por umbral"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

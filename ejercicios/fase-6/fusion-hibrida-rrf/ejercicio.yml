@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/fusion-hibrida-rrf
+titulo: "Retrieval híbrido: RRF + metadata filtering fail-closed"
+fase: fase-6
+sub_unidad: "6.7"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Fusionar varios rankings con Reciprocal Rank Fusion usando la posición (no el score) y de forma determinista"
+  - "Filtrar candidatos por metadata con cierre seguro (fail-closed) como frontera de control de acceso"
+  - "Componer fusión + filtro + recorte en un retrieval híbrido top-k correcto"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

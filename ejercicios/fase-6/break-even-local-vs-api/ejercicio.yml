@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/break-even-local-vs-api
+titulo: "Calculadora del punto de equilibrio local vs API"
+fase: fase-6
+sub_unidad: "6.10"
+ruta_critica: true
+modalidad: mixto                     # a-mano (predicción del equilibrio) + codigo (funciones puras)
+objetivos:
+  - "Calcular el costo por request y el costo mensual de una API a partir de tokens y pricing por millón"
+  - "Calcular el punto de equilibrio en requests donde servir local (costo fijo) iguala a la API (costo variable)"
+  - "Explicar por qué a volumen bajo o variable la API casi siempre gana por costo"
+hilos_transversales: [costo-latencia, testing]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención

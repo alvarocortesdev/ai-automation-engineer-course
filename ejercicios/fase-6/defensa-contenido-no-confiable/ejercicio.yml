@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/defensa-contenido-no-confiable
+titulo: "Defensa de prompt injection + versionado (diseño)"
+fase: fase-6
+sub_unidad: "6.2"
+ruta_critica: true
+modalidad: a-mano                    # diseño/razonamiento, sin código que ejecutar
+objetivos:
+  - "Diseñar un system que segregue el contenido no confiable del canal de instrucciones"
+  - "Razonar qué vectores de inyección se mitigan y cuáles no (honestidad sobre los límites)"
+  - "Diseñar versionado de prompts y la trazabilidad mínima para auditar una falla"
+hilos_transversales: [seguridad, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example en la lección -> diseño solo
+  timebox_min: 35
+definition_of_done: []               # ejercicio atómico, no capstone
+paths:
+  tests: null                        # ejercicio a-mano: no hay suite

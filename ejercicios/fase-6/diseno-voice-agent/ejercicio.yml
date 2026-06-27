@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/diseno-voice-agent
+titulo: "Elegir la arquitectura y diseñar un voice agent"
+fase: fase-6
+sub_unidad: "6.12"
+ruta_critica: false                  # opcional/profundización (estrella de nicho)
+modalidad: a-mano                    # diseño / razonamiento: sin código ni tests
+objetivos:
+  - "Elegir S2S vs turn-based vs híbrido por la restricción dominante"
+  - "Defender la elección nombrando qué se pierde (en especial, el texto intermedio del S2S)"
+  - "Diseñar un voice agent end-to-end: presupuesto de latencia, barge-in, economía USD/min, observabilidad y seguridad"
+hilos_transversales: [costo-latencia, observabilidad, seguridad]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> razonamiento propio
+  timebox_min: 40
+definition_of_done: []               # ejercicio atómico, no capstone
+paths:
+  tests: null                        # ejercicio de diseño: la verificación es el write-up, no una suite

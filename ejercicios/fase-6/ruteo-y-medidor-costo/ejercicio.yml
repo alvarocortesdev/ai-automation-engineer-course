@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/ruteo-y-medidor-costo
+titulo: "Medidor de costo en vivo + router de modelos"
+fase: fase-6
+sub_unidad: "6.16"
+ruta_critica: true
+modalidad: mixto                     # a-mano (predicción) + codigo (funciones puras)
+objetivos:
+  - "Calcular el USD por request desde usage contando las tres tarifas de input (fresco 1.0x, cache read 0.1x, cache write 1.25x) y el output"
+  - "Rutear cada request al modelo más barato que cubre su dificultad (barato→caro), manejando el borde exacto y el fuera de rango"
+  - "Agregar el costo mensual sobre una mezcla de tráfico, reusando el medidor y el router, con desglose por modelo"
+  - "Explicar por qué cachear un prefijo de un solo uso pierde plata y cuándo el ruteo barato degrada la calidad"
+hilos_transversales: [costo-latencia, testing, observabilidad]
+primero_sin_ia:
+  novedad: nuevo                     # concepto nuevo: worked example -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []               # ejercicio atómico, no capstone
+paths: {}                            # rutas por convención

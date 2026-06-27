@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/diseno-llmops-plataforma
+titulo: "Diseño: la capa LLMOps de la plataforma RAG"
+fase: fase-6
+sub_unidad: "6.16"
+ruta_critica: true
+modalidad: a-mano                    # diseño / razonamiento, sin código
+objetivos:
+  - "Diseñar las dos capas de caching (prompt caching del provider con prefijo estable vs. volátil, y semantic cache con umbral calibrado por eval) y nombrar dónde el caching no sirve"
+  - "Definir una política de ruteo de modelos barato→caro y un corte interactivo vs. batch, justificados, y cómo se evalúa el router"
+  - "Definir un budget de costo/latencia como gate atado al eval, y la capa LLMOps (fallbacks, versionado, despliegue seguro, monitoreo) que sostiene el sistema"
+  - "Nombrar un riesgo de seguridad que el caching introduce (fuga de respuesta entre usuarios) y su mitigación"
+hilos_transversales: [costo-latencia, evals, observabilidad, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: no hay suite; la entrega es diseno.md

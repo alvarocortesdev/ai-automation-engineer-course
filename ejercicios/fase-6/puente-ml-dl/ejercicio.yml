@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-6/puente-ml-dl
+titulo: "Defiende tus fundamentos (modo entrevista)"
+fase: fase-6
+sub_unidad: "6.0b"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Explicar qué es un modelo, entrenar vs inferir, y de dónde salen los embeddings (vectores aprendidos)"
+  - "Diagnosticar overfitting vs underfitting con números de train/test y justificar por qué se separan los datos"
+  - "Explicar la intuición de self-attention con un ejemplo de ambigüedad propio"
+hilos_transversales: [evals, ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento: no hay suite automática
