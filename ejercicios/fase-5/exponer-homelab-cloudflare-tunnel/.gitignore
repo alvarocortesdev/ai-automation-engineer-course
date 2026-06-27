@@ -1,0 +1,2 @@
+# Los secretos del entorno NUNCA viajan al repo. Solo sube .env.example (claves sin valores).
+.env

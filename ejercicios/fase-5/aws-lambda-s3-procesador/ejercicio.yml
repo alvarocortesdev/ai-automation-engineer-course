@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/aws-lambda-s3-procesador
+titulo: "Lambda S3-triggered: handler + política IAM mínima, testeado sin AWS"
+fase: fase-5
+sub_unidad: "5.7"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Implementar una AWS Lambda en Python con la firma handler(event, context) que parsea un evento de S3 y resume el objeto"
+  - "Separar lógica pura (parsear_evento) del efecto (S3) inyectando el cliente, para hacer la Lambda testeable sin AWS"
+  - "Manejar el caso borde de un evento sin Records lanzando ValueError"
+  - "Escribir una policy IAM de least privilege para el execution role (s3:GetObject acotado a ARN + logs), sin access keys"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}   # tests en tests/test_handler.py (convención)

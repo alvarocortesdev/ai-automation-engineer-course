@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/fase-5-index
+titulo: "Diagnóstico de Fase 5 y plan de ruta a producción"
+fase: fase-5
+sub_unidad: "5.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar el punto de partida real en DevOps por sub-unidad de ruta-crítica (5.1–5.10), distinguiendo 'lo sé hacer sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de Fase 5 con bloques semanales concretos, ritual de active recall y un orden de apilado del pipeline que termina con usuarios reales y observabilidad"
+  - "Traducir los 7 puntos del Definition of Done del Capstone F5 en evidencias verificables, no en intenciones"
+hilos_transversales: [observabilidad, seguridad, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  solucion_referencia: .ai/soluciones/fase-5/fase-5-index.md
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

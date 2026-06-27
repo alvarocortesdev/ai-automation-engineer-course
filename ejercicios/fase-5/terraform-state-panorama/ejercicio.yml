@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/terraform-state-panorama
+titulo: "Diseña el state y el panorama IaC de tu proyecto"
+fase: fase-5
+sub_unidad: "5.11"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Explicar el problema que IaC resuelve (no-reproducibilidad y config drift del clickeo de consolas) con un ejemplo concreto"
+  - "Distinguir el modelo declarativo (estado deseado, idempotente) del imperativo (los pasos)"
+  - "Diseñar el manejo del state remoto compartido: backend S3 con use_lockfile (no DynamoDB) y por qué el state nunca va a Git"
+  - "Decidir Terraform (BSL) vs OpenTofu (MPL) justificando el trade-off según a quién afecta la licencia"
+hilos_transversales: [spec-driven, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: lo corrige la IA con la rúbrica, no hay suite

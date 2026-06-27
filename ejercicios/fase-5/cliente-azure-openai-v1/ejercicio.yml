@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/cliente-azure-openai-v1
+titulo: "Escribe el cliente v1 de Azure OpenAI"
+fase: fase-5
+sub_unidad: "5.6"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Construir el cliente vigente (API v1 GA) de Azure OpenAI: cliente OpenAI() con base_url /openai/v1, sin api_version"
+  - "Leer endpoint y clave del entorno (12-factor) sin hardcodear secretos"
+  - "Llamar a chat.completions con model=<deployment>, explicando por qué model es el nombre del deployment y no del modelo base"
+hilos_transversales: [seguridad, spec-driven, testing, ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

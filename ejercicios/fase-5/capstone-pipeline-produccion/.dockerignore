@@ -1,0 +1,16 @@
+# Evita meter basura (y secretos) en el build context de la imagen.
+# TODO: ajusta a tu stack. Mínimo recomendado:
+.git
+.github
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+node_modules/
+docs/
+WRITE-UP.md
+README.md
+*.md

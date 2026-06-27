@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/slo-error-budget
+titulo: "SLO, error budget y la decisión de desplegar"
+fase: fase-5
+sub_unidad: "5.10"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Distinguir SLI, SLO y error budget, y calcular el budget en peticiones y en tiempo a partir de una tasa de error medida"
+  - "Tomar una decisión de despliegue justificada por el error budget restante en vez de por intuición"
+  - "Distinguir RED (servicios/usuario) de USE (recursos/máquina) y elegir qué alertar (síntoma, no causa)"
+hilos_transversales: [observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento: no hay suite

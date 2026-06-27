@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/aws-mapeo-diseno
+titulo: "AWS para tu capstone: mapea servicios y diseña el acceso con least privilege"
+fase: fase-5
+sub_unidad: "5.7"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Mapear EC2/S3/IAM/Lambda/RDS a los primitivos de cloud (5.5) y dar el equivalente en Azure de cada uno"
+  - "Diseñar el acceso de una app a recursos de AWS con least privilege: role (no access keys) + policy JSON acotada por acción y ARN"
+  - "Estimar costo/riesgo de la arquitectura: free tier 2026 (créditos, no 12 meses) + una medida de control de costo el día 1"
+  - "Elegir el servicio de compute justificando el trade-off según el patrón de carga (no por preferencia)"
+hilos_transversales: [seguridad, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: lo corrige la IA con la rúbrica, no hay suite

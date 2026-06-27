@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TODO-LeerUploads",
+      "Effect": "Allow",
+      "Action": ["TODO: solo s3:GetObject"],
+      "Resource": "TODO: arn del bucket de uploads, acotado (no *)"
+    },
+    {
+      "Sid": "TODO-EscribirLogs",
+      "Effect": "Allow",
+      "Action": ["TODO: logs:CreateLogStream, logs:PutLogEvents"],
+      "Resource": "TODO: arn del log group de la Lambda"
+    }
+  ]
+}

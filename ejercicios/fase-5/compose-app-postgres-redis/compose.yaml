@@ -1,0 +1,38 @@
+# Tu stack va aquí. Escríbelo a mano, sin IA. Ver README.md para los requisitos.
+#
+# NO pongas un campo `version:` arriba: es obsoleto.
+# Arranca directo con `services:`.
+#
+# Pistas de estructura (rellena los TODO; el orden de las claves es libre):
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # TODO: DATABASE_URL y REDIS_URL deben alcanzar a db y cache POR NOMBRE de
+      # servicio (no por IP). La contraseña entra por ${POSTGRES_PASSWORD}.
+      DATABASE_URL: "" # TODO
+      REDIS_URL: "" # TODO
+    # TODO: depends_on en forma LARGA, con condition: service_healthy para db y cache.
+    restart: unless-stopped
+
+  db:
+    # TODO: imagen postgres PINNEADA (no latest)
+    image: "" # TODO
+    environment:
+      POSTGRES_USER: app
+      # TODO: POSTGRES_PASSWORD desde el entorno (${POSTGRES_PASSWORD}), no un literal
+      POSTGRES_DB: appdb
+    # TODO: volumes -> named volume montado en /var/lib/postgresql/data
+    # TODO: healthcheck con pg_isready
+
+  cache:
+    # TODO: imagen redis PINNEADA (no latest)
+    image: "" # TODO
+    # TODO: healthcheck con redis-cli ping
+
+# TODO: declara aquí, a nivel raíz, el named volume que usa db.
+# volumes:
+#   pgdata:

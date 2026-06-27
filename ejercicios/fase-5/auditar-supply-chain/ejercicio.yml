@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/auditar-supply-chain
+titulo: "Auditoría de supply chain: clasifica las fallas de un workflow real"
+fase: fase-5
+sub_unidad: "5.4"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Auditar un workflow de CI e identificar al menos 6 fallas de cadena de suministro distintas"
+  - "Clasificar cada falla por gate/concepto (SAST/SCA/secret/pin/permisos/PPE) y categoría OWASP CICD-SEC, con severidad justificada"
+  - "Priorizar los arreglos por impacto real, reconociendo el Poisoned Pipeline Execution como el más grave"
+hilos_transversales: [seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de auditoría/razonamiento: lo corrige la IA con la rúbrica, no hay suite

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/auditoria-finops
+titulo: "Auditoría FinOps: una factura se disparó, encuentra por qué"
+fase: fase-5
+sub_unidad: "5.8"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diagnosticar las trampas de costo de una arquitectura a partir de su factura, ordenadas por impacto en dólares"
+  - "Diseñar el control de costos faltante: tags de atribución + budget con umbrales de alerta + qué apagar/redimensionar"
+  - "Rehacer la estimación previa que habría anticipado el golpe, conectando cada línea con su driver"
+hilos_transversales: [costo-latencia, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: lo corrige la IA con la rúbrica, no hay suite

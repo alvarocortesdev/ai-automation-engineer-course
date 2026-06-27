@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/instrumentar-call-chain
+titulo: "Instrumenta el call-chain: trazas + correlation ID"
+fase: fase-5
+sub_unidad: "5.10"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Instrumentar una cadena de llamadas con spans de OpenTelemetry anidados (call-chain) que reflejen la estructura de la petición"
+  - "Propagar un correlation_id por la petición (contextvars) y emitir structured logging JSON que lo lleve en cada evento"
+  - "Adjuntar al span del LLM atributos de tokens y costo por paso que conecten la traza con el costo y los evals de la Fase 6"
+hilos_transversales: [observabilidad, testing, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

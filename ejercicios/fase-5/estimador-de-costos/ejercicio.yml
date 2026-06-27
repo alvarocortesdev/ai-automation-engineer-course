@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/estimador-de-costos
+titulo: "Estimador de costos cloud (con la trampa del egress)"
+fase: fase-5
+sub_unidad: "5.8"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Estimar el costo mensual de una arquitectura descomponiéndolo en los 4 drivers (compute, storage, egress, requests)"
+  - "Tratar correctamente el tramo gratis de egress (nunca negativo) y el compute always-on vs scale-to-zero"
+  - "Devolver un desglose por driver que permita explicar de dónde sale cada dólar"
+hilos_transversales: [testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

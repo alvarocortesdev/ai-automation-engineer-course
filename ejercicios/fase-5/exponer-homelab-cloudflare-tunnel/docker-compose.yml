@@ -1,0 +1,32 @@
+# docker-compose.yml — expón tu API del homelab por Cloudflare Tunnel (de forma SEGURA).
+#
+# Completa los TODO. Recuerda (lección 5.9, sección 4.4):
+#   - el backend NO se publica a internet: visible solo en la red interna (expose, NO ports)
+#   - el túnel es una conexión SALIENTE: NINGÚN servicio necesita publicar puertos al host
+#   - el token del túnel es un SECRETO: viene de ${CF_TUNNEL_TOKEN} (del .env, ignorado por git),
+#     nunca escrito literal en este archivo
+#
+# Los tests (test_despliegue.py) revisan este archivo como TEXTO: no necesitas cuenta de Cloudflare.
+# Corre `pytest` y deja que las verificaciones en rojo te guíen.
+
+services:
+  api:
+    # TODO: tu imagen del registry (la que construiste en 5.1 / publicaste en 5.3).
+    image: ghcr.io/donpelusa/api-produccion:latest
+    # TODO (1): el backend debe ser alcanzable SOLO desde la red interna de Docker
+    #           (para que únicamente el túnel le llegue). ¿'expose' o 'ports'? Elige y declara 8000.
+    #
+    # TODO (2): añade una política de reinicio para que sobreviva a reinicios del homelab.
+    #
+    # TODO (3): comenta POR QUÉ este servicio no publica puertos al host.
+
+  cloudflared:
+    # TODO (4): imagen oficial del conector.
+    image:
+    # TODO (5): corre el túnel gestionado por token. El token NO va hardcodeado:
+    #           sale de la variable de entorno ${CF_TUNNEL_TOKEN}.
+    #           Pista de comando: tunnel --no-autoupdate run --token <viene del entorno>
+    command:
+    # TODO (6): misma política de reinicio.
+    #
+    # TODO (7): comenta POR QUÉ el túnel no necesita abrir ningún puerto del router.

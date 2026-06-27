@@ -1,0 +1,32 @@
+# Esqueleto de DEPLOY — corre en push a main, DESPUÉS de que el CI pasó. Complétalo (lección §4 paso 7).
+#
+# Principios:
+#   - Despliega la MISMA imagen que se testeó (referenciada por digest/tag inmutable, no :latest).
+#   - Secretos vía `secrets.` de GitHub Actions, inyectados en runtime. NUNCA en el repo.
+#   - Documenta el rollback en docs/RUNBOOK.md (este workflow debería permitir volver a la imagen anterior).
+#   - Pinea las actions a SHA y usa permissions mínimos.
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Usa un GitHub Environment para gatear/auditar el deploy a prod (5.3).
+    environment: production
+    permissions:
+      contents: read
+      # packages: write   # solo si publicas la imagen a GHCR
+    steps:
+      # TODO: checkout (a SHA).
+      # TODO: build + push de la imagen a un registry, taggeada por digest/versión inmutable.
+      # TODO: desplegar al destino (VPS+Caddy, homelab+Cloudflare Tunnel, o Vercel para el frontend).
+      #       Inyecta la config/secretos por ambiente; NO los escribas a un .env en claro.
+      # TODO: verificación post-deploy: golpea /health en la URL pública y falla si no responde 200.
+      - run: "echo 'TODO: build/push imagen inmutable + deploy + smoke /health' && exit 1"

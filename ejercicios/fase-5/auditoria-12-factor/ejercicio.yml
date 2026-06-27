@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/auditoria-12-factor
+titulo: "Auditoría 12-factor de un backend"
+fase: fase-5
+sub_unidad: "5.2"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diagnosticar violaciones de 12-factor en app + Dockerfile + compose, nombrando el factor de cada una"
+  - "Explicar el síntoma observable en producción de cada violación (no genérico) y proponer un arreglo accionable"
+  - "Priorizar los arreglos por riesgo (seguridad vs operativo) en un ADR corto"
+hilos_transversales: [seguridad, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diagnóstico: la evaluación es del razonamiento escrito, no hay suite

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/terraform-bucket-modulo
+titulo: "Escribe un módulo de bucket testeable, verificado sin tocar la nube"
+fase: fase-5
+sub_unidad: "5.11"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Escribir una configuración Terraform mínima y reusable: bloque terraform con provider pineado, resource parametrizado y outputs"
+  - "Parametrizar con variables sin hardcodear nada; versioning condicional con el operador ternario"
+  - "Verificar la config con terraform test y mock_provider, sin tocar la nube ni usar credenciales (testing aplicado a IaC)"
+hilos_transversales: [testing, seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}   # rúbrica, solución y tests siguen la convención por defecto

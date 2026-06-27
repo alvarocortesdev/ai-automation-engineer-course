@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/primer-pipeline-ci
+titulo: "Tu primer pipeline: lint → test en cada PR"
+fase: fase-5
+sub_unidad: "5.3"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un workflow de GitHub Actions que se dispare en push a main y en pull_request, con permisos mínimos (contents: read)"
+  - "Ordenar correctamente los steps de un job de CI Python con uv: checkout -> setup-uv -> uv sync --frozen -> ruff -> pytest, explicando por qué el checkout va primero"
+  - "Pinear las actions a un tag de versión (nunca @main) y explicar qué se necesita ADEMÁS del workflow (branch protection) para bloquear un merge con CI en rojo"
+hilos_transversales: [testing, spec-driven, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

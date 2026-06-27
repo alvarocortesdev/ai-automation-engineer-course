@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/pipeline-matriz-gate
+titulo: "Diseña el pipeline completo: matriz, caché, gate y trade-offs"
+fase: fase-5
+sub_unidad: "5.3"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Configurar un pipeline con matriz de versiones, caché de dependencias y jobs encadenados con needs (test -> build -> deploy)"
+  - "Gatear el deploy por rama (if) y por environment (production con su secret), distinguiendo un secret de repo de un secret de environment"
+  - "Explicar por qué el archivo de workflow no bloquea un merge (lo hace la branch protection / ruleset con required status checks) y razonar el trade-off costo/latencia de la matriz"
+hilos_transversales: [seguridad, costo-latencia, spec-driven, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

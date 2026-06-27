@@ -1,0 +1,33 @@
+# STARTER — reescribe este archivo a mano (sin IA).
+#
+# Un workflow con TRES jobs encadenados para una librería que se publica
+# (la usan en Python 3.11, 3.12 y 3.13) y se deploya a producción solo desde main:
+#
+#   test   -> matriz de las 3 versiones + caché de dependencias
+#   build  -> needs: test ; sube el artefacto con upload-artifact
+#   deploy -> needs: build ; if: solo push a main ; environment: production ;
+#             inyecta DEPLOY_TOKEN como ${{ secrets.DEPLOY_TOKEN }}
+#
+# Borra TODO esto y escríbelo. El test estructural (test_workflow.py) valida la forma.
+# Las versiones vigentes (jun 2026): actions/checkout@v7, astral-sh/setup-uv@v8,
+# actions/upload-artifact@v7. Verifícalas en el repo oficial de cada action.
+#
+# Esqueleto (faltan claves y valores — NO es la solución):
+#
+# name: Release
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+# permissions:
+#   contents: read
+# jobs:
+#   test:
+#     ...        # strategy.matrix.python-version: ["3.11", "3.12", "3.13"]
+#                # setup-uv con enable-cache: true
+#   build:
+#     needs: ... # upload-artifact
+#   deploy:
+#     needs: ...
+#     if: ...
+#     environment: ...

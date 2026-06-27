@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/plan-de-despliegue
+titulo: "Plan de despliegue de la app completa (decisión + trade-offs)"
+fase: fase-5
+sub_unidad: "5.9"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Asignar cada pieza de la app a una opción de despliegue (Vercel/VPS+proxy/homelab+túnel/managed cloud) justificando el trade-off"
+  - "Determinar la fuente correcta del certificado HTTPS por pieza (plataforma / Caddy+Let's Encrypt / edge de Cloudflare)"
+  - "Diseñar variables por ambiente distinguiendo público de secreto, y argumentar por restricciones por qué no se necesita Kubernetes"
+hilos_transversales: [seguridad, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: no hay suite; se evalúa el write-up

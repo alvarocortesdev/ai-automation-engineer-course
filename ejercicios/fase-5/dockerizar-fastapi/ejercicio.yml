@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/dockerizar-fastapi
+titulo: "Dockeriza el backend FastAPI (multi-stage, seguro y mínimo)"
+fase: fase-5
+sub_unidad: "5.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un Dockerfile multi-stage (builder + runtime) que produce una imagen mínima copiando solo lo necesario al runtime"
+  - "Ordenar las instrucciones para aprovechar la caché de capas: el manifiesto de dependencias antes que el código fuente"
+  - "Aplicar seguridad de imagen: base pinneada y slim, usuario no-root, HEALTHCHECK y .dockerignore que excluye secretos"
+hilos_transversales: [seguridad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

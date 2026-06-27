@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/exponer-homelab-cloudflare-tunnel
+titulo: "Expón tu API del homelab con Cloudflare Tunnel (sin abrir puertos)"
+fase: fase-5
+sub_unidad: "5.9"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Exponer un servicio del homelab a internet con Cloudflare Tunnel sin abrir puertos del router"
+  - "Mantener el backend con exposición mínima: visible solo en la red interna (expose), nunca publicado al host (ports)"
+  - "Inyectar el token del túnel desde el entorno (CF_TUNNEL_TOKEN) sin secretos hardcodeados ni commiteados"
+hilos_transversales: [seguridad, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

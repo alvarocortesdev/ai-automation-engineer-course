@@ -1,0 +1,365 @@
+---
+title: 12-factor app
+description: "El checklist barato que separa 'funciona en mi máquina' de 'se despliega sin sorpresas': config en el entorno (no en el código), paridad dev/prod, procesos sin estado, backing services adjuntos, logs como streams y port binding, aplicados al backend de la Fase 3."
+sidebar:
+  order: 2
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="intermedio" />
+
+En [`5.1`](/fase-5-devops/5-1-docker/) metiste tu backend en una imagen de Docker: una caja que corre igual en tu máquina y en el servidor. Pero meter algo en una caja no lo hace **desplegable**. Si la URL de la base de datos está escrita en el código, la imagen que probaste en tu laptop apunta a tu base local, y la misma imagen en producción seguiría apuntando ahí. Si la app guarda las sesiones en una variable en memoria, al reiniciar el contenedor los usuarios pierden la sesión, y si levantas dos copias para repartir la carga, cada una ve usuarios distintos. La metodología **12-factor** es una lista de doce hábitos —publicada por los ingenieros de Heroku en 2011 y todavía vigente— que arregla justo eso: vuelve tu app **portable, escalable y predecible** al desplegarla. No es teoría académica ni necesita Kubernetes; es un checklist barato que aplicas hoy a lo que ya construiste, y que sostiene todo el resto de esta fase.
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Implementar el Factor III (config en el entorno):** mover toda la configuración que varía entre deploys (URLs, credenciales, flags) fuera del código a variables de entorno, leerla con validación de tipos y arranque-que-falla-rápido (`pydantic-settings`), y explicar por qué un secreto en el código o en la imagen es un bug de seguridad, no una comodidad.
+- **O2 — Diagnosticar violaciones de 12-factor en un backend dado:** auditar app + Dockerfile + compose, nombrar el factor incumplido, el **síntoma concreto en producción** que provoca, y el arreglo (config, logs a stdout, proceso sin estado, backing service adjunto, port binding).
+- **O3 — Explicar el trade-off de un proceso sin estado:** por qué mover el estado del proceso a un backing service es lo que habilita el escalado horizontal y el reinicio sin pérdida, y qué costo (latencia, una dependencia más) se paga a cambio.
+
+## 2. Por qué importa (tu techo salarial está aquí)
+
+> 💰 **Por qué importa:** la Fase 5 es la que te lleva de "sé programar" a "sé poner cosas en producción de forma profesional", y eso sube tu techo salarial. Docker (33% de las ofertas), CI/CD (32%) y cloud (AWS 30%, Azure 17%) son table stakes — pero todos asumen que tu app **se comporta bien** al desplegarse. 12-factor es el contrato que lo garantiza. "Twelve-factor", "stateless services", "config via environment" y "logs to stdout" aparecen tal cual en las descripciones de roles de backend, platform y DevOps porque son lo primero que un revisor mira: una app que hornea su URL de base de datos en el código o que guarda sesiones en memoria **no se puede operar**, da igual lo elegante que sea su lógica.
+
+Tres razones la vuelven un punto de no-retorno:
+
+1. **Es el cimiento de TODA la Fase 5.** El CI/CD de [`5.3`](/fase-5-devops/5-3-cicd-github-actions/) inyecta secretos como variables de entorno (Factor III); los gates de seguridad de [`5.4`](/fase-5-devops/5-4-seguridad-supply-chain-ci/) revientan si encuentran un secreto horneado en la imagen; la observabilidad de [`5.10`](/fase-5-devops/5-10-observabilidad/) asume que los logs salen como un stream a stdout (Factor XI); el despliegue de [`5.9`](/fase-5-devops/5-9-despliegue/) con usuarios reales exige que la app sobreviva a un reinicio (Factor VI). Saltarte 12-factor es construir el resto sobre arena.
+2. **Una sola imagen, muchos entornos.** El valor real de Docker se cobra solo si la **misma** imagen corre en dev, staging y producción sin recompilar — y eso únicamente es cierto si toda la diferencia entre entornos vive en config externa, no en el código (Factor III + V + X). Sin 12-factor, tienes una imagen por entorno, y "funciona en mi máquina" vuelve por la ventana.
+3. **Es barato y de altísimo retorno.** No es un framework que estudiar meses: son doce ideas que aplicas en una tarde y que evitan las clases enteras de bugs más caras de producción (sesión perdida al escalar, secreto filtrado en el repo, log que se llena el disco). Un revisor senior detecta una violación en treinta segundos; aplicarlas te marca como alguien que ya operó algo de verdad.
+
+:::tip[Si ya lo tocaste]
+Quizá ya usas `.env` o ya separas config en algunos proyectos. Perfecto: úsalo como atajo de validación, no como excusa para saltar. El test honesto es si puedes (a) nombrar los doce factores, (b) explicar por qué un `.env` **commiteado** rompe el Factor III, y (c) defender por qué un proceso sin estado habilita el escalado. Si los tres salen fluidos, valida con el check de dominio (§8) y pasa a [`5.3`](/fase-5-devops/5-3-cicd-github-actions/). Si alguno tropieza, lee igual.
+:::
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección ensambla piezas que ya conoces. Reúsalas antes de seguir:
+
+- De [`5.1` Docker](/fase-5-devops/5-1-docker/): una **imagen** es inmutable; las **variables de entorno** (`ENV`, `docker run -e`, `environment:` en Compose) son cómo le pasas datos desde fuera sin reconstruirla. Ese mecanismo es el vehículo del Factor III.
+- De [`3.8` Backend con FastAPI](/fase-3-backend/3-8-backend-fastapi/): la app que vamos a "doce-factorizar". Sus rutas, su `pydantic` para validar payloads, su conexión a Postgres.
+- De [`3.13` OWASP](/fase-3-backend/3-13-owasp-top10-web/): "no metas secretos en el código ni en el repo" y el uso de `gitleaks`. El Factor III es la cara constructiva de esa regla: no solo *no* lo metas, sino *dónde* sí va (el entorno).
+- De [`3.3` PostgreSQL](/fase-3-backend/3-3-postgresql-a-fondo/) y [`3.9` ports & adapters](/fase-3-backend/3-9-ports-adapters-hexagonal/): la base de datos es un **recurso externo** al que te conectas por una URL. Que sea intercambiable (tu Postgres local hoy, el gestionado de la nube mañana) sin tocar código es el Factor IV.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="En 5.1 aprendiste que una imagen de Docker es inmutable. Si la URL de tu base de datos está escrita dentro del código que se hornea en esa imagen, ¿qué problema aparece al desplegar la MISMA imagen en producción?"
+  options={[
+    "Ninguno: la imagen es portable, así que funciona igual",
+    "La imagen de producción sigue apuntando a la base de datos de desarrollo, porque la URL viaja horneada y no se puede cambiar sin reconstruir",
+    "Docker reescribe automáticamente la URL según el entorno",
+  ]}
+  answer={1}
+  explanation="Justo porque la imagen es inmutable, todo lo que esté horneado dentro viaja igual a todos lados. Si la URL está en el código, producción apunta a la base de dev. La config que VARÍA entre entornos tiene que entrar desde fuera (variables de entorno), no estar en la imagen. Ese es el Factor III."
+/>
+
+## 4. Los doce factores, y el problema en voz alta
+
+Primero el mapa completo, para que ningún factor te suene a chino; luego bajamos a los que sostienen esta fase y los razonamos sobre código real.
+
+| # | Factor | En una frase |
+|---|---|---|
+| I | Codebase | Un repo en control de versiones, muchos deploys desde él. |
+| II | Dependencies | Declara e **aísla** las dependencias (lockfile, venv); nada implícito del sistema. |
+| III | **Config** | La config que varía entre deploys vive en el **entorno**, no en el código. |
+| IV | **Backing services** | Bases de datos, colas, caches: recursos **adjuntos** intercambiables por una URL. |
+| V | **Build, release, run** | Tres etapas **separadas**: construir, combinar con config, ejecutar. |
+| VI | **Processes** | La app corre como procesos **sin estado**; el estado vive en backing services. |
+| VII | **Port binding** | La app se autocontiene y **exporta** su servicio atándose a un puerto. |
+| VIII | Concurrency | Escala **horizontalmente** lanzando más procesos (posible solo si son stateless). |
+| IX | Disposability | Arranque rápido y apagado **elegante**; los procesos son desechables. |
+| X | **Dev/prod parity** | Mantén dev, staging y prod lo más **parecidos** posible (mismos backing services). |
+| XI | **Logs** | Trata los logs como un **stream de eventos** a stdout; la app no gestiona archivos de log. |
+| XII | Admin processes | Tareas de administración (migraciones, scripts) como procesos **puntuales**. |
+
+Los **en negrita** son el corazón de esta lección. Voy a tomar un backend que viola varios y razonar el arreglo paso a paso. No memorices la receta: entiende **qué falla en producción y por qué la corrección lo cura**.
+
+### 4.1 El backend que "funciona en mi máquina"
+
+Aquí está, condensado, el antipatrón que escribe casi todo el mundo la primera vez:
+
+```python
+# app.py — TIENE varias violaciones 12-factor (no lo copies a producción)
+import logging
+
+DATABASE_URL = "postgresql://admin:s3cr3t@localhost:5432/tienda"  # ☠️ config + secreto en el código
+STRIPE_API_KEY = "sk_live_51Hxxxx_CLAVE_REAL"                     # ☠️ secreto horneado en la imagen
+PORT = 8000                                                       # ☠️ puerto fijo en el código
+
+SESSIONS: dict[str, int] = {}   # ☠️ estado en memoria del proceso
+
+logging.basicConfig(filename="/var/log/tienda/app.log")   # ☠️ log a un archivo en disco
+```
+
+Cada `☠️` es una bomba que **no explota en tu laptop** —donde la base local, la clave de prueba y el único proceso coinciden con lo que el código asume— y **sí explota al desplegar**. Vamos una por una.
+
+### 4.2 Factor III — Config en el entorno (el que más importa)
+
+La pregunta clave del Factor III es: **¿qué es config y qué no?** La regla operativa es nítida — config es **todo lo que varía entre un deploy y otro**: URLs de base de datos, credenciales, claves de API, hostnames de servicios, flags de feature. El nombre interno de la app, sus rutas de routing o el mapeo de un código de error **no** son config: son iguales en todos los entornos, así que viven en el código.
+
+El test mental infalible:
+
+> ¿Podrías volver tu repo **público ahora mismo** sin filtrar ninguna credencial? Si la respuesta es no, tienes config (o secretos) metida en el código. Eso es una violación del Factor III.
+
+La solución es leer la config del **entorno** (las variables de entorno del proceso). En Python no la lees a mano con `os.environ` y validas a ojo: usas `pydantic-settings`, que lee del entorno, **valida tipos** y —lo más importante— **falla al arrancar** si falta algo requerido (en vez de explotar a las 3am cuando alguien pega el endpoint que usa esa variable). El antes/después:
+
+```python
+# settings.py — Factor III bien hecho
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    # Lee variables APP_DATABASE_URL, APP_API_KEY, APP_DEBUG, APP_PORT del entorno.
+    model_config = SettingsConfigDict(env_prefix="APP_", env_file=".env")
+
+    database_url: str          # requerido: SIN default -> si falta, la app NO arranca
+    api_key: str               # requerido: SIN default
+    debug: bool = False        # opcional, con default seguro
+    port: int = 8000           # opcional
+
+
+settings = Settings()          # se evalúa AL ARRANCAR: si falta un requerido -> ValidationError inmediato
+```
+
+```python
+# app.py — ya no hornea nada
+from settings import settings
+
+engine = create_engine(settings.database_url)   # la URL viene de fuera; la imagen no la conoce
+```
+
+Lo que ganaste, factor por factor: la **misma imagen** corre contra tu Postgres local (con `APP_DATABASE_URL=postgresql://localhost/...`) o contra el gestionado de la nube (con la URL de prod) **sin reconstruir**; el repo es publicable porque no hay secretos dentro; y si despliegas sin la `APP_API_KEY`, la app **se niega a arrancar** con un error claro, en vez de fallar a medias bajo carga.
+
+:::tip[GLaDOS dice]
+El `.env` es una comodidad de **desarrollo local** y **JAMÁS** se commitea (va en `.gitignore`; commitéa un `.env.example` con las llaves pero sin valores). En producción nadie sube un `.env`: las variables las inyecta el orquestador (Compose, el runner de CI, la nube). Las variables de entorno reales **tienen prioridad** sobre el `.env`, justamente para que prod nunca dependa de un archivo. Confundir "uso un `.env`" con "cumplo el Factor III" es el malentendido número uno.
+:::
+
+### 4.3 Factor XI — Logs como streams
+
+El antipatrón escribía a `/var/log/tienda/app.log`. ¿Por qué está mal? Porque ata la app a un detalle del entorno (esa ruta existe, hay permiso de escritura, alguien rota el archivo antes de que llene el disco) y porque en un contenedor ese archivo **muere con el contenedor** — y si corres tres réplicas, tienes tres archivos sueltos que nadie agrega. El Factor XI dice: **la app escribe su flujo de eventos a stdout y se desentiende del resto.** Quien decide a dónde van (un archivo, un agregador, la consola de Docker, Loki, Datadog) es el **entorno de ejecución**, no la app.
+
+```python
+# Factor XI: a stdout, no a un archivo
+import logging
+import sys
+
+logging.basicConfig(
+    stream=sys.stdout,                 # el stream de eventos, no un archivo
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s %(message)s',
+)
+```
+
+Esto enlaza directo con la observabilidad de [`5.10`](/fase-5-devops/5-10-observabilidad/): cuando esos logs salen como **JSON estructurado** a stdout, el agregador los indexa y puedes correlacionarlos por `correlation_id`. Pero el primer paso, barato, es simplemente **dejar de gestionar archivos** y emitir al stream.
+
+### 4.4 Factor VI — Procesos sin estado (y por qué habilita el escalado)
+
+`SESSIONS: dict[str, int] = {}` guarda el login en una variable del proceso. Dos desastres:
+
+```mermaid
+flowchart TD
+    subgraph "Una réplica que reinicia"
+      A[Usuario hace login] --> B[SESSIONS en memoria]
+      B --> C[El contenedor reinicia / despliegas]
+      C --> D[SESSIONS vacío: TODOS deslogueados]
+    end
+    subgraph "Dos réplicas tras un balanceador"
+      E[Login va a la réplica 1] --> F[Sesión solo existe en réplica 1]
+      G[Siguiente request va a la réplica 2] --> H[Réplica 2 no conoce la sesión: 401]
+    end
+```
+
+El Factor VI dice que el proceso debe ser **sin estado**: nada de lo que importe puede vivir solo en su memoria entre requests. ¿Dónde va el estado entonces? En un **backing service** compartido: la sesión en Redis o en la base de datos, el archivo subido en un object storage, no en el disco local del contenedor.
+
+Aquí está el **trade-off**, y un semi-senior lo defiende en voz alta: mover el estado fuera **cuesta** una dependencia más (Redis) y un poco de **latencia** (un salto de red por sesión). Lo que **compras** con eso es enorme: puedes **escalar horizontalmente** (Factor VIII — lanzar N réplicas idénticas detrás de un balanceador, porque cualquiera atiende cualquier request) y **reiniciar/desplegar sin pérdida** (Factor IX — un proceso desechable se mata y se relevanta sin que nadie note). El estado en memoria te ahorra ese salto de red, pero te encadena a **un solo proceso que nunca reinicia** — que es exactamente lo contrario de "producción".
+
+> [!tip] GLaDOS says
+> "Sin estado" no significa "sin base de datos". Significa que el **proceso** no es el dueño del estado. La base de datos, Redis, el object storage: ahí vive el estado, compartido y persistente. El proceso es desechable, intercambiable, clonable. Si matar tu contenedor pierde datos de usuario, no es stateless — es una bomba con cuenta regresiva.
+
+### 4.5 Factores IV, VII, X — los que cierran el círculo
+
+- **Factor IV (backing services como recursos adjuntos):** tu Postgres, tu Redis, tu cola se tratan igual estén en tu máquina o gestionados en la nube — te conectas por una **URL que viene de config**. Cambiar de un Postgres local a uno gestionado es editar una variable de entorno, **cero cambios de código**. Eso es lo que vuelve intercambiable la dependencia.
+- **Factor VII (port binding):** la app se autocontiene (trae su propio servidor, uvicorn) y **exporta** su servicio atándose a un puerto que **lee de config** (`uvicorn ... --port $APP_PORT`), no clavado en el código. Así el entorno decide en qué puerto exponerla y puede mapearla (el `8080:8000` de Compose).
+- **Factor X (paridad dev/prod):** usa los **mismos backing services y versiones** en todos lados. El pecado clásico es SQLite en dev y Postgres en prod: "pasa los tests en mi máquina" y revienta en producción con un SQL que SQLite toleraba y Postgres no. Docker Compose levantando el mismo Postgres en dev que corre en prod es la cura barata.
+
+## 5. Non-examples y misconceptions (aquí se cae la gente)
+
+:::caution[Podrías pensar X… y está mal]
+
+**"12-factor es para microservicios / Kubernetes."**
+No. Nació en Heroku, para apps web normales, años antes del boom de Kubernetes. Un **monolito** puede ser perfectamente 12-factor, y un microservicio puede violar los doce. Es ortogonal a la arquitectura: es sobre cómo la app **se relaciona con su entorno de despliegue**.
+
+**"Tengo un `.env`, así que cumplo el Factor III."**
+Solo si ese `.env` está en `.gitignore` y **nunca** se commitea. Un `.env` con secretos dentro del repo es *peor* que hardcodear: parece buena práctica pero filtra credenciales a todo el que clone. El `.env` es para dev local; en prod las variables las inyecta el orquestador.
+
+**"Config son las constantes de mi app."**
+Config es lo que **varía entre deploys**. El nombre de la app, las rutas de routing, el mapeo de códigos de error son iguales en todos lados → van en el código. La URL de la base, las credenciales, los hostnames cambian por entorno → van en el entorno. Si lo metes todo en variables de entorno "por si acaso", ensucias la config con cosas que nunca cambian.
+
+**"Loguear a un archivo con rotación está bien, total no se llena el disco."**
+El Factor XI no es sobre rotación: es sobre **responsabilidad**. La app no debe saber a dónde van sus logs. Escribe a stdout; quién los rota, agrega o indexa es el entorno. En un contenedor, además, el archivo muere con él y N réplicas dan N archivos huérfanos.
+
+**"Stateless significa que no puedo usar base de datos."**
+Al revés: stateless significa que el estado vive en un backing service (base de datos, Redis), **no** en la memoria del proceso. Tener base de datos es lo que **permite** ser stateless. Lo prohibido es la sesión en un `dict` global o el archivo subido al disco local.
+
+**"Paridad dev/prod = las mismas máquinas exactas."**
+No necesitas hardware idéntico. Necesitas los **mismos backing services y versiones** (Postgres 16 en ambos, no SQLite vs Postgres) y un gap pequeño de tiempo/herramientas entre desarrollar y desplegar. La meta es que "pasó en dev" prediga "pasa en prod".
+
+**"Port binding es hardcodear el puerto 8000."**
+Es lo contrario: la app **exporta** su servicio atándose a un puerto que **lee de config**. Clavar `port=8000` en el código es justo lo que impide que el entorno decida dónde exponerla.
+
+:::
+
+## 6. Práctica con andamiaje (antes de soltarte)
+
+### 6.1 Predice antes de correr
+
+Tienes el `Settings` del §4.2 y despliegas el contenedor **sin** definir la variable `APP_API_KEY` (olvidaste pasarla).
+
+<Quiz
+  question="¿Qué pasa cuando el proceso ejecuta `settings = Settings()` al arrancar?"
+  options={[
+    "Arranca normal y api_key queda como string vacío, hasta que alguien use el endpoint que la necesita",
+    "Lanza un ValidationError de inmediato y el proceso no arranca: api_key es requerido (sin default) y falta en el entorno",
+    "Usa el último valor que tuvo api_key en la imagen anterior",
+  ]}
+  answer={1}
+  explanation="api_key es un campo requerido (no tiene default). pydantic-settings lee del entorno al instanciar Settings(); si falta, lanza ValidationError y el proceso muere al arrancar. Eso es FAIL-FAST: prefieres enterarte en el deploy, con un error claro, que a las 3am cuando un usuario pega el endpoint. Un default vacío sería peor: la app arrancaría rota y silenciosa."
+/>
+
+### 6.2 Identifica el factor
+
+<Quiz
+  question="Tu app guarda los archivos que suben los usuarios en /tmp/uploads dentro del contenedor. Levantas una segunda réplica para repartir carga. ¿Qué factor violas y cuál es el síntoma?"
+  options={[
+    "Factor II (dependencies): faltan librerías declaradas",
+    "Factor VI (processes / stateless): el archivo vive en el disco local de UNA réplica; la otra réplica no lo encuentra, y al reiniciar el contenedor se pierde",
+    "Factor I (codebase): hay más de un deploy",
+  ]}
+  answer={1}
+  explanation="El disco local del contenedor es estado del proceso. Con dos réplicas, el archivo subido a la réplica 1 no existe en la 2 (404 intermitente), y cualquier reinicio lo borra. El arreglo: object storage (S3/Blob) como backing service compartido (Factor IV), no el disco local."
+/>
+
+### 6.3 Completa el hueco (faded)
+
+A este `Settings` le falta la línea que lo conecta al entorno con el prefijo correcto, y un campo requerido. Complétalo mentalmente antes de mirar la pista.
+
+```python
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    # ___ (1) ¿qué línea configura el prefijo APP_ y el archivo .env de dev? ___
+
+    database_url: str
+    # ___ (2) api_key debe ser REQUERIDO (sin default). ¿Cómo se declara? ___
+    debug: bool = False
+```
+
+<Solucion title="Ver la lógica que falta (pista, no la solución del ejercicio)">
+
+```python
+    model_config = SettingsConfigDict(env_prefix="APP_", env_file=".env")   # (1)
+    api_key: str          # (2) sin valor por defecto => requerido => fail-fast si falta
+```
+
+La clave del diseño: un campo **sin** `=` (sin default) es **requerido**; si falta en el entorno, `Settings()` lanza `ValidationError` al arrancar. Un campo **con** default (`debug: bool = False`) es opcional. Nunca pongas un default a un secreto (`api_key: str = ""`): eso convierte un fallo ruidoso y temprano en un fallo silencioso y tardío.
+
+</Solucion>
+
+## 7. Ejercicios Primero-Sin-IA
+
+Trabaja cada uno **a mano y sin IA** dentro de su timebox. Las carpetas viven en tu repo; ábrelas en tu editor. Para el de código, implementa, **corre los tests** y míralos fallar primero. Pide la corrección con la rúbrica de `.ai/` cuando termines.
+
+<Reto title="Config en el entorno con pydantic-settings (código)" timebox="35–40 min">
+
+Carpeta: `ejercicios/fase-5/config-en-entorno/`
+
+Tienes un módulo de config **hardcodeada** (URL de base, clave de API y un puerto, todos escritos en el código). Refactorízalo a un `Settings` de `pydantic-settings` que lea del entorno con prefijo `APP_`, valide tipos y **falle al arrancar** si falta un requerido. No cambies la firma que esperan los tests.
+
+- `database_url` y `api_key` son **requeridos** (sin default): si faltan, `Settings()` debe lanzar `ValidationError`. **Prohibido** ponerles un default vacío.
+- `debug` (bool, default `False`) y `port` (int, default `8000`) son opcionales y se leen del entorno cuando están.
+- Expón una función `get_settings()` que devuelva una instancia fresca de `Settings` (para que los tests, que manipulan el entorno, no choquen con una caché).
+
+**Hecho significa:**
+- `pytest` en verde: lee los requeridos del entorno; `debug` parsea `"true"`/`"1"`; `port` usa el default y también lee del entorno; falta un requerido → `ValidationError`; no hay ningún secreto ni default inseguro en el código.
+- En `bitacora.md` explicas qué es config y qué no (con un ejemplo de cada uno de tu propio HomeHub o proyecto), y por qué un `.env` commiteado rompe el Factor III.
+- Puedes explicar, sin notas, por qué un campo requerido sin default es preferible a un default vacío (fail-fast).
+
+</Reto>
+
+<Reto title="Auditoría 12-factor de un backend (razonamiento)" timebox="40–45 min">
+
+Carpeta: `ejercicios/fase-5/auditoria-12-factor/`
+
+Modalidad **razonamiento y diagnóstico** (sin código que correr). Te entregamos un backend roto: `app.py`, `Dockerfile` y `compose.yaml` con varias violaciones de 12-factor sembradas. Tu trabajo es la **auditoría**: completa `auditoria.md` listando cada violación que encuentres con (a) el **factor** incumplido y su número, (b) el **síntoma concreto en producción** que provoca, y (c) el **arreglo** propuesto en una o dos líneas.
+
+- Hay **al menos seis** violaciones reales. Encuentra todas las que puedas; calidad sobre cantidad (un síntoma bien explicado vale más que un factor citado de memoria).
+- Para cada una, el síntoma debe ser **observable** ("al reiniciar el contenedor, los usuarios pierden la sesión"), no genérico ("es mala práctica").
+- Cierra con un **ADR corto**: de los arreglos, ¿cuál priorizarías primero y por qué? (pista: el de mayor riesgo de seguridad).
+
+**Hecho significa:**
+- Identificas correctamente el factor de cada violación (III, IV, VI, VII, X, XI como mínimo, según lo sembrado) sin confundirlos entre sí.
+- Cada arreglo es accionable y correcto (no "usa Kubernetes").
+- Defiendes, sin notas, por qué priorizaste el secreto horneado y qué factor habilita el escalado horizontal.
+
+</Reto>
+
+> La **solución de referencia** de cada ejercicio existe para el corrector IA, no para ti: no la busques antes de cerrar tu intento. La pista inline de arriba (sección 6.3) es un empujón, no la respuesta.
+
+## 8. Check de dominio
+
+Sin mirar la lección, responde en voz alta o por escrito. Si una te traba, ya sabes qué sección releer.
+
+<CheckDominio items={[
+  "Listar los doce factores (al menos los siete del corazón: config, backing services, build/release/run, processes, port binding, dev/prod parity, logs) y decir en una frase qué pide cada uno.",
+  "Explicar qué es config y qué NO lo es, con el test del 'repo público': ¿qué hace que algo sea config en vez de código?",
+  "Explicar por qué un .env commiteado rompe el Factor III y dónde SÍ va la config en producción.",
+  "Describir los dos desastres de guardar estado en la memoria del proceso (reinicio y múltiples réplicas) y a dónde se mueve el estado.",
+  "Defender el trade-off de un proceso sin estado: qué cuesta (latencia, una dependencia) y qué compra (escalado horizontal + reinicio sin pérdida).",
+  "Explicar por qué la app escribe logs a stdout y no a un archivo, y quién decide a dónde van.",
+]} />
+
+<Quiz
+  question="Quieres correr tres réplicas de tu API detrás de un balanceador para aguantar más carga (Factor VIII). ¿Qué tiene que ser cierto de tus procesos para que eso funcione, y qué factor lo garantiza?"
+  options={[
+    "Que cada réplica tenga su propia base de datos para no chocar",
+    "Que los procesos sean sin estado (Factor VI): nada que importe vive en la memoria de una réplica, así cualquiera atiende cualquier request y reiniciar una no pierde nada",
+    "Que el puerto esté hardcodeado igual en las tres para que el balanceador las encuentre",
+  ]}
+  answer={1}
+  explanation="El escalado horizontal (Factor VIII) solo es posible si los procesos son sin estado (Factor VI): si la sesión vive en la memoria de la réplica 1, la réplica 2 no la conoce y el usuario se desloguea al saltar entre ellas. El estado compartido va en un backing service (Redis, DB). Una base por réplica (opción 1) fragmenta los datos; un puerto hardcodeado (opción 3) no tiene nada que ver con compartir estado."
+/>
+
+## 9. Recursos (oficial primero)
+
+- **The Twelve-Factor App** (`12factor.net`): el documento original de Adam Wiggins (Heroku). Corto, canónico, un factor por página. Léelo entero — es de las pocas lecturas que envejecen bien.
+- **pydantic-settings — Settings management** (`docs.pydantic.dev/latest/concepts/pydantic_settings/`): `BaseSettings`, `SettingsConfigDict`, `env_prefix`, `env_file` y cómo se resuelve la precedencia de fuentes.
+- **Docker — Environment variables in Compose** (`docs.docker.com/compose/how-tos/environment-variables/`): cómo inyectar config y `.env` en Compose, y la precedencia entre `environment:`, `env_file:` y el shell.
+- **The Twelve-Factor App, revisited** (`12factor.net` + críticas modernas como las de la comunidad cloud-native): qué sigue vigente y qué matiza la era de contenedores (config como archivos montados, secrets dedicados). Lectura de profundización.
+- **OWASP — Secrets Management Cheat Sheet** (`cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html`): por qué los secretos no van en el código ni en la imagen, y hacia dónde escala el Factor III (gestores de secretos).
+
+## 10. Conexión con el capstone
+
+El [capstone de la Fase 5](/fase-5-devops/proyecto/) es un **pipeline completo a producción con usuarios reales**, y 12-factor es lo que lo vuelve operable de verdad:
+
+- **Una sola imagen, config por entorno (III + V + X):** la imagen que construye tu CI es la misma que corre en prod; toda la diferencia vive en variables de entorno inyectadas por el runner y por tu homelab/nube. Documenta en un **ADR** qué es config y dónde vive cada secreto.
+- **Sin secretos en el repo ni en la imagen (III + seguridad):** esto es lo que hace pasar el gate de secret-scanning de [`5.4`](/fase-5-devops/5-4-seguridad-supply-chain-ci/). Un secreto horneado revienta el pipeline — por diseño.
+- **Procesos sin estado (VI + VIII + IX):** los "≥3 usuarios reales" del Definition of Done implican que la app sobreviva a un redeploy sin desloguearlos. El estado en Redis/Postgres, no en memoria.
+- **Logs a stdout (XI):** es el insumo de la observabilidad de [`5.10`](/fase-5-devops/5-10-observabilidad/). Emites el stream; el entorno lo agrega y lo correlaciona.
+
+Mira el `Dockerfile` y el `compose.yaml` de tu capstone con la lista de los doce factores al lado: cada violación que caces ahora es un incidente de producción que no vas a tener.
+
+## 11. Reflexión + repaso espaciado
+
+Escribe 3–4 frases respondiendo: **de tus proyectos actuales (HomeHub o cualquiera), ¿cuál tiene un secreto en el código, un estado en memoria o un log a archivo?** Ese es el primer factor que vas a querer pagar — y probablemente sea config o un secreto, los de mayor riesgo.
+
+**Gancho de spaced repetition:**
+- **Mañana:** reescribe de memoria, sin mirar, el `Settings` con `pydantic-settings` (prefijo, un campo requerido sin default, uno opcional con default) y explica por qué falta-de-requerido falla al arrancar.
+- **En 3 días:** dibuja en una pizarra el diagrama de "una réplica que reinicia / dos réplicas tras un balanceador" y explícale a alguien (o a una grabación tuya, en inglés técnico) por qué el estado en memoria rompe el escalado y a dónde se mueve.
+- **En 1 semana:** corre la auditoría de los doce factores sobre el `Dockerfile`/`compose.yaml` de tu capstone de un tirón, y arregla en una sola pasada los que falten. Esa pasada completa es la prueba de que 12-factor ya es tu checklist por defecto, no un parche de último minuto.

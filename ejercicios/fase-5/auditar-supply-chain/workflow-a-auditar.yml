@@ -1,0 +1,30 @@
+# ⚠️ WORKFLOW A AUDITAR — está lleno de problemas de cadena de suministro a propósito.
+# NO lo copies a un repo real. Tu trabajo es encontrar y clasificar sus fallas en hallazgos.md.
+# (Este archivo vive en la raíz del ejercicio, NO en .github/workflows/, para que no corra.)
+
+name: Deploy
+
+on:
+  pull_request_target:
+  push:
+
+permissions: write-all
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: randomdev/super-deploy-action@v1
+
+      - run: echo "Desplegando PR titulado: ${{ github.event.pull_request.title }}"
+
+      - run: curl -sSL https://get.deploy-tools.example | sudo bash
+
+      - run: ./deploy.sh
+        env:
+          PROD_API_KEY: "prod-key-3f9a2b7c1029384756"
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -1,0 +1,60 @@
+# Esqueleto de CI — gate de PR. Complétalo (lección §4 pasos 4-5, §6 capa 3).
+# REGLAS de seguridad (5.4): permissions mínimos, actions pinneadas a SHA, cada gate FALLA el build.
+#
+# Pinea cada `uses:` a un commit SHA (NO a @v4 ni @main) con un comentario # vX.Y.Z legible.
+# Ejemplos de SHAs reales (verifica/actualiza con Dependabot):
+#   actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8   # v5.0.0
+#   astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc # v8
+#   aquasecurity/trivy-action@dc5a429b52fcf669ce959baa2c2dd26090d2a6c4 # v0.28
+
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Default mínimo a nivel de workflow. Súbelo SOLO en el job que de verdad lo necesite.
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # TODO: checkout (a SHA) + setup del runtime (a SHA) + instalar desde el lockfile.
+      # TODO: correr el linter.
+      # TODO: correr los tests de tu API F3 (los que ya miden lo que importa).
+      - run: "echo 'TODO: lint + test' && exit 1"
+
+  sca:
+    # SCA / dependency scanning: falla si una dependencia tiene un CVE conocido.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # TODO: checkout + escaneo de dependencias (p. ej. uvx pip-audit --strict, o npm audit).
+      - run: "echo 'TODO: SCA' && exit 1"
+
+  secret-scan:
+    # Secret-scanning: por si se escapó una credencial al historial.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # TODO: checkout (con fetch-depth: 0 para escanear historial) + gitleaks (a SHA).
+      - run: "echo 'TODO: secret-scan' && exit 1"
+
+  build-and-scan-image:
+    # Construye la imagen y la escanea (Trivy). Genera el SBOM.
+    runs-on: ubuntu-latest
+    needs: [lint-test]
+    permissions:
+      contents: read
+    steps:
+      # TODO: checkout + docker build (taggea por SHA del commit, no :latest).
+      # TODO: escaneo de la imagen con Trivy (falla en CRITICAL/HIGH según tu política).
+      # TODO: generar el SBOM (CycloneDX) y subirlo como artefacto.
+      - run: "echo 'TODO: build + trivy + SBOM' && exit 1"

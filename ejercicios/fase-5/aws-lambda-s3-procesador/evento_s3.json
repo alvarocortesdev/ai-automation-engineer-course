@@ -1,0 +1,18 @@
+{
+  "Records": [
+    {
+      "eventSource": "aws:s3",
+      "eventName": "ObjectCreated:Put",
+      "awsRegion": "us-east-1",
+      "s3": {
+        "bucket": {
+          "name": "donpelusa-app-uploads-prod"
+        },
+        "object": {
+          "key": "facturas/factura.pdf",
+          "size": 2048
+        }
+      }
+    }
+  ]
+}

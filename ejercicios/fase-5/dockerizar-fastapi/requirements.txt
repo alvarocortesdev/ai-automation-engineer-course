@@ -1,0 +1,3 @@
+# Dependencias de la app. fastapi[standard] incluye uvicorn y el CLI `fastapi`.
+# Está pinneado a propósito: la reproducibilidad empieza por las dependencias.
+fastapi[standard]==0.128.0

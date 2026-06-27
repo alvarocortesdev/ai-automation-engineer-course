@@ -1,0 +1,19 @@
+# compose.yaml de ejemplo para AUDITAR — tiene violaciones de 12-factor.
+# Este compose es "solo de producción". En desarrollo, el equipo corre la app
+# directamente con SQLite local (sqlite:///./dev.db) en vez de Postgres.
+# No lo uses como plantilla. Identifica los problemas en auditoria.md.
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    # Sin sección environment ni env_file: la config (incluida la URL de la
+    # base de datos y la clave de Stripe) vive dentro del código y de la imagen.
+    restart: always
+
+  # En producción la base es Postgres; en desarrollo se usa SQLite (ver arriba).
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: s3cr3t

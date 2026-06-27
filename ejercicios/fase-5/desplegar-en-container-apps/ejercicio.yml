@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/desplegar-en-container-apps
+titulo: "Despliega el contenedor de F3 en un servicio managed con identidad administrada"
+fase: fase-5
+sub_unidad: "5.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Desplegar un contenedor en un servicio managed (Azure Container Apps) con ingress público y el puerto correcto"
+  - "Autenticar el pull de la imagen con una identidad administrada, sin admin user ni passwords de registry"
+  - "Asignar el acceso con mínimo privilegio (solo acrpull sobre el registry), evitando roles amplios como Contributor/Owner"
+hilos_transversales: [seguridad, spec-driven, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

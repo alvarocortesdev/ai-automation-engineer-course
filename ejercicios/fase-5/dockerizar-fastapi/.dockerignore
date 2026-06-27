@@ -1,0 +1,8 @@
+# Tu .dockerignore va aquí. Funciona como .gitignore: lista lo que NO debe
+# entrar al build context (y por tanto a la imagen).
+#
+# Debe excluir, como mínimo: .git, .env y .env.*, __pycache__, *.pyc, .venv, tests/
+#
+# Borra este comentario cuando termines.
+#
+# TODO: escribe tu .dockerignore aquí.

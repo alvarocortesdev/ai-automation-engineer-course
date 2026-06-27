@@ -1,0 +1,38 @@
+# STARTER — este es el pipeline de la 5.3 (lint -> test). Tu trabajo es endurecerlo.
+# Sigue los TODO. Cuando termines, corre:  uv run pytest test_seguridad.py
+#
+# Recordatorio de SHA ilustrativos (cópialos o usa los reales desde GitHub):
+#   actions/checkout            08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+#   astral-sh/setup-uv          e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
+#   gitleaks/gitleaks-action    ff98106e4c7b2bc287b24eaf42907196329070c7  # v3
+#   actions/dependency-review-action  56339e523c0409420f6c2c9a2f4292bbb3c07dd3  # v4
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# TODO 1: declara permisos mínimos a nivel global (contents: read).
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # TODO 2: pinea TODAS las actions a un SHA (40 hex), con el tag en un comentario.
+      #         Hoy están con tag móvil (@v...): cámbialas.
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run pytest
+
+  # TODO 3: añade un gate de SCA (dependency scanning).
+  #         Opción A: un job 'sca' con un step  `uvx pip-audit`  (escanea el árbol instalado).
+  #         Opción B: un job 'dependency-review' con actions/dependency-review-action (solo en PRs).
+
+  # TODO 4: añade un gate 'secret-scan' con gitleaks/gitleaks-action.
+  #         Su checkout debe usar  fetch-depth: 0  (historial completo).

@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/config-en-entorno
+titulo: "Config en el entorno (Factor III)"
+fase: fase-5
+sub_unidad: "5.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Mover config y secretos del código al entorno y leerlos con pydantic-settings (env_prefix, tipos)"
+  - "Declarar campos requeridos sin default para que la app falle al arrancar (fail-fast) si falta config"
+  - "Explicar qué es config vs código y por qué un .env commiteado rompe el Factor III"
+hilos_transversales: [seguridad, testing, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

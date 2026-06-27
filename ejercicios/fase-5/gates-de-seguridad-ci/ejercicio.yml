@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/gates-de-seguridad-ci
+titulo: "Endurece el pipeline de la 5.3 con gates de supply chain"
+fase: fase-5
+sub_unidad: "5.4"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Añadir al pipeline gates de SCA (dependency scanning) y secret-scanning como jobs, explicando qué ataque previene cada uno"
+  - "Pinear todas las actions a un commit SHA (no a un tag) y aplicar permissions mínimos (least privilege)"
+  - "Configurar Dependabot (version 2) con groups para los ecosistemas github-actions y pip, razonando el trade-off pin inmutable vs. estar al día"
+hilos_transversales: [seguridad, spec-driven, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

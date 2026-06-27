@@ -1,0 +1,12 @@
+[project]
+name = "gates-de-seguridad-ci"
+version = "0.1.0"
+description = "Ejercicio 5.4 — endurecer el pipeline con gates de supply chain"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "pyyaml>=6", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 100

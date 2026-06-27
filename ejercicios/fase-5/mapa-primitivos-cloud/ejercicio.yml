@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/mapa-primitivos-cloud
+titulo: "Mapa de primitivos cloud + IAM de mínimo privilegio para tu API"
+fase: fase-5
+sub_unidad: "5.5"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Mapear cada componente de una app (compute, archivos, base de datos, secretos) al primitivo cloud correcto y justificar el trade-off"
+  - "Diseñar el acceso de la app con identidades de mínimo privilegio (least privilege), corrigiendo una asignación sobre-privilegiada"
+  - "Trazar la frontera del modelo de responsabilidad compartida según el compute elegido, y justificar región/zonas"
+hilos_transversales: [seguridad, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: lo corrige la IA con la rúbrica, no hay suite

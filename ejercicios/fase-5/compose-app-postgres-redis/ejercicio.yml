@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/compose-app-postgres-redis
+titulo: "Compón el stack: app + Postgres + Redis con health gates"
+fase: fase-5
+sub_unidad: "5.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Componer un stack multi-servicio con Docker Compose (app + Postgres + Redis) sin campo version obsoleto"
+  - "Orquestar el orden de arranque con depends_on + condition service_healthy apoyado en healthchecks reales"
+  - "Configurar red por nombre de servicio, named volume para persistencia y secretos por variable de entorno (no en el archivo)"
+hilos_transversales: [seguridad, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

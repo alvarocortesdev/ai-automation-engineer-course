@@ -1,0 +1,26 @@
+# STARTER — reescribe este archivo a mano (sin IA).
+#
+# Objetivo: un workflow de CI que en cada push a main y en cada pull_request
+# corra, sobre un runner Ubuntu limpio, el pipeline: checkout -> setup-uv ->
+# uv sync --frozen -> ruff check -> pytest. Con permisos mínimos y actions
+# pineadas a un tag de versión.
+#
+# Borra TODO esto y escribe el workflow. El test estructural
+# (test_workflow.py) te dice, assert por assert, qué falta.
+#
+# Pistas de estructura (NO es la solución; faltan claves y valores):
+#
+# name: CI
+# on:
+#   ...        # dos triggers: push (solo main) y pull_request
+# permissions:
+#   ...        # mínimo privilegio
+# jobs:
+#   test:
+#     runs-on: ...
+#     steps:
+#       - uses: ...        # 1) clonar el repo  (DEBE ir primero)
+#       - uses: ...        # 2) preparar el toolchain (uv)
+#       - run:  ...        # 3) instalar deps desde el lockfile
+#       - run:  ...        # 4) lint
+#       - run:  ...        # 5) tests

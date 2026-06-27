@@ -1,0 +1,565 @@
+---
+title: Terraform / IaC
+description: "Infraestructura como código desde cero: por qué clickear consolas no escala, el modelo declarativo (estado deseado), y Terraform de punta a punta — providers, el archivo de state, plan/apply, variables, outputs, módulos y backend remoto con locking. Más el panorama 2026: Terraform (BSL) vs OpenTofu (MPL)."
+sidebar:
+  order: 11
+---
+
+import Reto from "@components/Reto.astro";
+import Solucion from "@components/Solucion.astro";
+import Quiz from "@components/Quiz.astro";
+import CheckDominio from "@components/CheckDominio.astro";
+import Nivel from "@components/Nivel.astro";
+
+<Nivel nivel="profundización" />
+
+:::note[Esta sub-unidad es opcional / profundización]
+La **ruta crítica** de la Fase 5 te lleva a producción sin tocar Terraform: con un [Dockerfile](/fase-5-devops/5-1-docker/), un [pipeline de CI/CD](/fase-5-devops/5-3-cicd-github-actions/) y un [despliegue](/fase-5-devops/5-9-despliegue/) ya tienes un capstone que corre. Esta lección es un **diferenciador**, no un requisito: Terraform aparece en ~10-20% de los avisos y separa al que "desplegó clickeando una consola" del que tiene su infraestructura **versionada, revisable y reproducible**. Tómala si tu trabajo objetivo lo pide o si quieres el skill que un reclutador busca cuando tipea "Terraform". Si vas con el tiempo justo: termina la ruta crítica y vuelve aquí cuando una oferta concreta te lo pida.
+:::
+
+Hasta ahora desplegaste **haciendo clic**: entraste a la consola de tu cloud (la de la [5.5](/fase-5-devops/5-5-cloud-troncal/)), apretaste "crear bucket", "crear base de datos", llenaste formularios. Funciona una vez. El problema aparece cuando alguien pregunta *"¿exactamente qué creaste, en qué región, con qué configuración?"* y la única respuesta honesta es *"no sé, lo armé a mano hace dos meses"*. **Infraestructura como código (IaC)** resuelve eso: describes tu infraestructura en archivos de texto, los versionas con [Git](/fase-5-devops/5-3-cicd-github-actions/), y una herramienta los traduce en recursos reales —de forma repetible, revisable y borrable—. Terraform es la herramienta dominante para hacerlo, y esta lección te la enseña **desde cero**: no asumimos que hayas escrito una línea de HCL en tu vida.
+
+:::tip[Si ya tocaste Terraform (corriste un `apply`, copiaste un módulo)]
+Quizás clonaste un repo con `.tf`, corriste `terraform apply` y viste recursos aparecer. Bien: tienes el reflejo de "esto provisiona infra". La trampa del que "ya lo usó" es haber ejecutado **comandos sin el modelo mental**: no sabe qué es realmente el **state file** ni por qué borrarlo es catastrófico, confunde el modelo **declarativo** con un script imperativo, commitea el state a Git (con secretos adentro), o no se enteró de que en 2025-2026 el locking del backend S3 dejó de necesitar **DynamoDB**. Tres preguntas separan el hábito del cargo-cult: ¿sabes explicar qué pasa si editas un recurso **a mano** en la consola después de un `apply` (drift)? ¿Sabes por qué el state **nunca** va a Git? ¿Y sabes qué es **OpenTofu** y por qué existe? Si las tres tienen respuesta sólida, salta a la práctica (sección 6) y valida con el check de dominio (sección 8). Si dudaste en alguna, la sección 4 y la 5 son para ti.
+:::
+
+## 1. Qué vas a saber hacer
+
+Al terminar, sin IA y sin notas, podrás:
+
+- **O1 — Explicar el problema que IaC resuelve y el modelo declarativo de Terraform**: por qué clickear consolas no es reproducible (config drift, "funciona en mi cuenta"), y la diferencia entre describir el **estado deseado** (declarativo) y escribir los pasos para llegar a él (imperativo).
+- **O2 — Escribir una configuración Terraform mínima y correr su ciclo de vida**: bloque `terraform` + `required_providers` + `provider` + `resource`, parametrizada con `variable` y exponiendo `output`, y ejecutar `init → plan → apply → destroy` explicando qué hace cada paso y **qué es el state file**.
+- **O3 — Diseñar el manejo del state remoto compartido y ubicar el panorama 2026**: por qué el state va en un **backend remoto** (S3 con native locking, no en Git), y el trade-off entre **Terraform (BSL)** y **OpenTofu (MPL)** tras el cambio de licencia.
+
+## 2. Por qué importa (el dinero está aquí)
+
+> 💰 **Por qué importa:** Terraform aparece en las ofertas como **diferenciador**, no como tabla obligatoria —pero es de los que **suben tu techo**—. Un semi-senior que dice "desplegué mi app" es uno más; el que dice "mi infraestructura es **código**: está en Git, pasa por code review, se aplica en CI, y puedo destruir y recrear el ambiente entero con un comando" demuestra una madurez de ingeniería que el 80% de los portafolios homelab no tiene. IaC es además la base de cualquier conversación seria de **plataforma**, **multi-ambiente** (dev/staging/prod idénticos) y **disaster recovery**.
+
+Tres razones lo vuelven un buen retorno:
+
+1. **Reproducibilidad es el skill, no la herramienta.** El valor no es "sé Terraform"; es entender que la infraestructura **clickeada a mano no se puede auditar, revisar ni recrear**. Cuando tu cuenta cloud explota, o cuando entras a un equipo nuevo, "está todo en código" es la diferencia entre un día de trabajo y una semana de arqueología. Ese reflejo te sirve aunque la herramienta cambie.
+2. **Es el [12-factor](/fase-5-devops/5-2-12-factor/) y el [supply chain](/fase-5-devops/5-4-seguridad-supply-chain-ci/) aplicados a la infra.** Versionar config, pinear versiones de providers, separar ambientes por configuración (no por copy-paste): los mismos hábitos que ya practicaste con tu app, ahora sobre la nube. El que los transfiere demuestra que aprendió **principios**, no recetas.
+3. **El state file es la pregunta de entrevista que filtra.** "¿Qué es el state de Terraform y por qué no lo commiteas a Git?" separa al que entendió la herramienta del que copió comandos. Responder "es el mapeo entre tu código y los recursos reales; tiene **secretos en texto plano** y, si dos personas lo editan a la vez sin lock, se **corrompe** —por eso va en un backend remoto cifrado con locking, nunca en Git—" te pone por delante al instante.
+
+## 3. Lo que ya traes (actívalo)
+
+Esta lección **no parte de cero conceptual**: reusa cosas que ya tienes. Recupéralas antes de seguir:
+
+- De la [5.5 Cloud troncal](/fase-5-devops/5-5-cloud-troncal/): los **primitivos** (compute, object storage, identity, managed DB). Terraform no inventa recursos nuevos; describe **esos mismos** en texto.
+- De la [5.7 AWS](/fase-5-devops/5-7-aws/) (si la tomaste): **IAM y least privilege**. Terraform necesita credenciales para crear recursos, y aplica el mismo principio: la identidad que corre `apply` debe tener **solo** los permisos que provisiona.
+- De la [5.2 12-factor](/fase-5-devops/5-2-12-factor/): "config en el entorno, no en el código". El state y los secretos de Terraform son el caso extremo de esa regla.
+- De la [5.3 CI/CD](/fase-5-devops/5-3-cicd-github-actions/) y la [5.4 supply chain](/fase-5-devops/5-4-seguridad-supply-chain-ci/): **idempotencia** (correr dos veces da el mismo resultado) y **pinear versiones**. Terraform es idempotente por diseño, y se pinean los providers igual que se pinean las dependencias.
+- De [Git](/fase-5-devops/5-3-cicd-github-actions/): un cambio de infra debería poder revisarse en un **diff**, igual que un cambio de código. Eso es exactamente lo que Terraform hace posible.
+
+Antes de seguir, responde de memoria:
+
+<Quiz
+  question="Desplegaste tu app creando recursos a mano en la consola del cloud. ¿Cuál es el problema central que eso tiene?"
+  options={[
+    "Ninguno: si funciona, da igual cómo lo creaste",
+    "No es reproducible ni auditable: no queda un registro versionado de qué creaste, no se puede revisar en un diff ni recrear el ambiente de forma fiable",
+    "Es más lento que escribir código, pero el resultado es idéntico y igual de mantenible",
+  ]}
+  answer={1}
+  explanation="El problema no es la velocidad: es que la infraestructura clickeada no deja un artefacto versionado. No puedes revisarla en un PR, no puedes recrear dev igual a prod, y cuando algo cambia 'misteriosamente' (config drift) no hay forma de saber qué ni quién. IaC convierte la infra en código: versionable, revisable, reproducible. Ese es el problema que Terraform resuelve, y por eso es un diferenciador de madurez de ingeniería."
+/>
+
+## 4. Ejemplo resuelto, pensado en voz alta
+
+Voy a crear **un bucket de object storage** (el primitivo de la [5.5](/fase-5-devops/5-5-cloud-troncal/)) con Terraform, de la nada, y voy a razonar **cada pieza**. No memorices la sintaxis: sigue el flujo *"declaro qué quiero → Terraform calcula el diff → lo aplica → guarda lo que hizo"*.
+
+### 4.1 El modelo mental: declarativo, no imperativo
+
+Lo primero que tengo que internalizar: **Terraform no es un script**. Cuando programo en Python (Fase 1) escribo *los pasos*: "crea esto, luego esto, si existe sáltalo". Eso es **imperativo**. Terraform es **declarativo**: yo describo el **estado final que quiero** ("quiero que exista un bucket llamado X con versioning activado") y Terraform calcula **qué acciones** hacen falta para llegar ahí desde lo que existe hoy.
+
+```mermaid
+flowchart LR
+    COD["Mi código .tf<br/>(estado DESEADO)"] --> TF["terraform plan"]
+    STATE["State file<br/>(lo que YA existe)"] --> TF
+    REAL["La nube real"] --> TF
+    TF --> DIFF["Diff: crear / cambiar / destruir"]
+    DIFF -->|"terraform apply"| REAL
+    DIFF -->|"actualiza"| STATE
+```
+
+Razono la consecuencia: *"Si corro `apply` dos veces seguidas sin cambiar nada, la segunda vez Terraform dice 'no hay nada que hacer' —porque el estado real ya coincide con el deseado—. Eso es **idempotencia**, la misma idea de la [5.4](/fase-5-devops/5-4-seguridad-supply-chain-ci/). Y si edito el código para pedir versioning, Terraform no recrea el bucket: calcula que **solo** falta activar el versioning y hace ese cambio mínimo. Yo nunca escribo 'cómo'; escribo 'qué', y la herramienta calcula el 'cómo'."*
+
+### 4.2 La configuración mínima (HCL)
+
+Terraform se escribe en **HCL** (HashiCorp Configuration Language). Empiezo declarando **con qué provider** voy a hablar y **pineando su versión** —igual que pineo dependencias en la [5.4](/fase-5-devops/5-4-seguridad-supply-chain-ci/)—.
+
+```hcl
+# terraform.tf — qué versión de Terraform y qué providers necesito
+terraform {
+  required_version = ">= 1.6"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0" # acepta 6.x, no salta a 7.0 sin que yo lo decida
+    }
+  }
+}
+
+# provider — cómo me conecto a AWS (la región; las credenciales las toma del entorno)
+provider "aws" {
+  region = "us-east-1"
+}
+```
+
+Razono pieza por pieza: *"El bloque `terraform {}` es metadata del proyecto: qué versión mínima de Terraform necesito y, sobre todo, `required_providers` —un **provider** es el plugin que sabe hablar con una API concreta (AWS, Azure, Cloudflare, GitHub…)—. El `version = \"~> 6.0\"` es un **pin**: igual que en Python no dejo que una dependencia salte de major sola, acá fijo la familia 6.x. El bloque `provider \"aws\"` configura **cómo** me conecto. Fíjate que **no escribo credenciales acá**: Terraform las busca en el entorno (variables `AWS_*` o el perfil de la [5.7](/fase-5-devops/5-7-aws/)) —[12-factor](/fase-5-devops/5-2-12-factor/) puro—."*
+
+Ahora el recurso. Un **`resource`** es la unidad central: declara una pieza de infra que quiero que exista.
+
+```hcl
+# main.tf — el recurso que quiero que exista
+resource "aws_s3_bucket" "uploads" {
+  bucket = "donpelusa-iac-demo-uploads"
+
+  tags = {
+    Environment = "demo"
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "uploads" {
+  bucket = aws_s3_bucket.uploads.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+```
+
+Razono la anatomía: *"`resource \"aws_s3_bucket\" \"uploads\"` tiene tres partes: el **tipo** (`aws_s3_bucket`, lo define el provider), el **nombre local** (`uploads`, mío, para referenciarlo dentro del código) y el **cuerpo** con los argumentos. Fíjate en el segundo recurso: `bucket = aws_s3_bucket.uploads.id` es una **referencia** —le digo 'el versioning va sobre el bucket de arriba'—. Esa referencia crea una **dependencia implícita**: Terraform sabe que tiene que crear el bucket **antes** que el versioning, sin que yo lo ordene. El grafo de dependencias lo arma solo a partir de quién referencia a quién."*
+
+> **Por qué versioning está separado del bucket:** en versiones viejas del provider AWS, el versioning era un argumento dentro de `aws_s3_bucket`. Desde el provider v4 se separó en su propio recurso (`aws_s3_bucket_versioning`). Si ves tutoriales viejos con `versioning { enabled = true }` adentro del bucket, están desactualizados. Verifica siempre contra la doc del provider de tu versión.
+
+### 4.3 El ciclo de vida: init → plan → apply → destroy
+
+Con esos archivos en una carpeta, corro **cuatro comandos**. Los modelo enteros porque son el 90% de tu día a día con Terraform.
+
+```bash
+terraform init     # descarga el provider AWS y prepara el directorio de trabajo
+terraform plan     # muestra el DIFF: qué va a crear/cambiar/destruir (no toca nada)
+terraform apply    # ejecuta el plan tras tu confirmación (sí toca la nube)
+terraform destroy  # borra TODO lo que este código creó (cuando ya no lo necesitas)
+```
+
+Razono cada paso:
+
+- *"**`init`** lee `required_providers`, **descarga** el plugin de AWS desde el registry y lo deja en `.terraform/`. También genera un **lock file de dependencias** (`.terraform.lock.hcl`) que fija el hash exacto del provider —ese sí va a Git, es el equivalente al `uv.lock` o `package-lock.json` de la [5.4](/fase-5-devops/5-4-seguridad-supply-chain-ci/)—."*
+- *"**`plan`** es lo más importante y lo que la gente se salta. Compara mi código (deseado) contra el state (lo que Terraform cree que existe) contra la nube real, y me muestra el **diff** sin tocar nada. Es un *dry-run*: leerlo **antes** de aplicar es el hábito que evita borrar una base de datos por accidente."*
+- *"**`apply`** me vuelve a mostrar el plan, me pide que escriba `yes`, y recién ahí crea/modifica/destruye de verdad. Al terminar, **actualiza el state**."*
+- *"**`destroy`** es la contracara que ningún clickeo de consola te da gratis: borra exactamente lo que este código creó. Para un ambiente de prueba que cobra por hora (una [RDS](/fase-5-devops/5-7-aws/) olvidada), es la diferencia entre una boleta sorpresa y cero costo."*
+
+El plan se lee con un vocabulario de símbolos que tienes que reconocer al instante:
+
+```text
+Terraform will perform the following actions:
+
+  # aws_s3_bucket.uploads will be created
+  + resource "aws_s3_bucket" "uploads" {
+      + bucket = "donpelusa-iac-demo-uploads"
+      + id     = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+```
+
+| Símbolo | Significa | Cuándo te asusta |
+|---|---|---|
+| `+` | **crear** un recurso nuevo | normal en el primer apply |
+| `~` | **modificar** en sitio (sin recrear) | normal; revisa qué cambia |
+| `-` | **destruir** un recurso | revisa **muy bien** por qué |
+| `-/+` | **reemplazar** (destruir y recrear) | peligro: puede borrar datos (una DB, un volumen) |
+
+Razono el último: *"`-/+` es el que tienes que cazar en el plan. Significa que un cambio que pediste **no se puede hacer en sitio** y obliga a destruir y recrear el recurso. Si eso es un bucket vacío, da igual; si es tu base de datos de producción, acabas de planear borrarla. Por eso `plan` antes de `apply` no es burocracia: es el [code review](/fase-5-devops/5-3-cicd-github-actions/) de tu infraestructura."*
+
+### 4.4 Variables y outputs: dejar de hardcodear
+
+El código de arriba tiene el nombre del bucket **hardcodeado**. Eso no escala a dev/staging/prod. Lo parametrizo con **`variable`** (entradas) y expongo datos útiles con **`output`** (salidas).
+
+```hcl
+# variables.tf — las entradas configurables
+variable "bucket_name" {
+  description = "Nombre global y único del bucket"
+  type        = string
+}
+
+variable "environment" {
+  description = "Ambiente (dev, staging, prod)"
+  type        = string
+  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment debe ser dev, staging o prod."
+  }
+}
+```
+
+```hcl
+# outputs.tf — datos que quiero ver/usar después del apply
+output "bucket_arn" {
+  description = "ARN del bucket creado"
+  value       = aws_s3_bucket.uploads.arn
+}
+```
+
+Y en el recurso, reemplazo los literales por referencias a las variables:
+
+```hcl
+resource "aws_s3_bucket" "uploads" {
+  bucket = var.bucket_name
+  tags = {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+```
+
+Razono: *"`variable` es el parámetro de entrada: lo paso con `-var`, un archivo `.tfvars`, o una variable de entorno `TF_VAR_bucket_name`. El bloque `validation` es testing aplicado a la config: rechaza un `environment` inválido **antes** de tocar la nube —fail-fast—. `output` expone valores calculados (el ARN, una URL, una IP) para verlos tras el apply o para que **otro módulo** los consuma. Con variables, el **mismo código** crea dev, staging y prod cambiando solo los valores: ahí muere el copy-paste de ambientes."*
+
+### 4.5 Módulos: empaquetar y reusar
+
+Un **módulo** es, simplemente, una carpeta con archivos `.tf`. Cuando tienes un patrón que se repite (un bucket privado con versioning y cifrado, una VPC estándar), lo empaquetas en un módulo y lo llamas con valores distintos —como una **función** de tu infraestructura—.
+
+```hcl
+# llamar a un módulo local con for_each (tres buckets de un mismo patrón)
+module "buckets" {
+  source   = "./modules/bucket-privado"
+  for_each = toset(["logs", "uploads", "backups"])
+
+  bucket_name = "donpelusa-${each.key}"
+  environment = var.environment
+}
+```
+
+Razono el valor: *"DRY de la [Fase 2](/fase-5-devops/5-2-12-factor/) llevado a la infra: defino 'bucket privado bien hecho' una vez, y lo reuso tres veces sin copiar y pegar. El `for_each` itera; `module.buckets[\"logs\"].arn` accede a la salida de una instancia concreta. Hay un **Terraform Registry** con módulos comunitarios (VPC, EKS…) que pineas igual que un provider. Empieza con módulos **propios y chicos**: meterte a módulos gigantes de terceros antes de entender los básicos es la receta para no entender nada cuando algo falla."*
+
+### 4.6 El state: el corazón (y el pie) de Terraform
+
+Esto es lo único que **no puedes** no entender. Terraform guarda un archivo —`terraform.tfstate`, un JSON— que es el **mapeo entre tu código y los recursos reales**. Cuando declaras `aws_s3_bucket.uploads`, el state recuerda *"ese recurso del código = el bucket real con id `arn:aws:s3:::...`"*. Sin state, Terraform no sabría que el bucket que ya creó es "el mismo" del código, e intentaría crearlo de nuevo.
+
+```mermaid
+flowchart LR
+    subgraph C["Tu código"]
+        R["aws_s3_bucket.uploads"]
+    end
+    subgraph S["State (JSON)"]
+        M["uploads = bucket real #abc123"]
+    end
+    subgraph N["La nube"]
+        B["bucket arn:...:abc123"]
+    end
+    R <-->|"mapea"| M
+    M <-->|"apunta a"| B
+```
+
+Tres reglas sobre el state, en orden de importancia:
+
+1. **El state NUNCA va a Git.** Contiene **secretos en texto plano** (passwords de bases de datos, llaves) y un repo es el peor lugar para eso. Va a tu `.gitignore` el día 1.
+2. **El state se comparte por un backend remoto, no por archivo local.** Si tú y un compañero tienen cada uno su `terraform.tfstate` en su laptop, sus realidades divergen y se pisan. El state vive en un lugar **central** (un bucket S3, Azure Blob, HCP Terraform).
+3. **El state remoto necesita locking.** Si dos personas corren `apply` a la vez, pueden **corromper** el state. El **lock** hace que el segundo espere al primero.
+
+Así se configura un **backend remoto** S3 con locking nativo (lo correcto en 2026):
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket       = "donpelusa-tfstate"
+    key          = "prod/app/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true # locking nativo de S3 (Terraform 1.11+); ya NO necesitas DynamoDB
+  }
+}
+```
+
+Razono lo nuevo de 2026: *"Hasta hace poco, el locking del backend S3 obligaba a crear **una tabla DynamoDB** aparte (`dynamodb_table = ...`). Eso era infra extra solo para el lock. Desde Terraform **1.10 (experimental) y 1.11 (estable)**, `use_lockfile = true` usa **escrituras condicionales de S3** (un archivo `.tflock` que solo se crea si no existe) para el mismo trabajo, **sin DynamoDB**. Si ves tutoriales con `dynamodb_table`, están vigentes pero **deprecados**: el camino nuevo es `use_lockfile`. `encrypt = true` cifra el state en reposo —obligatorio, porque tiene secretos—."*
+
+## 5. Errores que vas a tener (y por qué)
+
+:::caution[Podrías pensar que Terraform es un lenguaje de programación y escribes "los pasos"]
+No. HCL es **declarativo**: describes el **estado final** que quieres, no la secuencia para llegar a él. No existe un "primero crea esto, luego un `if` para ver si ya existe". Tú declaras "quiero que exista X"; Terraform compara con lo que hay (el state + la nube real) y **calcula** las acciones mínimas. Por eso es idempotente: aplicar dos veces sin cambiar el código no hace nada la segunda vez. Tratar a Terraform como un script imperativo lleva a pelear con la herramienta en vez de usarla.
+:::
+
+:::caution[Podrías pensar que el state file da igual, o que se commitea a Git como cualquier archivo]
+El state es **lo más sensible** de tu proyecto Terraform. Primero, tiene **secretos en texto plano** (passwords, tokens): commitearlo es filtrarlos a todo el que vea el repo. Segundo, si dos personas tienen cada una su copia local, Terraform pierde la noción de qué existe y empieza a recrear o destruir cosas. El state va en un **backend remoto cifrado con locking** y en el **`.gitignore`** —nunca en el repo—. "Lo subo a Git para compartirlo con el equipo" es exactamente cómo se filtra una credencial de producción.
+:::
+
+:::caution[Podrías pensar que si un recurso te molesta, borras el state file y listo]
+Borrar el `terraform.tfstate` **no borra los recursos reales**: borra el **mapeo**. Resultado: Terraform "olvida" que esos recursos son suyos, y en el próximo `apply` intenta **crearlos de nuevo** (chocando con los que ya existen) o los deja **huérfanos** cobrándote para siempre. Si necesitas que Terraform deje de gestionar un recurso sin destruirlo, existe `terraform state rm`; si quieres adoptar uno que ya existe, `terraform import`. Borrar el state a mano es de las formas más rápidas de romper un proyecto IaC.
+:::
+
+:::caution[Podrías pensar que con editar la consola a mano después de un apply no pasa nada]
+Pasa: se llama **config drift**. Terraform no vigila la nube en tiempo real; solo sabe lo que está en su state. Si entras a la consola y cambias algo a mano, el state queda **mentido**: cree una cosa y la realidad es otra. El próximo `plan` detectará la diferencia y querrá **revertir** tu cambio manual (o fallará de forma confusa). La regla de oro de IaC: **una vez que un recurso es de Terraform, se cambia SOLO por Terraform**. Mezclar clic y código es pedir drift.
+:::
+
+:::caution[Podrías pensar que corres `apply` directo, sin mirar el `plan`]
+`plan` es el **diff** de tu infraestructura: te dice exactamente qué se va a crear (`+`), cambiar (`~`), destruir (`-`) o **reemplazar** (`-/+`). Saltártelo es como hacer `git push --force` sin mirar qué commiteas. El símbolo que tienes que cazar es `-/+` (reemplazo): un cambio aparentemente inocente puede obligar a **destruir y recrear** una base de datos —y con ella, tus datos—. Leer el plan antes de confirmar es el code review de la infra; no es opcional en producción.
+:::
+
+:::caution[Podrías pensar que Terraform es 100% open source y gratis para siempre]
+Eso cambió. En **agosto de 2023**, HashiCorp pasó la licencia de Terraform de MPL 2.0 (open source) a la **BSL** (Business Source License), que restringe usarlo para competir con HashiCorp. La comunidad forkeó la última versión MPL y creó **OpenTofu**, hoy bajo la Linux Foundation (CNCF). En 2025 **IBM compró HashiCorp**. Para ti, que solo corres `apply` contra tu propia infra, la BSL **no te afecta** en la práctica; importa para empresas que construyen productos sobre Terraform. OpenTofu es **100% compatible** en comandos (`init/plan/apply` idénticos) y open source de verdad (MPL). Saber que existen los dos —y por qué— es parte de entender el panorama 2026.
+:::
+
+## 6. Práctica con andamiaje (que se desvanece)
+
+Tres pasos, de más apoyo a menos. Hazlos **a mano primero**: en Terraform, "ejecutar" mentalmente un `plan` es leer el código y predecir el diff.
+
+### 6.1 PREDICT — ¿qué hará este `plan`?
+
+Tu state actual ya tiene un bucket `aws_s3_bucket.uploads` creado, **sin** tags. Editas el código y queda así:
+
+```hcl
+resource "aws_s3_bucket" "uploads" {
+  bucket = "donpelusa-iac-demo-uploads"
+  tags = {
+    Environment = "prod"
+  }
+}
+```
+
+Sin ejecutar, responde antes de abrir la solución:
+
+1. ¿Qué símbolo mostrará el `plan` para este recurso: `+`, `~`, `-` o `-/+`? ¿Por qué?
+2. ¿Recreará el bucket o lo modificará en sitio?
+3. ¿Cuántos recursos dirá "to add / to change / to destroy"?
+
+<Solucion title="Ver la respuesta (solo después de predecir)">
+1. **`~` (modificar en sitio).** El bucket ya existe en el state; lo único que cambió es que ahora pides un tag que antes no estaba. Agregar un tag es un cambio que el provider puede hacer **sin recrear** el bucket.
+2. **Lo modifica en sitio.** No hay nada que obligue a reemplazar (el `bucket` name no cambió; cambiar el nombre **sí** forzaría un `-/+`, porque el nombre es inmutable).
+3. **`Plan: 0 to add, 1 to change, 0 to destroy.`** Un solo recurso, modificado.
+
+La lección: un cambio de tag es seguro (`~`); un cambio de **nombre del bucket** habría sido `-/+` (destruir y recrear), porque ese atributo no se puede mutar. Reconocer qué atributos fuerzan reemplazo es lo que te salva de borrar datos sin querer.
+</Solucion>
+
+### 6.2 Parsons — ordena el flujo de trabajo de Terraform
+
+Estos pasos describen el ciclo correcto de trabajar con Terraform en un proyecto nuevo con state remoto. Ordénalos:
+
+```text
+A. terraform apply (revisar el plan otra vez y escribir 'yes')
+B. Escribir el código .tf (terraform block, provider, resources)
+C. terraform plan (leer el diff con atención)
+D. terraform init (descargar providers, configurar el backend remoto)
+E. Configurar el backend remoto S3 con use_lockfile en el bloque terraform
+F. Revisar el código en un PR (code review de la infra)
+```
+
+<Solucion title="Ver el orden correcto">
+Orden: **B → E → D → C → F → A** (o **F** después de **C**, según tu flujo de PR).
+
+1. **B** Escribes el código que describe el estado deseado.
+2. **E** Configuras el backend remoto (dónde vivirá el state compartido y cómo se bloquea).
+3. **D** `init`: descarga los providers y conecta el backend. Sin esto, ningún otro comando corre.
+4. **C** `plan`: lees el diff. Es tu dry-run; aquí cazas los `-/+`.
+5. **F** Revisas en un **PR**: tu compañero ve el mismo diff. La infra pasa por code review como el código.
+6. **A** `apply`: vuelve a mostrar el plan, confirmas con `yes`, y recién ahí toca la nube.
+
+La moraleja: `init` siempre va antes que `plan`/`apply`, y `plan` **siempre** antes que `apply`. El PR entre medio es lo que distingue IaC de equipo de "un script que corro yo solo".
+</Solucion>
+
+### 6.3 MODIFY — arregla esta configuración peligrosa
+
+Un compañero subió esto "para que funcione rápido". Tiene **tres** problemas serios. Encuéntralos y corrígelos a mano (sin IA):
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+    }
+  }
+}
+
+provider "aws" {
+  region     = "us-east-1"
+  access_key = "AKIAIOSFODNN7EXAMPLE"
+  secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+}
+
+resource "aws_s3_bucket" "data" {
+  bucket = "datos"
+}
+```
+
+<Solucion title="Ver los problemas y el arreglo">
+Los tres problemas:
+
+1. **Credenciales hardcodeadas en el código** (`access_key`/`secret_key`). Es el anti-patrón de la [5.7](/fase-5-devops/5-7-aws/): una access key de larga vida escrita en un archivo que va a Git. Se quitan: Terraform las toma del entorno (variables `AWS_*` o el perfil/role).
+2. **El provider no está pineado** (falta `version`). Sin pin, un `init` futuro puede traer un major nuevo con cambios incompatibles —rompe la [supply chain](/fase-5-devops/5-4-seguridad-supply-chain-ci/)—.
+3. **El nombre del bucket (`"datos"`) no es único ni descriptivo.** Los nombres de bucket S3 son **globales**: "datos" ya está tomado hace años. Y hardcodearlo impide reusar el código para varios ambientes.
+
+Arreglado:
+
+```hcl
+terraform {
+  required_version = ">= 1.6"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1" # credenciales: del entorno, NUNCA en el código
+}
+
+variable "bucket_name" {
+  type = string
+}
+
+resource "aws_s3_bucket" "data" {
+  bucket = var.bucket_name
+}
+```
+
+El patrón: **cero secretos en el código**, **providers pineados**, **nombres por variable**. Los mismos hábitos de la app, ahora en la infra.
+</Solucion>
+
+## 7. Ejercicios Primero-Sin-IA
+
+Ahora sin andamiaje. Resuélvelos **a mano, sin IA** dentro del timebox. El primero es de **diseño/razonamiento** (se corrige por la calidad de tu criterio, no hay test); el segundo es de **código HCL** y se autocorrige con `terraform test` y `mock_provider` —corre en tu máquina **sin tocar la nube ni gastar un peso**—.
+
+<Reto title="Diseña el state y el panorama IaC de tu proyecto" timebox="30–40 min">
+
+Vas a escribir el **ADR de IaC** para el capstone de la fase: las decisiones de infraestructura como código, defendidas. No escribes HCL acá; escribes **criterio**.
+
+Produce `diseno.md` con:
+
+1. **El problema, en tus palabras** (3–4 líneas): ¿por qué desplegar el capstone clickeando la consola es un problema? Nombra **config drift** y **reproducibilidad** con un ejemplo concreto.
+2. **Declarativo vs imperativo** (2–3 líneas): explica, con el ejemplo de "correr `apply` dos veces", por qué Terraform es declarativo e idempotente, y en qué se diferencia de un script de bash que crea recursos.
+3. **Diseño del state** (lo central): ¿dónde vivirá el state, cómo se comparte en equipo, cómo se bloquea? Escribe el **bloque `backend`** que usarías (S3 con `use_lockfile`, o el equivalente de tu cloud) y explica en 3 puntos **por qué el state nunca va a Git**.
+4. **Decisión Terraform vs OpenTofu** (3–4 líneas): elige uno para el proyecto y **justifica** el trade-off (licencia BSL vs MPL, compatibilidad, a quién le importa de verdad). No hay respuesta "correcta": hay justificación defendible o no.
+5. **Una regla de oro** (1 línea): la regla sobre cambios manuales una vez que un recurso es de Terraform.
+
+**Hecho significa:**
+- [ ] Explicas el problema con un ejemplo concreto de drift, no en abstracto.
+- [ ] Distingues declarativo de imperativo con el caso de la idempotencia.
+- [ ] El bloque `backend` es correcto y usas `use_lockfile` (no DynamoDB) o el equivalente actual de tu cloud.
+- [ ] Das **3 razones** por las que el state no va a Git (al menos: secretos en texto plano, colisión de equipo).
+- [ ] Tu elección Terraform/OpenTofu tiene un trade-off defendible, no "porque es el más popular".
+- [ ] Puedes **explicar sin notas** qué es el state y qué pasa si lo borras.
+
+Entregable: `diseno.md`. No hay test automático: se corrige por la **calidad de tu criterio** con la rúbrica.
+
+Enunciado completo y material: `ejercicios/fase-5/terraform-state-panorama/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Para el problema, piensa en algo que YA te pasó: creaste un recurso a mano, pasaron semanas, y no recuerdas la config exacta —eso es no-reproducibilidad—; alguien lo tocó y nadie sabe qué cambió —eso es drift—. Para el backend, parte del bloque de la sección 4.6 y adáptalo a tu cloud y a tu nombre de proyecto. Para Terraform vs OpenTofu, la pregunta clave no es "cuál es mejor" sino "¿a quién le afecta la BSL?" —pista: a ti, que corres `apply` contra tu propia infra, casi nada; a un SaaS que revende Terraform, mucho—. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+<Reto title="Escribe un módulo de bucket testeable, verificado sin tocar la nube" timebox="40–45 min">
+
+Escribes una configuración Terraform mínima y **reusable** (un bucket privado con versioning, parametrizado), y la verificas con `terraform test` usando un **`mock_provider`** —sin credenciales, sin AWS, sin gastar—. Es el [hilo de testing](/fase-5-devops/5-4-seguridad-supply-chain-ci/) aplicado a la infraestructura.
+
+En la carpeta del ejercicio hay un esqueleto: `terraform.tf` (versión y provider pineados, **completo**), `variables.tf` (las variables declaradas, **completo**), un `main.tf` y un `outputs.tf` con **TODOs**, y `tests/bucket.tftest.hcl` con `mock_provider` y un assert ya escrito más uno por completar. Hay un `.gitignore` que ya excluye el state y `.terraform/`.
+
+Tu trabajo:
+
+1. En `main.tf`, implementa `aws_s3_bucket.this` (usa `var.bucket_name` y los tags `Environment = var.environment` y `ManagedBy = "Terraform"`) y `aws_s3_bucket_versioning.this` (status `"Enabled"` si `var.enable_versioning`, si no `"Suspended"`). **No cambies los nombres de los recursos**: el test los referencia.
+2. En `outputs.tf`, expón `bucket_id` (el `id` del bucket) y `bucket_arn` (el `arn`).
+3. En `tests/bucket.tftest.hcl`, completa el assert que falta (que el `status` del versioning sea `"Enabled"` cuando `enable_versioning = true`).
+4. Corre la verificación hasta el verde y agrega **un caso de prueba tuyo** (p. ej. un `run` con `enable_versioning = false` que verifique `status == "Suspended"`).
+
+Verificación (corre en tu máquina, sin AWS):
+
+```bash
+terraform init   # descarga el provider (necesita internet, NO credenciales de AWS)
+terraform test   # corre los .tftest.hcl con el mock_provider, sin tocar la nube
+```
+
+**Hecho significa:**
+- [ ] `terraform test` pasa: los `run` con `command = plan` validan tu config con el mock.
+- [ ] `aws_s3_bucket.this` usa `var.bucket_name` y los tags por variable; nada hardcodeado.
+- [ ] El versioning depende de `var.enable_versioning` (Enabled/Suspended), no es un literal fijo.
+- [ ] Los dos outputs (`bucket_id`, `bucket_arn`) existen y referencian el recurso.
+- [ ] Completaste el assert que faltaba y agregaste **un `run` propio** con otra entrada.
+- [ ] `terraform fmt` no reporta cambios y **no hay credenciales** en ningún `.tf`.
+
+Entregable: `main.tf` + `outputs.tf` + tu `tests/bucket.tftest.hcl`. No necesitas cuenta de AWS.
+
+Enunciado completo y starter: `ejercicios/fase-5/terraform-bucket-modulo/` (carpeta del repo).
+
+<Solucion title="Pista (ábrela solo si superaste el timebox)">
+Para el bucket, copia la estructura de la sección 4.2 pero reemplaza los literales por `var.bucket_name` y `var.environment`. Para el versioning condicional, usa el operador ternario: `status = var.enable_versioning ? "Enabled" : "Suspended"`. Para el assert que falta en el test, el valor está en `aws_s3_bucket_versioning.this.versioning_configuration[0].status` (es un bloque, por eso el `[0]`). Para tu `run` propio, copia el `run` existente, cambia el bloque `variables { enable_versioning = false }` y ajusta el assert a `"Suspended"`. Pista, no solución.
+</Solucion>
+
+</Reto>
+
+## 8. Check de dominio
+
+Sin mirar la lección, en voz alta o por escrito:
+
+<CheckDominio
+  items={[
+    "Explicar qué problema resuelve IaC y por qué clickear consolas no es reproducible (drift, no auditable).",
+    "Explicar la diferencia entre declarativo (estado deseado) e imperativo (los pasos), y por qué Terraform es idempotente.",
+    "Escribir de memoria un bloque terraform mínimo: required_providers con un provider pineado + un recurso.",
+    "Explicar qué hace cada uno de init, plan, apply y destroy, y por qué plan va siempre antes que apply.",
+    "Leer un plan y decir qué significan +, ~, - y -/+, y por qué -/+ es el peligroso.",
+    "Explicar qué es el state file, por qué NUNCA va a Git y qué pasa si lo borras.",
+    "Explicar por qué el state remoto necesita locking y cómo se hace hoy en S3 (use_lockfile, sin DynamoDB).",
+    "Explicar qué es OpenTofu, por qué existe (cambio de licencia BSL) y a quién le afecta de verdad.",
+  ]}
+/>
+
+Si marcaste menos de seis, vuelve a la sección correspondiente **antes** de avanzar. No es un examen: es honestidad contigo.
+
+<Quiz
+  question="Tu compañero dice: 'subí el terraform.tfstate a Git para que ambos lo tengamos sincronizado'. ¿Cuál es la respuesta correcta?"
+  options={[
+    "Perfecto: Git es justo para versionar archivos, y así los dos vemos el mismo state",
+    "Mal en dos frentes: el state tiene secretos en texto plano (los filtras al repo) y Git no provee locking (si ambos hacen apply a la vez, el state se corrompe). El state va en un backend remoto cifrado con locking, y en el .gitignore",
+    "Da igual, el state es solo un caché que Terraform regenera solo en cada apply",
+  ]}
+  answer={1}
+  explanation="El state NO se commitea a Git. Primero porque contiene secretos en texto plano (passwords, tokens): subirlo es filtrarlos. Segundo porque Git no da locking: dos apply concurrentes corrompen el state. La solución es un backend remoto (S3 con use_lockfile, Azure Blob, HCP Terraform) que comparte el state de forma central, lo cifra y lo bloquea. El state no es un caché regenerable: es el mapeo entre tu código y los recursos reales; perderlo o corromperlo es un problema serio."
+/>
+
+<Quiz
+  question="Corres terraform plan y ves: 'aws_db_instance.main must be replaced' con el símbolo -/+. Acabas de cambiar el nombre de la instancia. ¿Qué haces?"
+  options={[
+    "Confirmo el apply: -/+ es un cambio normal y Terraform sabe lo que hace",
+    "Me detengo: -/+ significa destruir y recrear. Recrear una base de datos borra sus datos. Reviso por qué ese cambio fuerza reemplazo y busco una alternativa (o respaldo los datos primero) antes de aplicar",
+    "Borro el state file para que Terraform se olvide del problema y vuelvo a empezar",
+  ]}
+  answer={1}
+  explanation="El símbolo -/+ (reemplazo) es el que tienes que cazar en todo plan: significa que el cambio no se puede hacer en sitio y obliga a destruir y recrear el recurso. En una base de datos, eso borra los datos. La disciplina es detenerse, entender qué atributo fuerza el reemplazo (algunos son inmutables, como ciertos identificadores), y decidir conscientemente —respaldar, usar un lifecycle, o aceptar la recreación si es un recurso sin estado—. Borrar el state es la peor reacción: no resuelve nada y deja recursos huérfanos."
+/>
+
+## 9. Recursos (documentación oficial primero)
+
+- **Terraform — Get Started / tutoriales oficiales:** [developer.hashicorp.com/terraform/tutorials](https://developer.hashicorp.com/terraform/tutorials) — el punto de entrada, con tracks por cloud.
+- **Lenguaje (HCL): bloques, providers, resources, variables, outputs, módulos:** [developer.hashicorp.com/terraform/language](https://developer.hashicorp.com/terraform/language).
+- **State — qué es y por qué importa:** [developer.hashicorp.com/terraform/language/state](https://developer.hashicorp.com/terraform/language/state).
+- **Backend S3 (incluye `use_lockfile` / native locking 2026):** [developer.hashicorp.com/terraform/language/backend/s3](https://developer.hashicorp.com/terraform/language/backend/s3).
+- **Testing nativo (`terraform test`, `.tftest.hcl`, `mock_provider`):** [developer.hashicorp.com/terraform/language/tests](https://developer.hashicorp.com/terraform/language/tests).
+- **AWS Provider (verifica la sintaxis de cada recurso por versión):** [registry.terraform.io/providers/hashicorp/aws/latest/docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs).
+- **OpenTofu (el fork open source; comandos idénticos):** [opentofu.org](https://opentofu.org/) y su doc: [opentofu.org/docs](https://opentofu.org/docs/).
+
+## 10. Conexión con el capstone de la fase
+
+El **[Capstone F5 — Pipeline completo a producción](/fase-5-devops/proyecto/)** **no exige** Terraform en su Definition of Done: puedes desplegar con un script o clickeando, y el capstone se da por válido. Esta lección te da la **versión diferenciada** de ese despliegue:
+
+- Si provisionas la infra del capstone con Terraform, tu repo gana un artefacto que el 80% de los portafolios no tiene: **infraestructura versionada y revisable**. El [ADR](/fase-5-devops/5-3-cicd-github-actions/) de despliegue ("¿por qué IaC, qué backend para el state, Terraform u OpenTofu?") sale directo del ejercicio de diseño de la sección 7.
+- El `terraform plan` encaja como **gate en tu [CI/CD](/fase-5-devops/5-3-cicd-github-actions/)**: el pipeline corre `plan` en cada PR y muestra el diff de infra para code review, igual que corre los tests del código —eso conecta Terraform con la [5.3](/fase-5-devops/5-3-cicd-github-actions/) y la [5.4](/fase-5-devops/5-4-seguridad-supply-chain-ci/)—.
+- Pinear el provider y meter `terraform validate`/`fmt`/`test` en el pipeline es el [supply chain](/fase-5-devops/5-4-seguridad-supply-chain-ci/) de la infra; el state cifrado es la [observabilidad y los secretos](/fase-5-devops/5-10-observabilidad/) bien tratados.
+
+Y mira hacia adelante: el mismo least privilege que la identidad de `apply` necesita es el de los **agentes** que verás en fases posteriores —"qué permisos tiene y sobre qué recursos" es la misma pregunta, primero para Terraform y después para un agente que ejecuta acciones—. La idea no cambia; cambia qué la ejecuta.
+
+## 11. Reflexión y repaso espaciado
+
+Cierra escribiendo dos o tres frases respondiendo: **antes de esta lección, ¿cómo creías que se "armaba" la infraestructura? ¿En qué cambió tu definición al verla como código declarativo con un state que hay que cuidar?** Nombrar ese cambio —de "entro a la consola y clickeo" a "describo el estado deseado, reviso el diff, y la infra es un artefacto versionado"— es medir lo que aprendiste, y es justo el discurso de madurez que un reclutador quiere oír.
+
+Gancho de **spaced repetition**:
+
+- **Mañana:** escribe **de memoria** (sin abrir esta página) el bloque `terraform` mínimo (required_providers con un provider pineado) + un `resource`. Si te falla, vuelve a la sección 4.2.
+- **En 3 días:** explica en voz alta, a alguien (o a la cámara), qué es el state file, por qué no va a Git, y qué pasa si lo borras. Si dudas, repasa la 4.6.
+- **En 1 semana:** lee mentalmente un `plan` con un `-/+` y explica por qué es peligroso y cuándo aparece. Y dile a tu yo de la semana pasada qué es OpenTofu y por qué existe. Si te trabas, repasa las secciones 4.3 y 5.

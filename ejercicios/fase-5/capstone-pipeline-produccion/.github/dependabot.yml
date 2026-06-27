@@ -1,0 +1,22 @@
+# Dependabot vigila tus dependencias y tus actions, y abre PRs cuando hay updates (5.4).
+# Es la otra mitad del trade-off "pin inmutable vs. estar al día": pineas a SHA por seguridad,
+# y Dependabot te avisa cuando vale la pena subir.
+#
+# TODO: ajusta los ecosistemas a tu stack (pip/uv, npm, docker). Mínimo:
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: "pip"        # o "npm" si tu app es Node
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  # - package-ecosystem: "docker"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"

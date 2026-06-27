@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/capstone-pipeline-produccion
+titulo: "Capstone Fase 5 — Pipeline completo a producción"
+fase: fase-5
+sub_unidad: "5.P"
+ruta_critica: true
+modalidad: mixto                     # infra (YAML/Dockerfile/IaC) + código (instrumentación OTel) + diseño (spec/ADR/runbook)
+objetivos:
+  - "Llevar un servicio a producción de forma reproducible: imagen Docker multi-stage, config 12-factor, deploy con dominio propio y HTTPS"
+  - "Construir un pipeline CI/CD con gates de seguridad y supply chain (SCA, secret-scanning, SBOM, actions a SHA, permisos mínimos) que bloquean merge/deploy en rojo"
+  - "Instrumentar observabilidad (logs estructurados + correlation IDs + trazas OTel) y operar con al menos 3 usuarios reales, cerrando con spec/ADRs/runbook/write-up"
+hilos_transversales: [seguridad, observabilidad, spec-driven, costo-latencia, testing, ingles]
+primero_sin_ia:
+  novedad: repaso                    # ensambla las 9 sub-unidades ya vistas de la fase; las decisiones se razonan de entrada
+  timebox_min: 45                    # timebox por sesión de decisión; el proyecto total son 20-30 h en 2-3 semanas
+definition_of_done: [1, 2, 3, 4, 7, 8, 9]   # DoD único §B; 7 condicional (solo si despliega UI); 5 y 6 NO aplican (sin IA aún)
+paths:
+  tests: null                        # capstone de infra: la "verificación" es el deploy vivo + el pipeline que corre, no una suite pytest provista

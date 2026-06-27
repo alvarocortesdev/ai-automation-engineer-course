@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-5/mapeo-primitivos-azure
+titulo: "Mapea una app de IA a primitivos de Azure (y defiende un trade-off)"
+fase: fase-5
+sub_unidad: "5.6"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Mapear cada componente de una app de IA a su primitivo cloud (5.5) y al servicio Azure correcto, justificando por perfil de carga"
+  - "Distinguir cuándo va serverless (Functions) vs. compute sostenido (App Service) según el evento o el tráfico"
+  - "Defender dos trade-offs de Azure (Managed Identity vs. clave, PTU vs. pay-as-you-go, AI Search vs. pgvector) con costo/seguridad/latencia, no marketing"
+hilos_transversales: [seguridad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null
