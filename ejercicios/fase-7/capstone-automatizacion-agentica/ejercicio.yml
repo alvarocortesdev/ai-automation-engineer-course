@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/capstone-automatizacion-agentica
+titulo: "Capstone Fase 7 — Automatización end-to-end agéntica"
+fase: fase-7
+sub_unidad: "7.P"
+ruta_critica: true
+modalidad: mixto                     # proyecto: código + tests + write-ups
+objetivos:
+  - "Diseñar e implementar una automatización agéntica end-to-end de producción: input firmado → IA clasifica/extrae salida estructurada validada → plano de control determinista decide → ejecución de acción externa, orquestada con ejecución durable (Temporal) e idempotente de punta a punta"
+  - "Instrumentar las garantías de producción no negociables y mapearlas al Definition of Done único: idempotency keys + DLQ, trazas OTel con tokens/latencia/costo por paso, eval gate del agente con gate de regresión, guardrails de I/O + least-privilege de tools, techo de costo y HITL para acciones sensibles"
+  - "Comunicar el sistema como ingeniero senior: demo que corre, README en inglés, write-up de trade-offs y una historia de falla en producción (post-mortem)"
+hilos_transversales: [testing, evals, seguridad, observabilidad, spec-driven, costo-latencia, ingles]
+primero_sin_ia:
+  novedad: repaso                    # ensambla piezas ya enseñadas; el diseño se hace de entrada sin IA
+  timebox_min: 45                    # presupuesto del DISEÑO sin IA (el proyecto en sí es multi-sesión)
+definition_of_done: [1, 2, 3, 4, 5, 6, 7, 8, 9]   # capstone: aplica el DoD único completo
+paths:
+  tests: ejercicios/fase-7/capstone-automatizacion-agentica/starter/   # tests que gatean el plano de control
+  solucion_referencia: .ai/soluciones/fase-7/capstone-automatizacion-agentica/   # directorio (brief de solución)

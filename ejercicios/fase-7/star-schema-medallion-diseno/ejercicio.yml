@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/star-schema-medallion-diseno
+titulo: "Diseñar un star schema + clasificar en capas medallion"
+fase: fase-7
+sub_unidad: "7.5a"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diseñar un star schema (tabla de hechos + dimensiones) desde un esquema transaccional, declarando el grain en una sola frase"
+  - "Clasificar transformaciones en la arquitectura medallion (bronze/silver/gold) con justificación"
+  - "Decidir ELT vs ETL para un caso concreto justificando por la causa (costo de compute, privacidad, auditabilidad)"
+hilos_transversales: [spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de diseño: no hay suite, la corrección la hace el corrector con la rúbrica

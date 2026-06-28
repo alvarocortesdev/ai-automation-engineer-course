@@ -1,0 +1,10 @@
+# Conexión al warehouse. Aquí, DuckDB local: el warehouse entero es el
+# archivo dev.duckdb que se crea en esta carpeta al correr `dbt build`.
+# Se usa con:  dbt build --profiles-dir .
+mini_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: dev.duckdb
+      threads: 4

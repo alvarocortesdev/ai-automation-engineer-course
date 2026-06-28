@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/plano-control-agente
+titulo: "El plano de control de un agente que actúa"
+fase: fase-7
+sub_unidad: "7.7"
+ruta_critica: true
+modalidad: mixto                     # tests automáticos + write-up
+objetivos:
+  - "Implementar el plano de control de un agente que ejecuta acciones, aplicando en orden idempotencia, guardrail de I/O, techo de costo, HITL para acciones sensibles y umbral de confianza"
+  - "Justificar por qué el orden de los chequeos es el diseño de seguridad (la primera barrera que aplica decide la ruta)"
+  - "Distinguir validar el schema de confiar en el contenido, y nombrar OWASP LLM05 (Improper Output Handling) y LLM06 (Excessive Agency)"
+hilos_transversales: [seguridad, costo-latencia, testing]
+primero_sin_ia:
+  novedad: nuevo                     # worked example (4.4) -> faded (6) -> solo
+  timebox_min: 45
+definition_of_done: [6]              # punto 6 del DoD único: validación + least-privilege + HITL + techo de costo
+paths: {}

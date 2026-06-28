@@ -1,0 +1,13 @@
+[project]
+name = "saga-pago-durable"
+version = "0.1.0"
+description = "Mini-proyecto: saga de checkout durable con Temporal (ejercicio 7.3)"
+requires-python = ">=3.10"
+dependencies = [
+    "temporalio>=1.9",
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+# Los tests llaman asyncio.run() ellos mismos, así que no necesitamos pytest-asyncio.
+testpaths = ["tests"]

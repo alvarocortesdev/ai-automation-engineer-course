@@ -1,0 +1,10 @@
+*.duckdb
+target/
+dbt_packages/
+logs/
+.dagster_home/
+tmp*/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/

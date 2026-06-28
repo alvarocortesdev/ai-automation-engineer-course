@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/cdc-arquitectura-frescura
+titulo: "¿CDC o batch? Diseña la frescura de dos RAGs y justifica por la causa"
+fase: fase-7
+sub_unidad: "7.6"
+ruta_critica: false          # 7.6 es opcional/profundización
+modalidad: a-mano
+objetivos:
+  - "Decidir batch incremental vs CDC+streaming para un caso concreto, justificando por la causa (freshness, volumen de cambios, costo operativo), no por la moda"
+  - "Elegir kappa vs lambda para un pipeline de streaming y explicar cómo re-procesar el histórico (replay)"
+  - "Ubicar un table format (Iceberg/Delta) y medallion en el diseño, y manejar los modos de falla (orden, deletes, backfill, evento venenoso)"
+hilos_transversales: [spec-driven, costo-latencia, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de diseño: no hay suite; la corrección la hace el corrector con la rúbrica

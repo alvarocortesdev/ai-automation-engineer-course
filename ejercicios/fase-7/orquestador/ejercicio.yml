@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/orquestador
+titulo: "Pipeline asset-centric: la ingesta dispara dbt"
+fase: fase-7
+sub_unidad: "7.5c"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un pipeline asset-centric en Dagster donde un asset de ingesta (E-L) dispara `dbt build` después, dejando que Dagster derive el DAG por el calce de asset keys"
+  - "Explicar el trade-off task-centric (Airflow) vs asset-centric (Dagster) y por qué los reintentos exigen idempotencia"
+  - "Configurar scheduling (cron) y una RetryPolicy, y razonar qué significa un backfill por particiones (no 're-correr todo')"
+hilos_transversales: [observabilidad, testing, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo            # primer contacto con un orquestador -> worked example -> faded (PRIMM/Parsons) -> solo
+  timebox_min: 45
+definition_of_done: []      # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths:
+  tests: tests              # pytest de idempotencia (offline); el pipeline se verifica además con `dagster dev`

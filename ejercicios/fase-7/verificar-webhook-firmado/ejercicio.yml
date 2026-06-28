@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/verificar-webhook-firmado
+titulo: "Verifica un webhook firmado (HMAC + anti-replay)"
+fase: fase-7
+sub_unidad: "7.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Verificar una firma HMAC-SHA256 sobre el body crudo en bytes, recomputando sobre t.payload"
+  - "Comparar firmas en tiempo constante (hmac.compare_digest) para no abrir un timing attack"
+  - "Aplicar anti-replay: rechazar una firma válida pero vieja, verificando la firma antes que la frescura"
+hilos_transversales: [testing, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

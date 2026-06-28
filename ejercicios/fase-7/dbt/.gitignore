@@ -1,0 +1,7 @@
+# Artefactos generados por dbt y por DuckDB — no se versionan.
+target/
+dbt_packages/
+logs/
+dev.duckdb
+dev.duckdb.wal
+.user.yml

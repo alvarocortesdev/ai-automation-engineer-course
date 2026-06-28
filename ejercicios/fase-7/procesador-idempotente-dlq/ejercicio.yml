@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/procesador-idempotente-dlq
+titulo: "Procesador idempotente con dead-letter queue"
+fase: fase-7
+sub_unidad: "7.2"
+ruta_critica: true
+modalidad: mixto
+objetivos:
+  - "Implementar idempotencia: deduplicar por id del evento para que el side-effect corra una sola vez ante duplicados"
+  - "Implementar una DLQ: enrutar un poison message a una cola lateral tras max_intentos en vez de reintentar para siempre"
+  - "Explicar por escrito el dual-write, el patrón outbox y el rol de la reconciliación"
+hilos_transversales: [testing, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

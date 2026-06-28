@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/fase-7-index
+titulo: "Diagnóstico de Fase 7 + decisión de capstone estrella"
+fase: fase-7
+sub_unidad: "7.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar los prerrequisitos de la fase (idempotencia/resiliencia 3.14, APIs+OAuth2 de F3, agentes+evals+seguridad LLM de F6) y el punto de partida por sub-unidad (7.1–7.7), distinguiendo 'lo sé hacer sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de Fase 7 con bloques semanales concretos, ritual de active recall / spaced repetition, y una decisión explícita de qué diferir (7.4/7.6 profundización)"
+  - "Decidir la estrella de portafolio (capstone agéntico de F7 vs RAG de F6) con un trade-off defendible, reconociendo qué puntos del Definition of Done costarán más"
+hilos_transversales: [evals, seguridad, observabilidad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

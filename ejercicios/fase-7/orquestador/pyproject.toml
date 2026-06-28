@@ -1,0 +1,18 @@
+[project]
+name = "orquestador-fase7"
+version = "0.1.0"
+description = "Ejercicio 7.5c — pipeline asset-centric con Dagster que dispara dbt tras la ingesta"
+requires-python = ">=3.10"
+dependencies = [
+    "dagster",
+    "dagster-dbt",
+    "dbt-duckdb",
+    "duckdb",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

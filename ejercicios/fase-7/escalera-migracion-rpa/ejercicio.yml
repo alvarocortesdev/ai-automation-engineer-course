@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/escalera-migracion-rpa
+titulo: "Plan de migración de un RPA frágil"
+fase: fase-7
+sub_unidad: "7.4"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Diagnosticar los modos de falla de un bot RPA por coordenadas, anclados a líneas/pasos concretos (posición vs significado, sleep adivinado, falla silenciosa, no idempotente, ciego para operaciones)"
+  - "Clasificar cada paso del proceso en la escalera de integración (API > navegador semántico > RPA de UI > rediseñar) justificando con la restricción dominante"
+  - "Planear la migración con el patrón Strangler Fig (incremental, en paralelo, reversible) y documentarla en un ADR honesto + un BPMN/carriles mínimo"
+hilos_transversales: [spec-driven, observabilidad, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: la verificación es el documento escrito, no una suite

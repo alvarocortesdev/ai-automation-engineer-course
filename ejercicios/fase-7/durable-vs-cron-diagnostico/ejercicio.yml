@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/durable-vs-cron-diagnostico
+titulo: "Diagnóstico: durable execution vs cron frágil"
+fase: fase-7
+sub_unidad: "7.3"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Identificar los modos de falla de un proceso de larga duración en un cron frágil (crash, no reanudación, timers en proceso, reintentos sin memoria, doble procesamiento) y la garantía de durable execution que resuelve cada uno"
+  - "Detectar las violaciones de determinismo que romperían el replay de Temporal si el script se portara tal cual, con su alternativa correcta"
+  - "Trazar la frontera workflow/activity correcta (todo side effect en una activity; el workflow solo orquesta)"
+hilos_transversales: [observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es el análisis escrito, no una suite

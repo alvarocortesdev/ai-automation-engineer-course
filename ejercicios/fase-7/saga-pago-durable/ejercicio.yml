@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/saga-pago-durable
+titulo: "Mini-proyecto: saga de checkout durable"
+fase: fase-7
+sub_unidad: "7.3"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un workflow durable en Temporal con la separación workflow/activity correcta (cero I/O dentro del workflow) y una RetryPolicy en las activities"
+  - "Implementar el patrón saga: compensar el inventario reservado cuando el cobro falla y dejar el sistema consistente antes de propagar el error"
+  - "Usar una espera durable (workflow.sleep) y verificar el workflow con el time-skipping environment sin esperar el tiempo real"
+hilos_transversales: [testing, observabilidad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+# tests por convención en ejercicios/fase-7/saga-pago-durable/tests/

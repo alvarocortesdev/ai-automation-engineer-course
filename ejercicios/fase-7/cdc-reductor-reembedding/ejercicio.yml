@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/cdc-reductor-reembedding
+titulo: "Reductor CDC: de eventos de cambio a tareas mínimas de re-embedding"
+fase: fase-7
+sub_unidad: "7.6"
+ruta_critica: false          # 7.6 es opcional/profundización
+modalidad: codigo
+objetivos:
+  - "Leer un change event de tipo Debezium (op c/u/d/r, before/after) y mapear cada operación a una acción de vector DB (upsert/delete) para mantener un RAG fresco"
+  - "Implementar un reductor idempotente y debounced: colapsar varios eventos de una fila a su intención final, propagar deletes y NO re-embeddear contenido idéntico (trade-off costo/freshness)"
+  - "Argumentar por qué un consumidor CDC debe ser idempotente (at-least-once) y cómo eso convive con replay/reproceso"
+hilos_transversales: [testing, costo-latencia, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo             # CDC/reductor nuevos; el reflejo idempotencia/DLQ viene de 7.2
+  timebox_min: 45
+definition_of_done: []       # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths: {}                    # convención estándar (tests en la propia carpeta: test_reductor.py)

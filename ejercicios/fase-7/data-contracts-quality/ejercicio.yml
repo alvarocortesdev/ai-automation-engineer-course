@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/data-contracts-quality
+titulo: "Gate de calidad shift-left: valida un lote contra un data contract"
+fase: fase-7
+sub_unidad: "7.5d"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Explicar y escribir un data contract, distinguiéndolo de un test de datos y de la observabilidad, y argumentar por qué un contrato versionado en el borde productor↔consumidor previene el schema drift"
+  - "Implementar un gate de calidad shift-left: dado un lote y un contrato, detectar a mano las violaciones (campo faltante/extra, tipo, nulo, duplicado, valor fuera de dominio/rango, freshness, volumen) y bloquear el lote con un reporte estructurado"
+  - "Explicar la data observability (freshness/volume/schema/distribution/lineage + OpenLineage) y por qué los datos malos rompen igual la analítica y un RAG, con la asimetría del fallo silencioso"
+hilos_transversales: [testing, observabilidad, spec-driven, seguridad]
+primero_sin_ia:
+  novedad: nuevo            # contrato/observabilidad nuevos; el modelo "test = filas malas" viene de 7.5b
+  timebox_min: 45
+definition_of_done: []      # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths: {}                   # convención estándar (tests en la propia carpeta: test_gate.py)

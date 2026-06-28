@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/decisor-codigo-vs-rpa
+titulo: "Decisor: ¿código, navegador o RPA?"
+fase: fase-7
+sub_unidad: "7.4"
+ruta_critica: false
+modalidad: codigo
+objetivos:
+  - "Codificar la escalera de integración (API > navegador semántico > RPA de UI > rediseñar) como una función pura y testeable que elige la estrategia según la restricción dominante"
+  - "Reconocer el caso en que la UI-automation no es base aceptable (sin API + crítico o alto volumen) y subir el problema en vez de bajar de escalón"
+  - "Justificar cada recomendación con un motivo que explique el porqué, no solo el qué"
+hilos_transversales: [testing, spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths: {}

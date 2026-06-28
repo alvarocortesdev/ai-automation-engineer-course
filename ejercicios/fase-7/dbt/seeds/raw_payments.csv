@@ -1,0 +1,7 @@
+payment_id,order_id,payment_method,amount
+1,101,credit_card,12990
+2,102,credit_card,8500
+3,103,debit_card,15990
+4,104,cash,4990
+5,105,credit_card,22990
+6,106,debit_card,7990

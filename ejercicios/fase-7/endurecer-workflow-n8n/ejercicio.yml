@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/endurecer-workflow-n8n
+titulo: "Endurece un workflow frágil de n8n"
+fase: fase-7
+sub_unidad: "7.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar idempotencia en un workflow: insertar una barrera de deduplicación (Remove Duplicates con clave estable) corriente ARRIBA del nodo con efecto secundario"
+  - "Configurar reintentos ante fallos transitorios (retryOnFail, maxTries 2-5, waitBetweenTries > 0) en el nodo peligroso, y asociar un error workflow para no fallar en silencio"
+  - "Explicar por qué reintentar sin idempotencia duplica efectos y por qué la barrera de dedup va antes del efecto secundario, no después"
+hilos_transversales: [testing, observabilidad, spec-driven, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

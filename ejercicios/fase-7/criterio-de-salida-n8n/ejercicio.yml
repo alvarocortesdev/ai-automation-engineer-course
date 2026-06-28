@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/criterio-de-salida-n8n
+titulo: "Criterio de salida: ¿n8n, código o Temporal?"
+fase: fase-7
+sub_unidad: "7.1"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Decidir, ante casos concretos, si una automatización se queda en n8n o se gradúa a código / durable execution, justificando con la restricción dominante"
+  - "Identificar los límites reales del low-code (lógica compleja, testabilidad, estado durable, replay) que obligan a graduar, y reconocer el patrón híbrido (n8n delgado + servicio en código)"
+  - "Documentar la decisión de graduar en un ADR con un trade-off honesto (graduar también cuesta)"
+hilos_transversales: [spec-driven, costo-latencia, testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: no hay suite, se corrige con la rúbrica

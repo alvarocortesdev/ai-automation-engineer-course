@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/capa-gold-sin-doble-conteo
+titulo: "Construir la capa gold sin doble conteo"
+fase: fase-7
+sub_unidad: "7.5a"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar una agregación analítica a grain de línea uniendo un hecho con su dimensión"
+  - "Combinar dos grains (línea y orden) sin fan-out: contar el costo de envío una sola vez por orden"
+  - "Explicar por qué aplanar tablas a distintos grains produce doble conteo en agregaciones"
+hilos_transversales: [testing]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths: {}

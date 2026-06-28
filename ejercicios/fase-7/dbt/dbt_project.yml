@@ -1,0 +1,23 @@
+name: 'mini_warehouse'
+version: '1.0.0'
+profile: 'mini_warehouse'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+
+# Limpieza de artefactos generados por dbt.
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Materialización por defecto, por carpeta:
+#   staging -> view  (barata, recalcula al consultarse)
+#   marts   -> table (rápida de leer para dashboards)
+models:
+  mini_warehouse:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

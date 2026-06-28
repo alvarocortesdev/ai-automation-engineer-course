@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/dbt
+titulo: "Mini-warehouse con dbt: modelos en capas, tests y linaje"
+fase: fase-7
+sub_unidad: "7.5b"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Construir un proyecto dbt en capas (staging -> marts) usando ref(), y explicar por qué ref() construye el DAG, da portabilidad dev/prod y genera el linaje"
+  - "Declarar tests de datos (unique/not_null/relationships/accepted_values) en YAML y dejar `dbt build` en verde, explicando el modelo mental (un test es una query que cuenta filas inválidas; cero filas = verde)"
+  - "Documentar el contrato del pipeline (sources con freshness, snapshots, exposures) y generar docs + linaje, argumentando qué problema resuelve cada uno"
+hilos_transversales: [testing, observabilidad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo            # primer contacto con dbt -> worked example -> faded (PRIMM/Parsons) -> solo
+  timebox_min: 40
+definition_of_done: []      # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths:
+  tests: verificacion       # smoke pytest opcional; la verificación principal es `dbt build`

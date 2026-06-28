@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-7/eval-gate-agente
+titulo: "El eval gate de un agente"
+fase: fase-7
+sub_unidad: "7.7"
+ruta_critica: true
+modalidad: mixto                     # tests automáticos + write-up
+objetivos:
+  - "Implementar la evaluación de un agente de automatización (accuracy de routing/clasificación y exactitud de extracción) sobre un golden set"
+  - "Implementar un gate de despliegue que bloquee por umbral fijo y por regresión respecto del baseline"
+  - "Explicar por qué para una automatización la métrica que importa es la decisión correcta y no la fluidez del texto, y la diferencia entre eval offline y monitoreo online"
+hilos_transversales: [evals, testing, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo                     # worked example (4.7) -> faded -> solo
+  timebox_min: 40
+definition_of_done: [5]              # punto 5 del DoD único: eval harness versionado + gate de regresión
+paths: {}

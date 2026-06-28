@@ -1,0 +1,43 @@
+version: 2
+
+# Declara aquí las descripciones y los TESTS de tus modelos.
+# Mínimo exigido (ver README):
+#   - unique + not_null en cada clave primaria (order_id, customer_id, payment_id)
+#   - un relationships: stg_orders.customer_id -> stg_customers.customer_id
+#   - un accepted_values sobre stg_orders.status
+#
+# Recuerda: la clave correcta hoy es `data_tests` (antes `tests`, sigue como alias).
+# Un test pasa si su query devuelve CERO filas.
+
+models:
+  - name: stg_customers
+    description: "Clientes, una fila por cliente."
+    columns:
+      - name: customer_id
+        description: "Clave primaria del cliente."
+        data_tests:
+          - unique
+          - not_null
+      # TODO: el resto de columnas si quieres documentarlas.
+
+  - name: stg_orders
+    description: "Pedidos, una fila por pedido."
+    columns:
+      - name: order_id
+        # TODO: unique + not_null
+      - name: customer_id
+        # TODO: not_null + relationships (to: ref('stg_customers'), field: customer_id)
+      - name: status
+        # TODO: accepted_values con la lista de estados válidos
+
+  - name: stg_payments
+    description: "Pagos, una fila por pago."
+    columns:
+      - name: payment_id
+        # TODO: unique + not_null
+
+  - name: customer_orders
+    description: "Un cliente por fila, con métricas de sus pedidos."
+    columns:
+      - name: customer_id
+        # TODO: unique + not_null
