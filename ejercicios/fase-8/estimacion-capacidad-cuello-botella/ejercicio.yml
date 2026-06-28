@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/estimacion-capacidad-cuello-botella
+titulo: "Estimación de capacidad y diagnóstico de cuello de botella"
+fase: fase-8
+sub_unidad: "8.1"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Estimar la capacidad de un sistema (DAU → QPS promedio → QPS pico → concurrencia con la ley de Little) mostrando la aritmética"
+  - "Identificar el recurso que se satura primero (el compartido y no clonable, no la CPU de la app) y justificarlo con una métrica de saturación"
+  - "Proponer un plan de escala ordenado por costo/beneficio, cada intervención con su trade-off explícito (obsolescencia de caché, replication lag)"
+  - "Identificar un punto donde aplica el dilema CAP y defender la elección C vs A como decisión de negocio"
+hilos_transversales: [observabilidad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la verificación es el análisis escrito, no una suite

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/monolito-vs-microservicios-diseno
+titulo: "Diseña los módulos de un monolito modular (+ ADR + primera costura)"
+fase: fase-8
+sub_unidad: "8.3"
+ruta_critica: false          # opcional / profundización
+modalidad: a-mano
+objetivos:
+  - "Diseñar límites de módulo con ownership de datos y APIs internas de dominio (nadie lee las tablas del vecino)"
+  - "Defender 'monolito modular, no microservicios' en un ADR que nombre al menos una renuncia real"
+  - "Identificar la primera costura a extraer a un servicio y su gatillo observable, por bajo acoplamiento transaccional"
+hilos_transversales: [spec-driven, costo-latencia, observabilidad]
+primero_sin_ia:
+  novedad: nuevo             # concepto nuevo: worked example en la lección -> faded (6.3) -> este ejercicio
+  timebox_min: 45
+definition_of_done: []       # ejercicio atómico; alimenta el capstone F8 pero no es el capstone
+paths:
+  tests: null                # ejercicio de diseño: la entrega es diseno.md (mapa + Mermaid + ADR), sin suite

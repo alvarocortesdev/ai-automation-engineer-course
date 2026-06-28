@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/comunicacion-rediseno-event-driven
+titulo: "Rediseña un flujo síncrono frágil a event-driven"
+fase: fase-8
+sub_unidad: "8.4"
+ruta_critica: false          # opcional / profundización
+modalidad: a-mano
+objetivos:
+  - "Rediseñar una cadena síncrona separando el corazón (consistente al instante) de los reactores (consumidores de un evento)"
+  - "Articular en un ADR el trade-off de la consistencia eventual y blindar lo asíncrono contra dual write (outbox) y at-least-once (idempotencia)"
+hilos_transversales: [spec-driven, observabilidad, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo             # concepto nuevo: worked example en la lección -> faded -> este ejercicio
+  timebox_min: 45
+definition_of_done: []       # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths:
+  tests: null                # ejercicio de diseño: la entrega es diseno.md (Mermaid + ADR), sin suite

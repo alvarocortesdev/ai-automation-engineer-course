@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/disenar-bounded-contexts-y-acl
+titulo: "Diseñar bounded contexts + un anti-corruption layer (sin código)"
+fase: fase-8
+sub_unidad: "8.2"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Identificar 2-3 bounded contexts de un sistema y nombrar la relación entre ellos en un context map (Mermaid)"
+  - "Diseñar un anti-corruption layer que traduzca el modelo sucio de un sistema externo al dominio propio y valide el input no confiable (frontera de seguridad)"
+  - "Decidir y defender, en un ADR, dónde DDD táctico paga y dónde es over-engineering para este sistema concreto"
+hilos_transversales: [spec-driven, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: no hay suite; se corrige por la calidad del diseño y el ADR

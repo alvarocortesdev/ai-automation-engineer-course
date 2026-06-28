@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/monolito-vs-microservicios-decision
+titulo: "Decisor: ¿monolito modular o microservicios?"
+fase: fase-8
+sub_unidad: "8.3"
+ruta_critica: false          # opcional / profundización
+modalidad: a-mano
+objetivos:
+  - "Decidir entre monolito modular y microservicios nombrando la restricción dominante"
+  - "Nombrar un costo asumido (microservicios) o un gatillo de extracción (monolito) en cada decisión, reconociendo cuándo los microservicios son prematuros"
+hilos_transversales: [spec-driven, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo             # concepto nuevo: worked example en la lección -> faded -> este ejercicio
+  timebox_min: 35
+definition_of_done: []       # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths:
+  tests: null                # ejercicio de razonamiento: la entrega es decisiones.md, sin suite

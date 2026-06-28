@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/fase-8-index
+titulo: "Diagnóstico de Fase 8 + contrato de método de diseño"
+fase: fase-8
+sub_unidad: "8.0"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Autoevaluar los prerrequisitos de la fase (arquitectura light 3.9, bases de datos de F3, sistemas de IA de F6, automatización/integración de F7) y el punto de partida por sub-unidad (8.1–8.5), distinguiendo 'lo sé explicar/diseñar sin notas' de 'lo reconozco'"
+  - "Diseñar un plan de Fase 8 con bloques semanales concretos, ritual de active recall / spaced repetition, y una decisión explícita de qué diferir (8.3/8.4 profundización)"
+  - "Comprometerse con el método de la fase (cada decisión = un ADR; cada arquitectura = un diagrama) y articular el triángulo latencia/costo/calidad con un ejemplo propio, pre-clasificando los 3 sistemas del ejercicio de cierre por dificultad con una restricción dominante cada uno"
+hilos_transversales: [spec-driven, costo-latencia, observabilidad, seguridad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano de razonamiento/diseño: no hay suite de tests

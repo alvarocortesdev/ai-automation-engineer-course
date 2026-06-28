@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/comunicacion-sincrono-vs-asincrono
+titulo: "Decisor: ¿llamada síncrona o evento asíncrono?"
+fase: fase-8
+sub_unidad: "8.4"
+ruta_critica: false          # opcional / profundización
+modalidad: a-mano
+objetivos:
+  - "Decidir entre comunicación síncrona y asíncrona por salto, nombrando la pregunta que manda"
+  - "Clasificar cada salto asíncrono como comando o evento, nombrando el modelo de consistencia (eventual) y una anomalía a mitigar"
+hilos_transversales: [spec-driven, costo-latencia, observabilidad]
+primero_sin_ia:
+  novedad: nuevo             # concepto nuevo: worked example en la lección -> faded -> este ejercicio
+  timebox_min: 35
+definition_of_done: []       # ejercicio atómico; alimenta el capstone pero no es el capstone
+paths:
+  tests: null                # ejercicio de razonamiento: la entrega es decisiones.md, sin suite

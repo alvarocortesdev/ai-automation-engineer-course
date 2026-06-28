@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/modelar-aggregate-y-value-object
+titulo: "Refactor de modelo anémico a aggregate + value object (billetera)"
+fase: fase-8
+sub_unidad: "8.2"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un value object inmutable (Dinero) que carga su invariante: no negativo, no opera entre monedas distintas, igualdad por valor"
+  - "Implementar un aggregate root (Billetera) que vuelve IMPOSIBLE el estado inválido desde afuera: saldo nunca negativo y saldo calculado de los movimientos (no un campo desincronizable)"
+  - "Emitir un domain event (PagoRealizado) solo cuando la operación de dominio ocurre con éxito"
+hilos_transversales: [testing, spec-driven, observabilidad]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

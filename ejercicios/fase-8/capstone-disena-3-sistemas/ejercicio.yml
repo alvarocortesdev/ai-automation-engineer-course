@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio (CAPSTONE de diseño)
+id: fase-8/capstone-disena-3-sistemas
+titulo: "Capstone Fase 8 — Diseña 3 sistemas en papel"
+fase: fase-8
+sub_unidad: "8.P"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diseñar en papel tres sistemas de IA/datos a escala (RAG multi-tenant, automatización de tickets con IA, pipeline de datos para IA), cada uno con requisitos, diagrama Mermaid y las decisiones de arquitectura que el sistema exige"
+  - "Defender cada decisión clave con un número (costo/hora, aprobaciones HITL/día, ventana de frescura) o un trade-off explícito que nombre qué se sacrifica y la alternativa descartada"
+  - "Registrar las decisiones más jugosas como ADRs (Contexto/Decisión/Consecuencias) y comunicar los tres diseños de forma defendible en voz alta, sin notas, ante una repregunta"
+hilos_transversales: [seguridad, observabilidad, evals, costo-latencia, spec-driven, ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45   # por sistema; ~135 min en total + pulido
+definition_of_done: [1, 2, 3, 4, 5, 6]   # adaptados a un artefacto de DISEÑO (ver §10 de la lección): spec+ADRs, seguridad, observabilidad, eval, agente/HITL, costo-latencia pensados en el diseño; sin demo desplegada
+paths:
+  tests: null   # capstone de diseño: la "verificación" es la defensa del razonamiento, no una suite

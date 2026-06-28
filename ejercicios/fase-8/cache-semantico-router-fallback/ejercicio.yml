@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/cache-semantico-router-fallback
+titulo: "Caché semántico + router con fallback (testeable y determinista)"
+fase: fase-8
+sub_unidad: "8.5"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar un caché semántico que devuelve un hit solo si hay un vecino del mismo tenant con similitud coseno >= umbral, y que aísla a los tenants entre sí"
+  - "Implementar un router multi-modelo que manda la tarea fácil al modelo barato y la difícil al caro"
+  - "Implementar una cadena de fallback que degrada solo ante errores reintentables (429/5xx) y NO enmascara un error del request (400)"
+hilos_transversales: [testing, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}

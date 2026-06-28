@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/disenar-rag-multitenant-escala
+titulo: "Diseña un RAG multi-tenant para escala y costo"
+fase: fase-8
+sub_unidad: "8.5"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diseñar la arquitectura de un asistente RAG multi-tenant pensada para escala y costo (aislamiento, caché semántico, ruteo multi-modelo, cola de inferencia, fallback)"
+  - "Estimar el costo por hora de generación con un cálculo de servilleta (tokens x tarifa x QPS) y usarlo para priorizar las intervenciones"
+  - "Defender una decisión del triángulo latencia/costo/calidad con un trade-off explícito, registrada en un ADR"
+hilos_transversales: [seguridad, observabilidad, costo-latencia, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: la "verificación" es la defensa del razonamiento, no una suite

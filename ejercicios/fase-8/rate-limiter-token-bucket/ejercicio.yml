@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: fase-8/rate-limiter-token-bucket
+titulo: "Rate limiter token bucket (testeable y determinista)"
+fase: fase-8
+sub_unidad: "8.1"
+ruta_critica: true
+modalidad: codigo
+objetivos:
+  - "Implementar el algoritmo token bucket: recargar tokens según el tiempo transcurrido sin superar la capacidad, luego consumir si alcanza"
+  - "Diseñar la clase con el reloj inyectado (parámetro ahora) para que los tests sean deterministas, sin sleep ni flakiness"
+  - "Explicar por qué un rate limiter protege capacidad y costo a escala, y por qué el orden recargar→decidir es obligatorio"
+hilos_transversales: [testing, seguridad, costo-latencia]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths: {}
