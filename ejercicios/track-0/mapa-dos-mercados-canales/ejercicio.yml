@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: track-0/mapa-dos-mercados-canales
+titulo: "Mapea tus dos mercados y tu estrategia de canal"
+fase: track-0
+sub_unidad: "T0.10"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Explicar el trade-off entre local-CLP empleado y remoto-USD contractor (moneda, beneficios, banda, gate)"
+  - "Autoevaluar honestamente el gate de inglés para un screening tecnico hablado, con evidencia"
+  - "Decidir a que mercado apuntar segun el nivel real, sin sobrevender ni subvalorar"
+  - "Disenar una estrategia de postulacion por canal con volumen sostenido + seguimiento, evitando spray-and-pray"
+hilos_transversales: [ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: la verificación es la rúbrica + autocorrección por IA

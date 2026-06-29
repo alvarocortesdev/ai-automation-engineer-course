@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: track-0/scoping-problema-vago
+titulo: "Convierte un pedido vago en un mini-spec (discovery)"
+fase: track-0
+sub_unidad: "T0.8"
+ruta_critica: false
+modalidad: a-mano
+objetivos:
+  - "Convertir un problema de negocio vago en un mini-spec técnico aplicando el banco de 7 preguntas de discovery antes de codear"
+  - "Separar la solución imaginada del cliente del problema real, y acotar una rebanada mínima de valor entregable"
+hilos_transversales: [spec-driven, costo-latencia, ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: la verificación es la rúbrica + autocorrección por IA, no una suite

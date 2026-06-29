@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: track-0/leer-feedback-rechazo
+titulo: "Lee el feedback: señal vs ruido"
+fase: track-0
+sub_unidad: "T0.2"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Clasificar el desenlace de una postulación como señal accionable o ruido"
+  - "Para cada señal, nombrar el gap concreto y la etapa del funnel donde ocurrió"
+  - "Proponer un ajuste concreto por señal, sin leer el rechazo como un veredicto sobre el propio valor"
+hilos_transversales: [observabilidad, ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento: la verificación es la rúbrica + autocorrección por IA

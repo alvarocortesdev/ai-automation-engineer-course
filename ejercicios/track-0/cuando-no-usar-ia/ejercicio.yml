@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: track-0/cuando-no-usar-ia
+titulo: "Defiende el cuándo-NO en una entrevista hostil"
+fase: track-0
+sub_unidad: "T0.9"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Defender en entrevista, sin sobrevender, el uso de IA: romper la falsa dicotomía 'o sabes o usas IA' anclando en evidencia y cerrando con Primero-Sin-IA"
+  - "Explicar el trade-off de cuándo NO usar IA: situaciones concretas con un porqué de ingeniería y el costo de cada decisión"
+hilos_transversales: [seguridad, testing, costo-latencia, ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/razonamiento: la verificación es la rúbrica + autocorrección por IA, no una suite

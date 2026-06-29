@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: track-0/negociar-oferta-usd
+titulo: "Negocia una oferta: del rango a la contraoferta"
+fase: track-0
+sub_unidad: "T0.10"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Comprar tiempo ante una oferta sin aceptar ni rechazar en el acto"
+  - "Investigar el rango de mercado del rol/seniority cruzando varias fuentes y ubicar la oferta dentro de él"
+  - "Evaluar la oferta completa (base + equity + beneficios + moneda + estabilidad), valorando el equity con descuento"
+  - "Formular una contraoferta única anclada en mercado y valor demostrado, sin confundir leverage con agresividad"
+hilos_transversales: [ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de razonamiento/diseño: la verificación es la rúbrica + autocorrección por IA

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: track-0/curaduria-portafolio
+titulo: "Cura el portafolio: mata el 80% idéntico"
+fase: track-0
+sub_unidad: "T0.5"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Curar un portafolio: seleccionar 2-3 proyectos profundos y justificar por qué baten a tutoriales clonados, identificando el patrón del 80% idéntico"
+  - "Defender por qué el capstone agéntico es la estrella por encima del RAG-sobre-docs genérico"
+  - "Mapear cada proyecto sobreviviente a una skill concreta que un hiring manager pide"
+hilos_transversales: [ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 35
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño: la verificación es la rúbrica + autocorrección por IA, no una suite

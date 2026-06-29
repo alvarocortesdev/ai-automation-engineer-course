@@ -1,0 +1,17 @@
+# .ai contract v1 — un ejercicio
+id: track-0/perfil-readme-vende-10s
+titulo: "Escribe tu perfil README que vende en 10 segundos"
+fase: track-0
+sub_unidad: "T0.6"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Diseñar un perfil README que comunique en menos de 10 segundos quién eres, qué construyes y cómo contactarte"
+  - "Justificar un recorte deliberado: qué se omite y por qué cada elemento restaría señal"
+hilos_transversales: [ingles, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 45
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diseño/comunicación: la verificación es la rúbrica + autocorrección por IA

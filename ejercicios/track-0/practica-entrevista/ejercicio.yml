@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: track-0/practica-entrevista
+titulo: "Cadencia de entrevistas + banco STAR + autoevaluación de mock"
+fase: track-0
+sub_unidad: "T0.3"
+ruta_critica: true
+modalidad: mixto              # diseño escrito + grabación; sin suite de tests
+objetivos:
+  - "Diseñar e implementar una cadencia semanal de mock interviews (live coding hablado, system design, behavioral) con grabación y autoevaluación por rúbrica, desde el mes 2"
+  - "Construir un banco de 8-10 historias STAR reutilizables en inglés, con Action dominante y Result con número, mapeadas a las preguntas behavioral frecuentes"
+  - "Demostrar el thinking out loud y diagnosticar el propio desempeño escuchando una grabación con rúbrica"
+hilos_transversales: [ingles, observabilidad]
+primero_sin_ia:
+  novedad: nuevo             # worked example en la lección -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []        # ejercicio de track-0, no es capstone
+paths:
+  tests: null                                                  # no hay suite automática
+  solucion_referencia: ".ai/soluciones/track-0/practica-entrevista/"   # directorio, no .md suelto

@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: track-0/explicar-arquitectura-en-voz-alta
+titulo: "Explica tu arquitectura en voz alta, en inglés, bajo timer"
+fase: track-0
+sub_unidad: "T0.1"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Explicar en voz alta, en inglés y bajo timer (60–120s), la arquitectura de un proyecto usando la estructura de 4 movimientos"
+  - "Incluir al menos una decisión técnica con su porqué (trade-off defendible) y un punto de mejora honesto"
+  - "Diagnosticar los propios puntos débiles de inglés hablado a partir de la grabación y proponer su corrección"
+hilos_transversales: [ingles]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 30
+definition_of_done: []
+paths:
+  tests: null   # ejercicio a-mano: la entrega es grabación + transcripción + auto-evaluación, no hay suite

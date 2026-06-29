@@ -1,0 +1,19 @@
+# .ai contract v1 — un ejercicio
+id: track-0/historia-falla-produccion
+titulo: "Historia de falla en producción: instrumentar, romper, post-mortem público"
+fase: track-0
+sub_unidad: "T0.4"
+ruta_critica: true
+modalidad: mixto              # instrumentación + escritura; sin suite de tests automática
+objetivos:
+  - "Instrumentar una app con usuarios reales (logs estructurados + al menos una alerta) para que un fallo se detecte por una señal y no por la queja del usuario"
+  - "Escribir un post-mortem público y blameless de un incidente real: summary, impact, timeline, detection, root cause (5 whys), remediation y action items con dueño y fecha"
+  - "Derivar del incidente una métrica/alerta/SLO que cierre el loop y destilar el incidente en una historia STAR en inglés"
+hilos_transversales: [observabilidad, testing, ingles, seguridad]
+primero_sin_ia:
+  novedad: nuevo             # worked example en la lección -> faded -> Primero-Sin-IA
+  timebox_min: 45
+definition_of_done: []        # ejercicio de track-0, no es capstone
+paths:
+  tests: null                                                       # no hay suite automática
+  solucion_referencia: ".ai/soluciones/track-0/historia-falla-produccion/"   # directorio

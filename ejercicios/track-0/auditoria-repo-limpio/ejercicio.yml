@@ -1,0 +1,18 @@
+# .ai contract v1 — un ejercicio
+id: track-0/auditoria-repo-limpio
+titulo: "Audita y limpia un repo de portafolio"
+fase: track-0
+sub_unidad: "T0.6"
+ruta_critica: true
+modalidad: a-mano
+objetivos:
+  - "Auditar un repositorio y detectar problemas de seguridad, legales y de señal"
+  - "Proponer el fix concreto de cada problema, con el orden de pasos correcto ante un secreto filtrado"
+  - "Reescribir mensajes de commit ruido a Conventional Commits bien formados"
+hilos_transversales: [seguridad, spec-driven]
+primero_sin_ia:
+  novedad: nuevo
+  timebox_min: 40
+definition_of_done: []
+paths:
+  tests: null   # ejercicio de diagnóstico: la verificación es la rúbrica + autocorrección por IA
