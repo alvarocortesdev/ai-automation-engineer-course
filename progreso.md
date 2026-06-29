@@ -16,13 +16,13 @@
   (la columna ancha; se retoma según el rol objetivo, no se descarta).
 - **Track-0** corre **en paralelo desde la semana 1**, no al final.
 - Al cerrar cada fase, escribe su **RETROSPECTIVA** (qué aprendiste, qué te costó, qué proyecto lo
-  demuestra) en la plantilla de la fase dentro del sitio.
+  demuestra) junto a tu capstone (`proyecto.mdx` de la fase) o en tus propias notas.
 
 ---
 
 ## 🔁 Track-0 — Empleabilidad, marca e inglés (paralelo, continuo)
 
-> RETROSPECTIVA: `src/content/docs/track-0-empleabilidad/retrospectiva.mdx`
+> Cierre del track: `src/content/docs/track-0-empleabilidad/index.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -41,7 +41,7 @@
 
 ## Fase 0 — Reconstrucción de fundamentos y autonomía
 
-> RETROSPECTIVA: `src/content/docs/fase-0-fundamentos/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-0-fundamentos/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -59,7 +59,7 @@
 
 ## Fase 1 — Lenguajes núcleo (Python + TypeScript)
 
-> RETROSPECTIVA: `src/content/docs/fase-1-lenguajes/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-1-lenguajes/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -79,7 +79,7 @@
 
 ## Fase 2 — Ingeniería de software
 
-> RETROSPECTIVA: `src/content/docs/fase-2-ingenieria/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-2-ingenieria/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -102,7 +102,7 @@
 
 ## Fase 3 — Bases de datos y Backend
 
-> RETROSPECTIVA: `src/content/docs/fase-3-backend/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-3-backend/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -128,7 +128,7 @@
 
 ## Fase 4 — Frontend + UI/UX
 
-> RETROSPECTIVA: `src/content/docs/fase-4-frontend/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-4-frontend/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -149,7 +149,7 @@
 
 ## Fase 5 — DevOps, Cloud y despliegue
 
-> RETROSPECTIVA: `src/content/docs/fase-5-devops/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-5-devops/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -170,7 +170,7 @@
 
 ## Fase 6 — AI Engineering ★
 
-> RETROSPECTIVA: `src/content/docs/fase-6-ai-engineering/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-6-ai-engineering/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -198,7 +198,7 @@
 
 ## Fase 7 — Automatización, Orquestación y Data Engineering ★
 
-> RETROSPECTIVA: `src/content/docs/fase-7-automatizacion/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-7-automatizacion/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|
@@ -218,7 +218,7 @@
 
 ## Fase 8 — System Design y Arquitectura
 
-> RETROSPECTIVA: `src/content/docs/fase-8-arquitectura/retrospectiva.mdx`
+> Capstone (escribe ahí tu retrospectiva): `src/content/docs/fase-8-system-design/proyecto.mdx`
 
 | Estado | ID | Sub-unidad | Ruta |
 |---|---|---|---|

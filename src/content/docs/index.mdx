@@ -15,7 +15,7 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import { Card, CardGrid, LinkCard, Steps } from "@astrojs/starlight/components";
 
 ## Qué es esto
 
@@ -41,3 +41,109 @@ experiencia previa marcada como _opcional_, nunca como prerrequisito.
     Empleabilidad e inglés técnico en paralelo, no al final.
   </Card>
 </CardGrid>
+
+## Cómo funciona el método
+
+El motor del curso es un bucle de dos tiempos. Primero piensas tú; después la IA
+te corrige con una rúbrica. No al revés.
+
+<Steps>
+
+1. **Aprende el concepto.** Lees la lección y trazas a mano hasta que el modelo
+   mental se sostiene sin notas.
+
+2. **Resuelve Primero-Sin-IA.** Tomas el ejercicio (enunciado + starter + tests)
+   en `ejercicios/` y lo intentas con un timebox, sin asistente. Aquí es donde se
+   construye el criterio.
+
+3. **Pide la corrección por IA.** Le entregas tu solución a un asistente junto con
+   la rúbrica de `.ai/rubricas/` correspondiente. La IA evalúa corrección, calidad
+   de ingeniería y casos borde, y te devuelve feedback honesto.
+
+4. **Cierra el capstone.** Cada fase termina en un proyecto que corre y cumple el
+   Definition of Done compartido por todo el curso.
+
+</Steps>
+
+Las **rúbricas y soluciones de referencia** viven en `.ai/`, fuera de las
+lecciones, para que no espíes la respuesta antes de intentarlo. Esa carpeta es el
+corrector: no la abras hasta haber escrito tu intento.
+
+## El mapa del curso
+
+El curso es **un carril paralelo + diez fases secuenciales**. El Track 0 corre
+**desde la semana 1** en paralelo a todo lo demás: el error más caro del roadmap
+clásico es dejar la empleabilidad para el final.
+
+<LinkCard
+  title="🔁 Track 0 · Empleabilidad, marca e inglés"
+  href="/track-0-empleabilidad/"
+  description="Carril PARALELO desde la semana 1. Inglés técnico como gate, portafolio diferenciado, CV, GitHub profesional y estrategia de postulación. No es la fase final: arranca ya."
+/>
+
+Y estas son las diez fases de la ruta técnica, en orden:
+
+<CardGrid>
+  <LinkCard
+    title="Fase 0 · Fundamentos y autonomía"
+    href="/fase-0-fundamentos/"
+    description="Mentalidad, pensamiento computacional, terminal, Git y programación sin IA. Capstone: una CLI sin asistente."
+  />
+  <LinkCard
+    title="Fase 1 · Lenguajes núcleo"
+    href="/fase-1-lenguajes/"
+    description="Python y TypeScript desde cero, async, type hints, primer test y tu primera victoria con un LLM."
+  />
+  <LinkCard
+    title="Fase 2 · Ingeniería de software"
+    href="/fase-2-ingenieria/"
+    description="DSA de trabajo, clean code, SOLID, refactoring, testing y TDD obligatorio, debugging y spec-driven dev."
+  />
+  <LinkCard
+    title="Fase 3 · Bases de datos y Backend"
+    href="/fase-3-backend/"
+    description="SQL y PostgreSQL a fondo, ORMs, APIs REST con FastAPI, auth/OAuth2, OWASP y resiliencia."
+  />
+  <LinkCard
+    title="Fase 4 · Frontend + UI/UX"
+    href="/fase-4-frontend/"
+    description="HTML/CSS, Tailwind, accesibilidad WCAG, React + Next.js, estado y UI para apps de IA con streaming."
+  />
+  <LinkCard
+    title="Fase 5 · DevOps y Cloud"
+    href="/fase-5-devops/"
+    description="Docker, 12-factor, CI/CD, seguridad de supply chain, cloud, costos, despliegue y observabilidad."
+  />
+  <LinkCard
+    title="Fase 6 · AI Engineering ★"
+    href="/fase-6-ai-engineering/"
+    description="LLMs, prompt/context engineering, tool use + MCP, embeddings, RAG, agentes, evals y LLMOps."
+  />
+  <LinkCard
+    title="Fase 7 · Automatización + Data Eng ★"
+    href="/fase-7-automatizacion/"
+    description="n8n, integración confiable, Temporal, ELT/dbt, orquestadores y agentes de automatización con IA."
+  />
+  <LinkCard
+    title="Fase 8 · System Design"
+    href="/fase-8-system-design/"
+    description="Fundamentos de system design, DDD táctico, arquitectura de sistemas de IA a escala."
+  />
+  <LinkCard
+    title="Empezar aquí"
+    href="/empezar/"
+    description="Onboarding: cómo estudiar, montar el entorno y cómo te corrige la IA. Tu primer paso real."
+  />
+</CardGrid>
+
+## Para quién es
+
+Para alguien que parte de **cero real** y quiere llegar a empleable en serio. No
+necesitas experiencia previa: si ya sabes algo, salta lo que domines; si no,
+ninguna sección asume que lo traes. Lo único que se te pide es honestidad con el
+método: pensar antes de preguntar, y dejar que la IA te corrija después.
+
+> [!tip] Lleva tu progreso
+> El archivo `progreso.md` en la raíz del repo es tu tablero personal: marca cada
+> sub-unidad conforme la completes. Una sub-unidad solo está lista cuando entiendes
+> el concepto sin notas, hiciste el ejercicio sin IA y lo aplicaste en un proyecto.
