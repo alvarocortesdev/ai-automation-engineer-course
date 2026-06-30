@@ -3,11 +3,55 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import mermaid from "astro-mermaid";
 
+// Base path del project site en GitHub Pages. Fuente ÚNICA de verdad:
+// se usa en `base` y en el rehype plugin de abajo. Cambiar aquí los arregla todos.
+const SITE_BASE = "/ai-automation-engineer-course";
+
+/**
+ * Prefija con SITE_BASE los links internos root-relative (`href="/..."`).
+ * Astro NO lo hace solo cuando `base` está configurado, así que sin esto los
+ * ~1700 links del contenido dan 404 bajo /ai-automation-engineer-course/.
+ * Idempotente y conservador: ignora externos (//), anclas, y los que ya
+ * tienen el base. Solo toca `href` (no hay `src` absolutos en el contenido).
+ */
+function rehypeBasePrefix() {
+  const shouldPrefix = (v) =>
+    typeof v === "string" &&
+    v.startsWith("/") &&
+    !v.startsWith("//") &&
+    v !== SITE_BASE &&
+    !v.startsWith(SITE_BASE + "/");
+  const prefix = (v) => (v === "/" ? SITE_BASE + "/" : SITE_BASE + v);
+  const walk = (node) => {
+    // Links markdown `[](/...)` -> nodos HAST <a> con properties.href
+    if (node.type === "element" && node.properties && shouldPrefix(node.properties.href)) {
+      node.properties.href = prefix(node.properties.href);
+    }
+    // Links `<a href="/...">` escritos como JSX en .mdx -> nodos MDX con attributes[]
+    if (
+      (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+      Array.isArray(node.attributes)
+    ) {
+      for (const attr of node.attributes) {
+        if (attr.type === "mdxJsxAttribute" && attr.name === "href" && shouldPrefix(attr.value)) {
+          attr.value = prefix(attr.value);
+        }
+      }
+    }
+    if (node.children) for (const child of node.children) walk(child);
+  };
+  return (tree) => walk(tree);
+}
+
 // https://astro.build/config
 export default defineConfig({
   // GitHub Pages (project site): se sirve bajo /ai-automation-engineer-course/
   site: "https://alvarocortesdev.github.io",
-  base: "/ai-automation-engineer-course",
+  base: SITE_BASE,
+  // Reescribe links internos del contenido para que respeten el base (ver arriba).
+  markdown: {
+    rehypePlugins: [rehypeBasePrefix],
+  },
   integrations: [
     // astro-mermaid debe ir ANTES de starlight: transforma los bloques
     // ```mermaid en diagramas renderizados client-side (sin browser/playwright).
