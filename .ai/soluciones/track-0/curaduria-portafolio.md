@@ -23,12 +23,12 @@ version: 1
 | 5 | `pdf-chatbot` | **ruido (trampa)** | RAG-de-tutorial: parece "de IA" pero es el "hola mundo" copiado, sin eval ni reranking. No diferencia. |
 | 6 | `rag-knowledge-platform` | **señal** | Propio; RAG **de producción** (reranking, ragas, observabilidad, desplegado). |
 | 7 | `nextjs-starter-fork` | **ruido** | Fork sin cambios reales; no es trabajo propio. |
-| 8 | `homehub` | **señal** | Propio; fullstack en uso real con tests y CI/CD. |
+| 8 | `homebase` | **señal** | Propio; fullstack en uso real con tests y CI/CD. |
 | 9 | `crypto-price-tracker` | **ruido** | Script de tutorial. |
 
 ## Vitrina de referencia (2-3) y archivo
 
-- **En la vitrina:** `ticket-triage-agent` (estrella), `rag-knowledge-platform`, `homehub`.
+- **En la vitrina:** `ticket-triage-agent` (estrella), `rag-knowledge-platform`, `homebase`.
 - **Archivar/esconder:** 1, 2, 3, 5, 7, 9. No se borran necesariamente (puede haber código reutilizable),
   pero **salen del perfil** para no diluir la señal.
 
@@ -42,7 +42,7 @@ version: 1
    API". Es lo más difícil de fakear.
 
 El RAG de producción (#6) es la **segunda** estrella —sólido, pero "RAG" es lo que el reclutador ve en cada
-portafolio; diferencia menos. HomeHub tercero, como prueba de amplitud fullstack.
+portafolio; diferencia menos. HomeBase tercero, como prueba de amplitud fullstack.
 
 ## Mapeo a skills del mercado (referencia)
 
@@ -50,7 +50,7 @@ portafolio; diferencia menos. HomeHub tercero, como prueba de amplitud fullstack
 |---|---|
 | `ticket-triage-agent` | orquestación de LLMs + manejo de fallas + integración de sistemas |
 | `rag-knowledge-platform` | retrieval, evaluación (ragas) y observabilidad de IA |
-| `homehub` | fullstack TS + CI/CD + estados completos (a11y) |
+| `homebase` | fullstack TS + CI/CD + estados completos (a11y) |
 
 ## El "80% idéntico" (referencia)
 
@@ -69,8 +69,8 @@ para que la señal se vea.
 4. **Mapeo a tecnologías, no skills.** "Python/React" en vez de la capacidad que el proyecto prueba.
 
 ## Rango de soluciones aceptables
-- Defender `homehub` como segunda estrella en vez del RAG es aceptable si el argumento es bueno (amplitud
+- Defender `homebase` como segunda estrella en vez del RAG es aceptable si el argumento es bueno (amplitud
   fullstack vs profundidad IA) —siempre que el agéntico siga siendo #1.
 - Mantener `pdf-chatbot` visible es aceptable **solo** si el alumno lo replantea explícitamente como "RAG de
   producción" con eval/reranking (es decir, deja de ser el de tutorial). Mantenerlo tal cual = error.
-- Una vitrina de 2 (sin HomeHub) es válida si se justifica enfoque en los dos pilares (IA + automatización).
+- Una vitrina de 2 (sin HomeBase) es válida si se justifica enfoque en los dos pilares (IA + automatización).

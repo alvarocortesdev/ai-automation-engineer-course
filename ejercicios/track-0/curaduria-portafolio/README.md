@@ -38,7 +38,7 @@ tu trabajo). El candidato postula a roles de **AI/Automation Engineer**.
 6. **`rag-knowledge-platform`** — plataforma RAG propia: ingest, vector DB, retrieval con reranking,
    evaluación con ragas y observabilidad. Desplegada. README en inglés.
 7. **`nextjs-starter-fork`** — fork de un starter de Next.js que tocó dos días; sin cambios reales.
-8. **`homehub`** — app fullstack propia (TS, Next.js, tests, CI/CD, estados completos). En uso real.
+8. **`homebase`** — app fullstack propia (TS, Next.js, tests, CI/CD, estados completos). En uso real.
 9. **`crypto-price-tracker`** — script que imprime precios de cripto; ejemplo de un tutorial.
 
 ## Tu tarea (en este orden)

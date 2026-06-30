@@ -70,7 +70,7 @@ Llega un issue al tablero:
 ```text
 #87 — Dividir un gasto en partes desiguales (por porcentaje)
 Hoy split_equal(monto, n) reparte en partes iguales. Necesitamos repartir
-por porcentajes (ej: 50/30/20). Reportado por: Carla (usa la app de gastos del hogar).
+por porcentajes (ej: 50/30/20). Reportado por: una usuaria (divide gastos compartidos con su grupo).
 ```
 
 Razono: *"Antes de tocar el editor, dos preguntas: ¿entiendo bien **qué** se pide? y ¿cuál es la **decisión técnica** escondida aquí? El issue dice 'porcentajes', pero no dice qué pasa cuando los porcentajes no dividen exacto el monto (el clásico problema del centavo perdido). Eso es ambigüedad: si codeo ahora, voy a *adivinar*. El spec-driven existe para no adivinar."*
@@ -117,7 +117,7 @@ La decisión del remanente es **arquitectónicamente significativa**: cambia el 
 
 - Estado: aceptado
 - Fecha: 2026-06-26
-- Decididores: @pelu, Carla
+- Decididores: el equipo de producto
 
 ## Contexto y problema
 Al repartir un monto entero por porcentajes, la división rara vez es exacta
@@ -208,7 +208,7 @@ Añade `split_uneven(monto, porcentajes)`: reparte un gasto por porcentajes.
 Closes #87.
 
 ## Por qué
-Carla necesita repartir gastos del hogar en proporciones desiguales (50/30/20),
+Una usuaria necesita repartir gastos compartidos en proporciones desiguales (50/30/20),
 no solo en partes iguales.
 
 ## Cómo

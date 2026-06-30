@@ -55,13 +55,13 @@ run "usa_el_nombre_y_los_tags" {
   command = plan
 
   variables {
-    bucket_name       = "donpelusa-iac-demo"
+    bucket_name       = "acme-iac-demo"
     environment       = "test"
     enable_versioning = true
   }
 
   assert {
-    condition     = aws_s3_bucket.this.bucket == "donpelusa-iac-demo"
+    condition     = aws_s3_bucket.this.bucket == "acme-iac-demo"
     error_message = "El bucket debe usar el nombre de var.bucket_name"
   }
 
@@ -82,7 +82,7 @@ run "versioning_suspendido_cuando_es_false" {
   command = plan
 
   variables {
-    bucket_name       = "donpelusa-iac-demo"
+    bucket_name       = "acme-iac-demo"
     environment       = "dev"
     enable_versioning = false
   }

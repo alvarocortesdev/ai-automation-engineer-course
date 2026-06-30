@@ -58,11 +58,11 @@ trabajo aunque el servidor se reinicie**". Tres razones de mercado, sin adornos:
   en un try/except", todavía no llegaste. Si es "saga con compensación sobre un motor de durable
   execution que reanuda por replay", estás en otra liga.
 
-> [!tip] GLaDOS dice
-> Yo orquesté cámaras de prueba durante décadas. ¿Sabes qué pasaba cuando se cortaba la luz a mitad
-> de un experimento? Nada. Yo retomaba exactamente donde había quedado, con cada sujeto en su sitio.
+> [!tip] En la práctica
+> ¿Qué le pasa a un proceso largo cuando se corta la luz a mitad de camino? Si está bien diseñado:
+> nada. Retoma exactamente donde quedó, con cada paso en su sitio.
 > Eso es durable execution. Tu cron, en cambio, se olvida de todo apenas parpadea la energía. Uno de
-> los dos diseños sobrevive a un apagón. No es el tuyo.
+> los dos diseños sobrevive a un apagón. No es el del cron.
 
 :::tip[Si ya tocaste Temporal, Airflow o AWS Step Functions]
 Valida y salta: ¿sabes explicar **por qué** el código del workflow debe ser determinista y qué lo

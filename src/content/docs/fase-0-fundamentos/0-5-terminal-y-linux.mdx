@@ -197,9 +197,9 @@ Por defecto, bash **ignora** errores y sigue ejecutando la siguiente línea, y u
 Una **variable de entorno** es un par `NOMBRE=valor` que el shell y los procesos hijos pueden leer. Sirven para **configurar sin tocar el código**: rutas, modos, y —con cuidado— credenciales.
 
 ```bash
-echo "$HOME"          # tu carpeta personal, ej. /home/pelu
+echo "$HOME"          # tu carpeta personal, ej. /home/usuario
 echo "$PATH"          # carpetas donde el shell busca comandos
-nombre="Alvaro"       # variable de shell (solo este shell)
+nombre="Ada"       # variable de shell (solo este shell)
 export API_URL="https://api.ejemplo.com"   # exportada: la heredan los procesos hijos
 ```
 
@@ -240,7 +240,7 @@ Atajo de productividad: un archivo `~/.ssh/config` te deja escribir alias.
 ```text
 Host miservidor
     HostName servidor.com
-    User pelu
+    User usuario
     Port 22
     IdentityFile ~/.ssh/id_ed25519
 ```

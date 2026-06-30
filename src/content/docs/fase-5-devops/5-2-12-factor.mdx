@@ -136,7 +136,7 @@ engine = create_engine(settings.database_url)   # la URL viene de fuera; la imag
 
 Lo que ganaste, factor por factor: la **misma imagen** corre contra tu Postgres local (con `APP_DATABASE_URL=postgresql://localhost/...`) o contra el gestionado de la nube (con la URL de prod) **sin reconstruir**; el repo es publicable porque no hay secretos dentro; y si despliegas sin la `APP_API_KEY`, la app **se niega a arrancar** con un error claro, en vez de fallar a medias bajo carga.
 
-:::tip[GLaDOS dice]
+:::tip[En la práctica]
 El `.env` es una comodidad de **desarrollo local** y **JAMÁS** se commitea (va en `.gitignore`; commitéa un `.env.example` con las llaves pero sin valores). En producción nadie sube un `.env`: las variables las inyecta el orquestador (Compose, el runner de CI, la nube). Las variables de entorno reales **tienen prioridad** sobre el `.env`, justamente para que prod nunca dependa de un archivo. Confundir "uso un `.env`" con "cumplo el Factor III" es el malentendido número uno.
 :::
 
@@ -179,7 +179,7 @@ El Factor VI dice que el proceso debe ser **sin estado**: nada de lo que importe
 
 Aquí está el **trade-off**, y un semi-senior lo defiende en voz alta: mover el estado fuera **cuesta** una dependencia más (Redis) y un poco de **latencia** (un salto de red por sesión). Lo que **compras** con eso es enorme: puedes **escalar horizontalmente** (Factor VIII — lanzar N réplicas idénticas detrás de un balanceador, porque cualquiera atiende cualquier request) y **reiniciar/desplegar sin pérdida** (Factor IX — un proceso desechable se mata y se relevanta sin que nadie note). El estado en memoria te ahorra ese salto de red, pero te encadena a **un solo proceso que nunca reinicia** — que es exactamente lo contrario de "producción".
 
-> [!tip] GLaDOS says
+> [!tip] En la práctica
 > "Sin estado" no significa "sin base de datos". Significa que el **proceso** no es el dueño del estado. La base de datos, Redis, el object storage: ahí vive el estado, compartido y persistente. El proceso es desechable, intercambiable, clonable. Si matar tu contenedor pierde datos de usuario, no es stateless — es una bomba con cuenta regresiva.
 
 ### 4.5 Factores IV, VII, X — los que cierran el círculo
@@ -288,7 +288,7 @@ Tienes un módulo de config **hardcodeada** (URL de base, clave de API y un puer
 
 **Hecho significa:**
 - `pytest` en verde: lee los requeridos del entorno; `debug` parsea `"true"`/`"1"`; `port` usa el default y también lee del entorno; falta un requerido → `ValidationError`; no hay ningún secreto ni default inseguro en el código.
-- En `bitacora.md` explicas qué es config y qué no (con un ejemplo de cada uno de tu propio HomeHub o proyecto), y por qué un `.env` commiteado rompe el Factor III.
+- En `bitacora.md` explicas qué es config y qué no (con un ejemplo de cada uno de tu propio HomeBase o proyecto), y por qué un `.env` commiteado rompe el Factor III.
 - Puedes explicar, sin notas, por qué un campo requerido sin default es preferible a un default vacío (fail-fast).
 
 </Reto>
@@ -357,7 +357,7 @@ Mira el `Dockerfile` y el `compose.yaml` de tu capstone con la lista de los doce
 
 ## 11. Reflexión + repaso espaciado
 
-Escribe 3–4 frases respondiendo: **de tus proyectos actuales (HomeHub o cualquiera), ¿cuál tiene un secreto en el código, un estado en memoria o un log a archivo?** Ese es el primer factor que vas a querer pagar — y probablemente sea config o un secreto, los de mayor riesgo.
+Escribe 3–4 frases respondiendo: **de tus proyectos actuales (HomeBase o cualquiera), ¿cuál tiene un secreto en el código, un estado en memoria o un log a archivo?** Ese es el primer factor que vas a querer pagar — y probablemente sea config o un secreto, los de mayor riesgo.
 
 **Gancho de spaced repetition:**
 - **Mañana:** reescribe de memoria, sin mirar, el `Settings` con `pydantic-settings` (prefijo, un campo requerido sin default, uno opcional con default) y explica por qué falta-de-requerido falla al arrancar.

@@ -39,8 +39,8 @@ Tres razones lo vuelven una pieza estrella, aunque no tenga una sola línea de c
 2. **Diseñar bien antes de construir es lo que evita sangrar dinero después.** Un sistema de IA mal arquitecturado no se cae —**sangra**. Una caché semántica que no pusiste, un ruteo multi-modelo que ignoraste, una frescura que nadie definió: cada omisión es un costo recurrente o un incidente. Diseñar en papel es la intervención más barata que existe, y es donde se nota quién entiende el sistema.
 3. **Es tu ensayo de entrevista, no un trámite académico.** La ronda de system design de Track-0 (mock interviews semanales en inglés, system design RAG en 40 min) se prepara *aquí*. Cada uno de estos tres documentos es un guion que puedes contar, grabar y pulir hasta que salga fluido bajo presión. Vale tanto como un repo: es la narrativa que convierte conocimiento en oferta.
 
-> [!tip] GLaDOS dice
-> Yo no construí cada cámara de prueba antes de saber qué medía. Primero diseñaba el experimento en papel: qué entra, qué sale, dónde está el peligro, qué hago cuando el sujeto se sale del guion. Tú harás lo mismo con tres sistemas. La diferencia entre tú y el otro candidato no será quién sabe más frameworks —será quién puede dibujar el flujo de un duplicado-que-además-es-un-reembolso sin titubear. Eso, querido, no se improvisa. Se ensaya. Como todo lo que vale la pena.
+> [!tip] En la práctica
+> Nadie que diseñe bien construye antes de saber qué va a medir. Primero el experimento en papel: qué entra, qué sale, dónde está el peligro, qué haces cuando el caso se sale del guion. Vas a hacer lo mismo con tres sistemas. La diferencia entre tú y el otro candidato no será quién sabe más frameworks —será quién puede dibujar el flujo de un duplicado-que-además-es-un-reembolso sin titubear. Eso no se improvisa. Se ensaya. Como todo lo que vale la pena.
 
 ## 3. Lo que ya traes (actívalo antes de empezar)
 
@@ -133,7 +133,7 @@ No diseñes los tres en una sentada ni empieces por el que menos dominas. El and
 - **Sistema 2 — Automatización de tickets con IA (andamiaje medio).** Tienes el esqueleto del §4.2 y el método de 7.7. Completa los pasos 4–6: el cuello de botella (acción irreversible), los trade-offs con número (umbral de confianza, techo de costo, qué mide el eval gate) y el ADR del plano de control. **Hecho cuando:** puedes predecir la ruta de un ticket que es duplicado *y* reembolso, y decir cuál barrera gana.
 - **Sistema 3 — Pipeline de datos para IA (andamiaje bajo: solo el método).** Sin esqueleto regalado. Aplica los 6 pasos desde cero: ingesta de documentos → transformación (limpieza, chunking) → embeddings → vector DB, con la **frescura** como cuello de botella. Decide medallion vs flat, orquestador, data contracts, y la estrategia de re-embedding (incremental por CDC vs rebuild nocturno). **Hecho cuando:** tu diseño nombra qué pasa cuando (a) un documento fuente cambia y (b) cambias el modelo de embeddings.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > Primero-Sin-IA aplica al **diseño**, no solo al código. Antes de pedirle a una IA que te "revise" el diagrama, dibújalo entero a mano y defiéndelo en voz alta frente a la pared. Si la pared no te convence, el entrevistador tampoco. Y la pared, créeme, es una audiencia mucho más amable.
 
 ## 7. El capstone
@@ -223,5 +223,5 @@ Gancho de **spaced repetition**:
 - **En 1 semana:** toma un sistema que NO está aquí —"diseña un feed de noticias", "diseña un sistema de notificaciones", "diseña el backend de Uber"— y aplícale los 6 pasos en 40 minutos cronometrados, en voz alta y grabándote. Esa grabación es material directo de tu mock interview de Track-0.
 - **En 1 mes:** vuelve a tus tres diseños y atácalos como un entrevistador hostil: por cada caja, pregúntate "¿y si esto se cae? ¿y si el tráfico se multiplica por 10? ¿y si un tenant es 100x más grande que el resto?". Anota dónde tu diseño no aguanta. Ese estrés-test es exactamente lo que separa una respuesta de junior de una de senior.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > "Sé usar un RAG" es lo que dice todo el mundo. "Te diseño un RAG multi-tenant, una automatización de tickets que no reembolsa dos veces ni actúa sobre basura, y el pipeline que los mantiene frescos —con números, trade-offs y ADRs— en cuarenta minutos y en inglés" es lo que te contrata. No construiste nada esta vez. Construiste algo mejor: la capacidad de explicar **por qué** lo construirías así. Ahora ve a defenderlo frente a la pared. Y después, frente a alguien que pague por escucharlo."

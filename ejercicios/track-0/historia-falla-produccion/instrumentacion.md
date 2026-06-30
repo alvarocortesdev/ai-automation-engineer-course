@@ -7,7 +7,7 @@
 ## La app y sus usuarios reales
 
 - **App:** _[nombre + 1 línea de qué hace]_
-- **Usuarios reales (mínimo 3):** _[quiénes — p. ej. "mi pareja y dos amigos que la usan para X"]_
+- **Usuarios reales (mínimo 3):** _[quiénes — p. ej. "tres personas que la usan para X"]_
 - **¿La usan de verdad?** _[con qué frecuencia / desde cuándo]_
 
 > Si AÚN no tienes usuarios o instrumentación, no finjas: escribe aquí el **plan

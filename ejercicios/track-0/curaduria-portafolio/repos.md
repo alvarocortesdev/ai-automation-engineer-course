@@ -12,7 +12,7 @@
 | 5 | `pdf-chatbot` | "Chatea con tu PDF": RAG básico copiado de un tutorial. Sin eval, sin reranking. | plantilla | screenshot |
 | 6 | `rag-knowledge-platform` | **Propio.** Ingest, vector DB, retrieval con reranking, evaluación con ragas, observabilidad. Desplegada. | inglés | link vivo |
 | 7 | `nextjs-starter-fork` | Fork de un starter de Next.js; tocado 2 días, sin cambios reales | del starter | — |
-| 8 | `homehub` | **Propio.** Fullstack (TS, Next.js, tests, CI/CD, estados completos). En uso real. | inglés | link vivo |
+| 8 | `homebase` | **Propio.** Fullstack (TS, Next.js, tests, CI/CD, estados completos). En uso real. | inglés | link vivo |
 | 9 | `crypto-price-tracker` | Script que imprime precios de cripto; ejemplo de un tutorial | mínimo | — |
 
 > Recuerda: el reclutador escanea esto en ~10 segundos. Tu curaduría decide qué ve primero.

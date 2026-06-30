@@ -25,7 +25,7 @@ with evals, guardrails, and failure handling.
   writes to the ERP. Idempotent, DLQ, agent eval gate, cost ceiling. [demo](…) · [write-up](…)
 - **rag-docs-platform** — production RAG: hybrid search, reranking, versioned eval
   harness, traces in Langfuse. [demo](…)
-- **homehub** — fullstack app with real users; includes a public post-mortem of a prod failure. [demo](…)
+- **homebase** — fullstack app with real users; includes a public post-mortem of a prod failure. [demo](…)
 
 ## Stack
 Python · TypeScript · FastAPI · PostgreSQL · Docker · LangGraph
@@ -38,7 +38,7 @@ Python · TypeScript · FastAPI · PostgreSQL · Docker · LangGraph
 - **Pin 1: agentic-invoice-pipeline** — es el capstone agéntico (Fase 7), el nicho menos saturado; es
   lo que me diferencia del 80% de portafolios. Va primero a propósito.
 - **Pin 2: rag-docs-platform** — RAG de producción con eval harness; demuestra el hilo de evals.
-- **Pin 3: homehub** — usuarios reales + post-mortem público; la narrativa de "falla en producción"
+- **Pin 3: homebase** — usuarios reales + post-mortem público; la narrativa de "falla en producción"
   que un homelab puro no tiene.
 
 ### Justificación de recorte (entregable, no se publica)

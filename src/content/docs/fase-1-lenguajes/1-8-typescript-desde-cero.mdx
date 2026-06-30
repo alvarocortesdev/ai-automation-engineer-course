@@ -58,7 +58,7 @@ Antes de seguir, responde de memoria:
 
 ## 4. Ejemplo resuelto, pensado en voz alta
 
-Voy a construir el camino completo: parto de los tipos básicos, modelo un pequeño dominio (la despensa de HomeHub), estrecho una unión, escribo un type guard, generalizo con generics, derivo tipos con utility types, y al final muestro por qué —aun con `tsc` en verde— necesito **zod** para los datos que entran de afuera. **No leas esto como un resultado: léelo como me oirías razonar al lado tuyo.**
+Voy a construir el camino completo: parto de los tipos básicos, modelo un pequeño dominio (la despensa de HomeBase), estrecho una unión, escribo un type guard, generalizo con generics, derivo tipos con utility types, y al final muestro por qué —aun con `tsc` en verde— necesito **zod** para los datos que entran de afuera. **No leas esto como un resultado: léelo como me oirías razonar al lado tuyo.**
 
 ### 4.1 Tipos básicos e inferencia
 
@@ -360,7 +360,7 @@ Sin andamiaje. Resuélvelos **sin IA** dentro del timebox. Cada carpeta trae su 
 
 <Reto title="Tipar y estrechar un módulo TypeScript" timebox="35–45 min">
 
-Un módulo de la despensa de HomeHub está escrito con `any` y sin modelar. Tu trabajo es **tiparlo entero sin dejar un solo `any`**: define el `Producto`, modela los eventos de stock como **unión discriminada**, implementa `aplicarEvento` con narrowing por el discriminante **y chequeo de exhaustividad (`never`)**, escribe un **type guard** y usa un **utility type** para no duplicar tipos.
+Un módulo de la despensa de HomeBase está escrito con `any` y sin modelar. Tu trabajo es **tiparlo entero sin dejar un solo `any`**: define el `Producto`, modela los eventos de stock como **unión discriminada**, implementa `aplicarEvento` con narrowing por el discriminante **y chequeo de exhaustividad (`never`)**, escribe un **type guard** y usa un **utility type** para no duplicar tipos.
 
 Entregable: tu solución en `ejercicios/fase-1/tipar-y-estrechar-typescript/` (carpeta del repo), con `pnpm typecheck` en verde y `pnpm test` pasando.
 
@@ -439,7 +439,7 @@ Si marcaste menos de seis, vuelve a la sección correspondiente **antes** de ava
 
 ## 10. Conexión con el capstone de la fase
 
-El **Capstone F1 — La misma app, dos lenguajes** es una mini-API de la despensa de HomeHub escrita en Python y en TypeScript. En el lado TypeScript:
+El **Capstone F1 — La misma app, dos lenguajes** es una mini-API de la despensa de HomeBase escrita en Python y en TypeScript. En el lado TypeScript:
 
 - Cada **request** que entra (agregar producto, actualizar stock) se valida con un **schema zod** antes de tocar la lógica: esa es tu frontera, el espejo exacto del modelo pydantic del lado Python ([`1.4`](/fase-1-lenguajes/1-4-type-hints-mypy-pydantic/)).
 - El **tipo** de cada entidad se **infiere del schema** con `z.infer` — una sola fuente de verdad para runtime y tipos.
@@ -448,7 +448,7 @@ El **Capstone F1 — La misma app, dos lenguajes** es una mini-API de la despens
 
 Haber construido la **misma validación de frontera** en pydantic y en zod te deja el patrón grabado en los dos idiomas de tu stack. Cuando llegues a Next.js, tRPC o a un agente en TypeScript, vas a encontrar zod en el centro — y ya lo vas a conocer.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > Los tipos de TypeScript son promesas que se evaporan al compilar. zod es el contrato firmado que sigue en pie cuando el programa corre. Confía en la salida de un LLM con un `as` y tendrás exactamente el tipo de sorpresa que en runtime se llama `NaN`, y en la reunión del lunes se llama post-mortem.
 
 ## 11. Reflexión y repaso espaciado

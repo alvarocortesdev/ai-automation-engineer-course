@@ -257,7 +257,7 @@ No construyas todo a la vez ni empieces por lo difícil. Avanza en **vertical sl
 - **Fase C — Durabilidad + HITL (andamiaje medio).** Mueve la orquestación a un workflow Temporal con actividades; añade la espera durable de la señal de aprobación para acciones sensibles. **Hecho cuando:** matas el worker a mitad de una espera HITL, lo reinicias, y el workflow retoma sin perder estado.
 - **Fase D — Producción (andamiaje bajo: solo el objetivo).** Instrumenta trazas OTel con `message_id` como correlation id (tokens/latencia/costo por paso); implementa el eval gate del agente sobre un golden set y conéctalo a CI; añade techo de costo; despliega con CI/CD y consíguete **3 usuarios reales**. Luego **rompe algo a propósito**, observa el fallo en las trazas, reconcilia, y escribe el post-mortem.
 
-> [!tip] GLaDOS says
+> [!tip] En la práctica
 > Primero-Sin-IA aplica al **diseño**, no solo al código. Antes de escribir una línea de la Fase A, haz a mano la tabla de decisión del plano de control y el diagrama de secuencia del HITL. Si no puedes dibujar el flujo de un duplicado-que-además-es-sensible sin ejecutar nada, todavía no lo entiendes.
 
 ## 7. El capstone
@@ -347,5 +347,5 @@ Gancho de **spaced repetition**:
 - **Al terminar el capstone:** explica en voz alta, a alguien o a la cámara (en inglés, es el gate de Track-0), tu arquitectura completa en menos de cinco minutos: input → IA → plano de control → ejecución durable, marcando las garantías. Grábate. Esa grabación es material de tu mock interview.
 - **En 1 semana:** toma cualquier automatización existente (un flujo n8n, un script tuyo, uno del trabajo) y audítala con la checklist del §10. Anota qué le falta. Casi siempre falta más de lo que crees —y ese diagnóstico, hecho frente a un entrevistador, es la diferencia entre "sé usar herramientas" y "sé sostener producción".
 
-> [!tip] GLaDOS says
-> "Construí un agente que clasifica correos" es lo que dice el 80%. "Construí un sistema que recibe input, decide y ejecuta acciones reales —y que no cobra dos veces, no actúa sobre basura, y sobrevive a un reinicio a mitad de un reembolso— y aquí está el post-mortem de cuándo se rompió" es lo que te contrata. Ese es el punto entero de la Fase 7. Ahora ve a romper algo. Para la ciencia. Y por ciencia, quiero decir tu estabilidad laboral."
+> [!tip] En la práctica
+> "Construí un agente que clasifica correos" es lo que dice el 80%. "Construí un sistema que recibe input, decide y ejecuta acciones reales —y que no cobra dos veces, no actúa sobre basura, y sobrevive a un reinicio a mitad de un reembolso— y aquí está el post-mortem de cuándo se rompió" es lo que te contrata. Ese es el punto entero de la Fase 7. Ahora ve a romper algo —y a documentar cómo lo arreglaste.

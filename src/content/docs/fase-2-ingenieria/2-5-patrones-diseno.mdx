@@ -229,7 +229,7 @@ flowchart LR
     A2 -.traduce.-> G2["OtraLibreria<br/>dispatch payload"]
 ```
 
-:::tip[GLaDOS dice — el adapter es tu frontera de defensa]
+:::tip[En la práctica — el adapter es tu frontera de defensa]
 El Adapter no solo traduce *formas*: es el lugar natural para **validar y sanear** lo que entra desde un tercero antes de que toque tu dominio. Cuando en la Fase 6 envuelvas un cliente de LLM en un adapter, ese envoltorio es donde validas el JSON que devolvió el modelo, recortas tokens o capturas un timeout —*improper output handling* (OWASP LLM05) y *costo/latencia* viven exactamente en esta costura. No dejes pasar la salida cruda de un extraño a tu lógica: ése es el pecado que el adapter te permite evitar en un solo punto.
 :::
 
@@ -485,7 +485,7 @@ El **[Capstone F2 — Refactor + suite de tests](/fase-2-ingenieria/proyecto/)**
 
 ## 11. Reflexión y repaso espaciado
 
-Cierra escribiendo dos o tres frases respondiendo: **¿en qué momento de tu propio código pasado (HomeHub, scripts) escribiste un `if/elif` que crecía, un SQL incrustado en el negocio, o una integración de terceros pegada directo —y qué patrón de hoy lo habría curado?** Anclar el patrón a un dolor que ya viviste es lo que lo vuelve tuyo, no vocabulario prestado.
+Cierra escribiendo dos o tres frases respondiendo: **¿en qué momento de tu propio código pasado (HomeBase, scripts) escribiste un `if/elif` que crecía, un SQL incrustado en el negocio, o una integración de terceros pegada directo —y qué patrón de hoy lo habría curado?** Anclar el patrón a un dolor que ya viviste es lo que lo vuelve tuyo, no vocabulario prestado.
 
 Gancho de **spaced repetition**:
 

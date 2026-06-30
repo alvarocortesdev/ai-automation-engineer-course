@@ -1,6 +1,6 @@
 """Ejercicio 1.4 — Tipar un módulo y hacer pasar mypy --strict (Primero-Sin-IA).
 
-Este módulo de la despensa de HomeHub está SIN TIPOS y esconde un bug latente:
+Este módulo de la despensa de HomeBase está SIN TIPOS y esconde un bug latente:
 trata un campo opcional ('descuento_pct') como si siempre estuviera presente.
 
 Tu trabajo, EN ESTE ORDEN:

@@ -6,7 +6,7 @@
       "awsRegion": "us-east-1",
       "s3": {
         "bucket": {
-          "name": "donpelusa-app-uploads-prod"
+          "name": "acme-app-uploads-prod"
         },
         "object": {
           "key": "facturas/factura.pdf",

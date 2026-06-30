@@ -214,7 +214,7 @@ from openlineage.client.uuid import generate_new_uuid
 from datetime import datetime, timezone
 
 client = OpenLineageClient.from_environment()   # destino: Marquez u otro colector
-PRODUCER = "https://github.com/donpelusa/pipeline-pagos"
+PRODUCER = "https://github.com/acme/pipeline-pagos"
 
 run = Run(runId=str(generate_new_uuid()))
 job = Job(namespace="pagos", name="ingest_eventos_pago")

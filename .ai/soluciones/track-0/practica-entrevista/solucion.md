@@ -50,7 +50,7 @@ Nota cómo **demuestra** idempotencia + observabilidad + manejo de errores sin q
 ## Rango de soluciones aceptables
 
 - Cualquier estructura de cadencia (tabla, lista, calendario) cuenta si los bloques son concretos y cubren los 3 formatos.
-- Las historias pueden venir de trabajo, proyectos personales o el HomeHub/capstones; lo que importa es S/T/A/R + número + mapeo, no que sean "épicas".
+- Las historias pueden venir de trabajo, proyectos personales o el HomeBase/capstones; lo que importa es S/T/A/R + número + mapeo, no que sean "épicas".
 - Es válido que el alumno entregue solo 3 historias (la semilla) con un backlog hacia 8-10; no exijas las 10 en esta entrega.
 - La grabación puede ser solo-audio o pantalla+audio; ambas valen mientras la autoevaluación evidencie que se escuchó.
 - El formato del mock grabado puede ser cualquiera de los 3; no exijas uno específico.

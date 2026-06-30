@@ -114,7 +114,7 @@ Ahora el recurso. Un **`resource`** es la unidad central: declara una pieza de i
 ```hcl
 # main.tf — el recurso que quiero que exista
 resource "aws_s3_bucket" "uploads" {
-  bucket = "donpelusa-iac-demo-uploads"
+  bucket = "acme-iac-demo-uploads"
 
   tags = {
     Environment = "demo"
@@ -159,7 +159,7 @@ Terraform will perform the following actions:
 
   # aws_s3_bucket.uploads will be created
   + resource "aws_s3_bucket" "uploads" {
-      + bucket = "donpelusa-iac-demo-uploads"
+      + bucket = "acme-iac-demo-uploads"
       + id     = (known after apply)
     }
 
@@ -230,7 +230,7 @@ module "buckets" {
   source   = "./modules/bucket-privado"
   for_each = toset(["logs", "uploads", "backups"])
 
-  bucket_name = "donpelusa-${each.key}"
+  bucket_name = "acme-${each.key}"
   environment = var.environment
 }
 ```
@@ -267,7 +267,7 @@ Así se configura un **backend remoto** S3 con locking nativo (lo correcto en 20
 ```hcl
 terraform {
   backend "s3" {
-    bucket       = "donpelusa-tfstate"
+    bucket       = "acme-tfstate"
     key          = "prod/app/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true
@@ -314,7 +314,7 @@ Tu state actual ya tiene un bucket `aws_s3_bucket.uploads` creado, **sin** tags.
 
 ```hcl
 resource "aws_s3_bucket" "uploads" {
-  bucket = "donpelusa-iac-demo-uploads"
+  bucket = "acme-iac-demo-uploads"
   tags = {
     Environment = "prod"
   }

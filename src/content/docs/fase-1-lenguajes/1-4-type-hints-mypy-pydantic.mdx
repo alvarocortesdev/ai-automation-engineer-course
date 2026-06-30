@@ -323,7 +323,7 @@ Sin andamiaje. Resuélvelos **sin IA** dentro del timebox. Instala las herramien
 
 <Reto title="Tipar un módulo y hacer pasar mypy --strict" timebox="30–40 min">
 
-Un módulo de la despensa de HomeHub está **sin tipos** y esconde un bug latente: trata un campo opcional como si siempre estuviera. Tu trabajo es **anotarlo entero**, correr `mypy --strict`, y dejar que mypy te muestre el bug — después arreglarlo para que los tests pasen.
+Un módulo de la despensa de HomeBase está **sin tipos** y esconde un bug latente: trata un campo opcional como si siempre estuviera. Tu trabajo es **anotarlo entero**, correr `mypy --strict`, y dejar que mypy te muestre el bug — después arreglarlo para que los tests pasen.
 
 Entregable: tu solución en `ejercicios/fase-1/tipar-y-pasar-mypy/` (carpeta del repo), con `mypy --strict` en verde y los tests pasando.
 
@@ -395,7 +395,7 @@ Si marcaste menos de cinco, vuelve a la sección correspondiente **antes** de av
 
 ## 10. Conexión con el capstone de la fase
 
-El **Capstone F1 — La misma app, dos lenguajes** es una mini-API de la despensa de HomeHub escrita en Python y en TypeScript. En el lado Python:
+El **Capstone F1 — La misma app, dos lenguajes** es una mini-API de la despensa de HomeBase escrita en Python y en TypeScript. En el lado Python:
 
 - Cada **request** que entra (agregar producto, actualizar stock) se valida con un **modelo pydantic** antes de tocar la lógica: esa es tu frontera.
 - Cada **response** se serializa con `model_dump()`.
@@ -403,7 +403,7 @@ El **Capstone F1 — La misma app, dos lenguajes** es una mini-API de la despens
 
 Y no es casualidad que el otro lenguaje use **zod** ([1.8](/fase-1-lenguajes/)): zod es el pydantic de TypeScript. Aprender a validar en la frontera en un lenguaje te da el patrón en los dos. Cuando llegues a FastAPI en la Fase 3, descubrirás que **ya construiste con pydantic la pieza central del framework**.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > Los type hints son promesas. pydantic es el contrato firmado ante notario. Confía en los datos de un LLM sin validarlos y tendrás exactamente el tipo de sorpresa que termina en un post-mortem.
 
 ## 11. Reflexión y repaso espaciado

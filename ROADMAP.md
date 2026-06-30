@@ -3,7 +3,7 @@
 > **Columna vertebral de mi repositorio de estudio.**
 > De recuperar autonomía de código → a semi-senior empleable → a senior en el nicho IA/Automatización.
 
-**Autor:** Álvaro Cortés (`donpelusa`)
+**Autor:** Alvaro Cortés
 **Perfil destino:** AI / Automation Engineer con base Fullstack sólida
 **Objetivo de mercado:** entrar como **semi-senior** (banda CLP 1.6M–2.4M+), modalidad **remoto/híbrido**, con horizonte a **senior** tras el próximo trabajo.
 **Última actualización:** 2026-06-25
@@ -48,7 +48,7 @@ estudio-ai-engineer/
 └── proyectos-portafolio/       ← los capstone que van a tu CV
     ├── 01-rag-app/
     ├── 02-automation-platform/
-    └── 03-homehub/
+    └── 03-homebase/
 ```
 > Convención: una carpeta por sub-unidad. Dentro, mínimo `notas.md`, `articulos.md`, `ejercicios/`. Los proyectos grandes van en `proyectos-portafolio/` con su propio repo o submódulo.
 
@@ -104,7 +104,7 @@ FASE 9  Portafolio, marca y empleabilidad
 ## 0.2 Cómo funciona la web y un computador
 - [ ] Modelo cliente–servidor, request/response
 - [ ] HTTP/HTTPS: métodos, status codes, headers, body
-- [ ] DNS, dominios, qué pasa al escribir una URL (ya administras `alvarocortes.cl`, formalízalo)
+- [ ] DNS, dominios, qué pasa al escribir una URL (si administras un dominio propio, formalízalo)
 - [ ] Qué hace el navegador (render, JS engine)
 - [ ] Puertos, IPs, NAT, proxies (ya lo tocas en tu homelab/Cloudflare Tunnel)
 
@@ -163,7 +163,7 @@ FASE 9  Portafolio, marca y empleabilidad
 - [ ] `zod` (validación de esquemas — el equivalente JS de pydantic)
 
 ### 🛠️ Proyecto Fase 1 — *La misma app, dos lenguajes*
-> Construye una pequeña API (ej: gestor de tu despensa de **HomeHub**) primero en **Python** y luego en **TypeScript/Node**. Comparar te fija ambos lenguajes y te da material de portafolio bilingüe.
+> Construye una pequeña API (ej: gestor de tu despensa de **HomeBase**) primero en **Python** y luego en **TypeScript/Node**. Comparar te fija ambos lenguajes y te da material de portafolio bilingüe.
 
 ---
 
@@ -504,10 +504,10 @@ FASE 9  Portafolio, marca y empleabilidad
 ## 9.1 Portafolio de proyectos (la prueba de seniority)
 - [ ] **Proyecto 1:** Plataforma RAG de producción (Fase 6)
 - [ ] **Proyecto 2:** Automatización end-to-end con IA (Fase 7)
-- [ ] **Proyecto 3:** **HomeHub** como fullstack+IA completo (TS, Next.js, tests, CI/CD, feature IA)
+- [ ] **Proyecto 3:** **HomeBase** como fullstack+IA completo (TS, Next.js, tests, CI/CD, feature IA)
 - [ ] Cada uno con README impecable, demo en vivo y arquitectura documentada
 
-## 9.2 GitHub profesional (`donpelusa`)
+## 9.2 GitHub profesional (`acme`)
 - [ ] Perfil README atractivo, repos limpios y documentados
 - [ ] Commits consistentes (este repo de estudio ya aporta a eso)
 - [ ] Pin de los 3 proyectos capstone

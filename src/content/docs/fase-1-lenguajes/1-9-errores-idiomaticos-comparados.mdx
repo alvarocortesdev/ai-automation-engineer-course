@@ -418,13 +418,13 @@ Si marcaste menos de seis, vuelve a la sección correspondiente **antes** de ava
 
 ## 10. Conexión con el capstone de la fase
 
-El **Capstone F1 — La misma app, dos lenguajes** es la mini-API de la despensa de HomeHub en Python y en TypeScript. El manejo de errores es justo donde el contraste bilingüe se vuelve material de portafolio:
+El **Capstone F1 — La misma app, dos lenguajes** es la mini-API de la despensa de HomeBase en Python y en TypeScript. El manejo de errores es justo donde el contraste bilingüe se vuelve material de portafolio:
 
 - **Lado Python:** cada operación que puede fallar de forma esperada (producto no encontrado, stock insuficiente) lanza una **excepción de dominio** propia; cuando llegues a **FastAPI** en la Fase 3, esas excepciones se mapean a códigos HTTP (404, 409) en un solo lugar. La validación de cada request con pydantic ([1.4](/fase-1-lenguajes/1-4-type-hints-mypy-pydantic/)) **lanza** `ValidationError`: ya es una decisión de diseño que ahora entiendes.
 - **Lado TypeScript:** las funciones de la capa de dominio devuelven `Result<T, E>` para los fallos esperados, de modo que el handler de la ruta esté **obligado** a discriminar antes de responder. El error nunca se cuela como un `200 OK` con basura.
 - **Ambos lados** registran el error con su **causa** (encadenamiento en Python, el `error` del `Result` en TS): esa es la semilla de la observabilidad que formalizas en la Fase 5.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > Un `try/except` pelado que se traga todo es el equivalente a tapar la luz "check engine" con una calcomanía. El auto sigue andando. Hasta que no.
 
 ## 11. Reflexión y repaso espaciado

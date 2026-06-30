@@ -110,7 +110,7 @@ Uso **Caddy** porque su mejor característica es **HTTPS automático**: pide y r
 ```yaml
 services:
   api:
-    image: ghcr.io/donpelusa/api-produccion:latest  # tu imagen del registry (5.3)
+    image: ghcr.io/acme/api-produccion:latest  # tu imagen del registry (5.3)
     restart: unless-stopped
     env_file: .env                  # config inyectada, NO horneada (12-factor)
     expose:
@@ -246,7 +246,7 @@ Antes de los retos completos, dos micro-ejercicios. Hazlos **mentalmente o en pa
 ```yaml
 services:
   api:
-    image: ghcr.io/donpelusa/api:latest
+    image: ghcr.io/acme/api:latest
     ______:                 # (1) ¿visible solo en la red interna, o publicado al host?
       - "8000"
   caddy:

@@ -13,7 +13,7 @@
 | 5 | `pdf-chatbot` | <...> | <...> |
 | 6 | `rag-knowledge-platform` | <...> | <...> |
 | 7 | `nextjs-starter-fork` | <...> | <...> |
-| 8 | `homehub` | <...> | <...> |
+| 8 | `homebase` | <...> | <...> |
 | 9 | `crypto-price-tracker` | <...> | <...> |
 
 ## 2. Selección — qué queda en la vitrina y qué se archiva

@@ -19,7 +19,7 @@ version: 1
 - **O2** — Mapear cada sobreviviente a una *skill* concreta del mercado.
 
 > Curaduría de referencia (el corrector la conoce; **no la entrega como atajo**): vitrina =
-> `ticket-triage-agent` (estrella), `rag-knowledge-platform`, `homehub`. Ruido a archivar: 1, 2, 3, 5, 7, 9.
+> `ticket-triage-agent` (estrella), `rag-knowledge-platform`, `homebase`. Ruido a archivar: 1, 2, 3, 5, 7, 9.
 > Repo trampa: `pdf-chatbot` (#5) —tiene "IA"/chatbot pero es un RAG-de-tutorial, ruido disfrazado de señal.
 
 ## Criterios y niveles

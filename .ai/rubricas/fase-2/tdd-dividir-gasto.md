@@ -66,4 +66,4 @@ version: 1
 - **Dirección concreta (nivel 3, sólo tras intento real):** "`base, resto = divmod(monto, personas)`. Las primeras `resto` personas reciben `base + 1`, las demás `base`: `[base + 1 if i < resto else base for i in range(personas)]`. Valida `personas <= 0` y `monto < 0` con `raise ValueError` ANTES, y testea ambos con `pytest.raises`. Repasa la sección 7 antes de mirar la referencia."
 
 ## Conexión con el proyecto / capstone
-- El reparto justo es la clase de regla que el módulo Splitwise del capstone HomeHub necesita correcta al peso. Practicar el invariante `sum == monto` aquí es el primer paso hacia las property-based tests de 2.8 y hacia medir la *calidad* de los tests (no su coverage) en 2.9.
+- El reparto justo es la clase de regla que el módulo Splitwise del capstone HomeBase necesita correcta al peso. Practicar el invariante `sum == monto` aquí es el primer paso hacia las property-based tests de 2.8 y hacia medir la *calidad* de los tests (no su coverage) en 2.9.

@@ -23,7 +23,7 @@ No existe "la" respuesta. Una entrega excelente exhibe **cuatro patrones**:
 
 ### Ejemplar de incidente (vara de medir, NO para mostrar)
 
-> **HomeHub — pérdida silenciosa de datos en la lista de compras (2 usuarios reales: la persona y su pareja).** Un deploy mató el contenedor a mitad de un POST de escritura; dos productos se perdieron sin que nada alertara; la usuaria se enteró en el supermercado, no por una señal.
+> **HomeBase — pérdida silenciosa de datos en la lista de compras (2 usuarios reales).** Un deploy mató el contenedor a mitad de un POST de escritura; dos productos se perdieron sin que nada alertara; la usuaria se enteró en el supermercado, no por una señal.
 >
 > **5 whys (resumen):** el POST devolvió 500 → el contenedor se reinició por un deploy en curso → el deploy no drena requests en vuelo (sin _graceful shutdown_) → no había alerta sobre el camino de escritura → el frontend hizo _optimistic update_ y nunca confirmó contra el servidor, así que el dato se perdió en silencio.
 >

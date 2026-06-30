@@ -48,7 +48,7 @@ version: 1
 | **incompleto** | Definiciones correctas pero ejemplos ausentes o que contradicen la definición. |
 | **en-progreso** | Ejemplos genéricos o reciclados de la lección (trofeo/maleta), no propios. |
 | **competente** | Cada concepto trae un ejemplo/analogía propio coherente con la definición. |
-| **excelente** | Los ejemplos son ilustrativos y revelan transferencia (los aplica a su propio dominio: trabajo, HomeHub, etc.). |
+| **excelente** | Los ejemplos son ilustrativos y revelan transferencia (los aplica a su propio dominio: trabajo, HomeBase, etc.). |
 
 ## Errores típicos a marcar
 - **"El LLM aprende de mis chats"**: confundir contexto (context window) con re-entrenamiento. En inferencia los pesos no cambian.

@@ -31,7 +31,7 @@
 | `[ ]` | T0.3 | Práctica de entrevista con cadencia (mocks semanales) | crítica |
 | `[ ]` | T0.4 | Historia de falla en producción (post-mortem público) | crítica |
 | `[ ]` | T0.5 | Portafolio diferenciado (capstone agéntico como estrella) | crítica |
-| `[ ]` | T0.6 | GitHub profesional (`donpelusa`) | crítica |
+| `[ ]` | T0.6 | GitHub profesional (`acme`) | crítica |
 | `[ ]` | T0.7 | CV y posicionamiento (AI/Automation Engineer) | crítica |
 | `[ ]` | T0.8 | Lane Forward-Deployed / cliente-facing | opcional |
 | `[ ]` | T0.9 | Vender el skill AI-augmented | crítica |

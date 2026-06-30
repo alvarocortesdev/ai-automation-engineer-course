@@ -571,7 +571,7 @@ El [capstone de la Fase 7](/fase-7-automatizacion/proyecto/) es una automatizaci
 
 - Cuando tu agente extrae datos estructurados, esos datos **aterrizan en un warehouse** y dbt los modela en capas testeadas — no quedan como JSON suelto.
 - Los **tests de dbt** son parte del *eval gate* del pipeline: si los datos extraídos violan una invariante (`accepted_values`, `not_null`), el build se pone rojo antes de que un dato malo contamine una decisión aguas arriba. Es la misma lógica del *ship-gate* que aplicarás a los evals de IA en [7.7](/fase-7-automatizacion/7-7-agentes-automatizacion-ia/).
-- El **linaje** documenta de punta a punta: fuente → modelo → exposure (el dashboard o la app que ve tu pareja en HomeHub). Eso es lo que distingue tu capstone "estrella" de un script que "funciona en mi máquina".
+- El **linaje** documenta de punta a punta: fuente → modelo → exposure (el dashboard o la app que ven tus usuarios en HomeBase). Eso es lo que distingue tu capstone "estrella" de un script que "funciona en mi máquina".
 
 Lo siguiente, [7.5c](/fase-7-automatizacion/7-5c-orquestador/), es **quién dispara `dbt build`** de forma confiable y programada (un orquestador como Dagster o Airflow), y [7.5d](/fase-7-automatizacion/7-5d-data-contracts-quality/) profundiza la **calidad y los contratos de datos** que aquí solo asomaste con `freshness` y tests.
 

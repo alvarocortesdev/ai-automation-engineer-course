@@ -31,7 +31,7 @@ class FakeS3Client:
 
 def test_parsear_evento_extrae_bucket_y_key():
     bucket, key = parsear_evento(EVENTO)
-    assert bucket == "donpelusa-app-uploads-prod"
+    assert bucket == "acme-app-uploads-prod"
     assert key == "facturas/factura.pdf"
 
 
@@ -45,7 +45,7 @@ def test_handler_devuelve_resumen_con_cliente_falso():
     resultado = handler(EVENTO, context=None, s3_client=fake)
 
     assert resultado["status"] == "ok"
-    assert resultado["bucket"] == "donpelusa-app-uploads-prod"
+    assert resultado["bucket"] == "acme-app-uploads-prod"
     assert resultado["key"] == "facturas/factura.pdf"
     assert resultado["bytes"] == 2048
 
@@ -56,7 +56,7 @@ def test_handler_consulta_el_objeto_correcto():
 
     # El handler debe haber consultado el objeto exacto del evento (least surprise).
     assert fake.llamadas == [
-        {"Bucket": "donpelusa-app-uploads-prod", "Key": "facturas/factura.pdf"}
+        {"Bucket": "acme-app-uploads-prod", "Key": "facturas/factura.pdf"}
     ]
 
 

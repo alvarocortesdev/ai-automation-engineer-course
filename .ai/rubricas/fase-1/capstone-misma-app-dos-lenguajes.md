@@ -5,7 +5,7 @@ sub_unidad: "1.P"
 version: 1
 ---
 
-# Rúbrica — Capstone F1: La misma app, dos lenguajes (despensa HomeHub)
+# Rúbrica — Capstone F1: La misma app, dos lenguajes (despensa HomeBase)
 
 > Rúbrica **analítica** atada a los `objetivos` del contrato. El corazón del
 > capstone NO es "hacer una API" (no hay framework, es stdlib): es **resolver el

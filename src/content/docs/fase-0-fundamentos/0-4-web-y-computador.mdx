@@ -96,7 +96,7 @@ sequenceDiagram
     R-->>N: 93.184.216.34
 ```
 
-> Pienso en voz alta: esto parece lento (varias idas y vueltas), pero casi siempre la respuesta está **cacheada** (en el navegador, en el sistema operativo, en tu router, en el resolver de tu ISP). El `TTL` —time to live— dice cuántos segundos vale guardarla. Por eso "ya administro `alvarocortes.cl`": cuando cambio un registro DNS, tarda en propagarse justo por estos cachés.
+> Pienso en voz alta: esto parece lento (varias idas y vueltas), pero casi siempre la respuesta está **cacheada** (en el navegador, en el sistema operativo, en tu router, en el resolver de tu ISP). El `TTL` —time to live— dice cuántos segundos vale guardarla. Por eso, cuando administras un dominio propio y cambias un registro DNS, el cambio tarda en propagarse: justo por estos cachés.
 
 **Paso 2 — Abro un canal hasta esa IP:puerto.** Con la IP `93.184.216.34` y el puerto `443`, establezco una conexión **TCP**. TCP garantiza que los bytes lleguen completos y en orden; se abre con un saludo de tres pasos (el *handshake*: SYN → SYN-ACK → ACK). Es una llamada telefónica: primero "¿me escuchas?" antes de hablar.
 
@@ -145,7 +145,7 @@ Ese es el viaje completo. Una página moderna repite los pasos 4–5 **decenas d
 - **"`401` y `403` son lo mismo."** ❌ `401 Unauthorized` en realidad significa **no autenticado** ("¿quién eres? identifícate"). `403 Forbidden` significa **autenticado pero sin permiso** ("sé quién eres, pero no puedes"). El nombre del 401 es engañoso; la semántica no.
 - **"El puerto es parte del dominio."** ❌ El dominio (`example.com`) se traduce a una IP vía DNS. El **puerto** (`:443`) elige *qué servicio* en esa máquina. Una misma IP puede correr web (443), SSH (22) y una base de datos (5432) a la vez, cada uno en su puerto.
 - **"`GET` y `POST` dan lo mismo."** ❌ `GET` **lee** sin efectos secundarios (es *seguro* e *idempotente*: repetirlo no cambia nada). `POST` **crea/modifica** (no idempotente: enviarlo dos veces puede crear dos pedidos). Usar `GET` para borrar algo es un bug clásico de seguridad.
-- **"Una IP identifica a una persona."** ❌ Gracias a **NAT**, toda tu casa (celular, TV, notebook, el mainframe) sale a internet con **una sola IP pública compartida**. La IP identifica una conexión de red, no a un humano.
+- **"Una IP identifica a una persona."** ❌ Gracias a **NAT**, toda tu casa (celular, TV, notebook, el servidor de casa) sale a internet con **una sola IP pública compartida**. La IP identifica una conexión de red, no a un humano.
 
 :::
 
@@ -300,5 +300,5 @@ Hilo de **ingeniería** que arrastras desde ya (Definition of Done §B): si tu C
 - **En 3 días:** explícale a alguien (o a una grabadora) la diferencia entre `401`/`403` y entre `4xx`/`5xx`, con un ejemplo de cada uno.
 - **En 1 semana:** vuelve a `curl -I` un sitio y, **antes** de correrlo, predice los tres primeros headers que esperas ver. Acertar es señal de que el modelo está fijo.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > Memorizar la tabla de status codes es de junior. Mirar un `502` y decir al tiro "el proxy está vivo pero el backend de atrás murió" — sin abrir Google — es lo que separa al que depura del que reza. Practica el segundo.

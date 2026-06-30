@@ -13,7 +13,7 @@ description: Añade o modifica una lección/sub-unidad del curso AI/Automation E
 - `CURRICULUM-REVIEW.md` (si está en el repo) — secciones **E** (anatomía + rúbrica), **B** (hilos transversales + DoD), **D** (build list con marcas ruta-crítica/opcional). Es la fuente de verdad pedagógica.
 - `.ai/INSTRUCCIONES-CORRECTOR.md` — cómo se corregirán los ejercicios que generes (debe poder corregirse con lo que escribas).
 
-No inventes ids ni títulos: cópialos del build list (§D). Cada sub-unidad tiene una marca **[ruta-crítica]** o **[opcional/profundización]** — respétala; las opcionales **nunca se eliminan** (mandato de @pelu), solo se marcan.
+No inventes ids ni títulos: cópialos del build list (§D). Cada sub-unidad tiene una marca **[ruta-crítica]** o **[opcional/profundización]** — respétala; las opcionales **nunca se eliminan** (por diseño del curso), solo se marcan.
 
 ## 1. Convención de identidad de una sub-unidad
 

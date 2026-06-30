@@ -37,7 +37,7 @@ concurrentes no corrompen el state.
 ```hcl
 terraform {
   backend "s3" {
-    bucket       = "donpelusa-tfstate"
+    bucket       = "acme-tfstate"
     key          = "prod/capstone/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true

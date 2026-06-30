@@ -332,7 +332,7 @@ La trampa: `localStorage` es lo *fácil* (lo lees con una línea de JS), y por e
 
 El patrón más robusto en 2026 es el **BFF (Backend-For-Frontend)**: un backend liviano que guarda los tokens server-side y le da al navegador solo una cookie de sesión `httpOnly`. El navegador nunca toca el access token. Más infraestructura, pero elimina el dilema.
 
-:::tip[GLaDOS dice]
+:::tip[En la práctica]
 Regla práctica para el capstone: **refresh token → cookie `httpOnly`+`Secure`+`SameSite` (o BFF). Nunca en `localStorage`.** El access token de vida corta en memoria (una variable JS) es un mal menor aceptable. Y documenta esta decisión como un **ADR**: "elegí cookies httpOnly sobre localStorage por XSS, asumiendo CSRF mitigado con SameSite" es justo el trade-off defendible que distingue a un semi-senior.
 :::
 

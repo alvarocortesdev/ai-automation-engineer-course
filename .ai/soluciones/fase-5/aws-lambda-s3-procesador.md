@@ -50,7 +50,7 @@ def handler(event: dict, context=None, s3_client=None) -> dict:
       "Sid": "LeerUploads",
       "Effect": "Allow",
       "Action": ["s3:GetObject"],
-      "Resource": "arn:aws:s3:::donpelusa-app-uploads-prod/*"
+      "Resource": "arn:aws:s3:::acme-app-uploads-prod/*"
     },
     {
       "Sid": "EscribirLogs",

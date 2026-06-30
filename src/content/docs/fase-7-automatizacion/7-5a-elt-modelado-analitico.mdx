@@ -55,11 +55,11 @@ malentiende. Tres razones de mercado, sin adornos:
   unir un hecho con varias dimensiones?" Si titubeas, te descartan. Si respondes con criterio,
   demuestras que entiendes el *por qué*, no solo la herramienta de moda.
 
-> [!tip] GLaDOS dice
-> Yo procesé petabytes de datos de prueba durante décadas. ¿Sabes cuál era mi regla número uno? Nunca
-> calculaba estadísticas sobre la base de datos que controlaba las puertas y la neurotoxina en tiempo
-> real. Una cosa es operar; otra es analizar. Mezclarlas es cómo se te cae la instalación entera
-> mientras alguien corre un `GROUP BY`. Tú llámalo "separar OLTP de OLAP". Yo lo llamo sentido común.
+> [!tip] En la práctica
+> Hay una regla de oro al trabajar con datos a escala: nunca corras tus analíticas pesadas sobre la
+> misma base de datos que atiende las operaciones en tiempo real.
+> Una cosa es operar; otra es analizar. Mezclarlas es cómo se te cae el sistema entero
+> mientras alguien lanza un `GROUP BY`. Tú llámalo "separar OLTP de OLAP". También se llama sentido común.
 
 :::tip[Si ya tocaste Fabric, Spark, BigQuery o un warehouse]
 Valida y salta: ¿sabes explicar **por qué** ELT le ganó a ETL en términos de **costo de compute**, no

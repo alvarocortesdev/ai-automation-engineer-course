@@ -134,7 +134,7 @@ El flujo correcto:
 
 El `INSERT`-primero convierte "comprobar y actuar" (dos pasos con una ventana entre medio) en una **única operación atómica** que la base de datos serializa por ti. Es el mismo principio del locking que ya conoces, aplicado a la identidad del intento.
 
-:::tip[GLaDOS dice]
+:::tip[En la práctica]
 La idempotency key la genera **el cliente**, no el servidor. Tiene que ser la misma a través de los reintentos —si el cliente genera una nueva por intento, no sirve de nada— y debe tener un **alcance**: misma clave + mismo usuario + mismo endpoint. Una clave también debería **expirar** (un TTL de 24 h es razonable): no quieres una tabla que crece para siempre.
 :::
 
@@ -234,7 +234,7 @@ Cuando el breaker está abierto o los reintentos se agotaron, tienes una decisi�
 - **Fail-closed (fallar cerrado):** ante la duda, **no** sigas. Para un pago, un borrado, una autorización: si no puedes confirmar que la operación es segura, **recházala**. Mejor un "intenta más tarde" que un cargo fantasma.
 - **Fail-open / degradación elegante:** para algo **no crítico** —recomendaciones, un avatar, un contador de "me gusta"— devuelve un **fallback**: el último valor cacheado, una lista vacía, un valor por defecto. La página carga, peor pero usable, en vez de romperse entera por un widget secundario.
 
-> [!tip] GLaDOS says
+> [!tip] En la práctica
 > La pregunta correcta nunca es "¿cómo evito que esto falle?" —no puedes—, sino "**cuando esto falle, ¿qué experiencia recibe el usuario?**". Diseñar la respuesta a la falla es ingeniería; ignorarla es esperar que el universo sea amable. No lo es.
 
 ## 5. Non-examples y misconceptions (aquí se cae la gente)
@@ -436,7 +436,7 @@ Esto se conecta hacia adelante con [`3.16` colas y async](/fase-3-backend/3-16-c
 
 ## 11. Reflexión + repaso espaciado
 
-Escribe 3–4 frases respondiendo: **¿cuál de tus endpoints actuales (o de HomeHub, o de cualquier proyecto tuyo) cobraría/crearía/enviaría dos veces si el cliente reintentara?** Esa es la primera deuda de resiliencia que vas a querer pagar.
+Escribe 3–4 frases respondiendo: **¿cuál de tus endpoints actuales (o de HomeBase, o de cualquier proyecto tuyo) cobraría/crearía/enviaría dos veces si el cliente reintentara?** Esa es la primera deuda de resiliencia que vas a querer pagar.
 
 **Gancho de spaced repetition:**
 - **Mañana:** reescribe de memoria, sin mirar, la lógica del claim de idempotency key (INSERT-primero + qué devolver ante violación de unicidad según `respuesta` esté llena o `NULL`).

@@ -86,13 +86,13 @@ recordar con esfuerzo fija mejor que releer.
 Antes de pedirte que escribas el tuyo, te muestro el razonamiento completo sobre un
 incidente real y pequeño —del tipo que tendrás tú— y voy narrando **cada decisión**.
 
-**El contexto.** Tengo una app, _HomeHub_, que mi pareja y yo usamos de verdad
+**El contexto.** Tengo una app, _HomeBase_, que un puñado de personas y yo usamos de verdad
 todos los días: maneja la lista de compras compartida del supermercado. Dos
 usuarios reales. La instrumenté con logs estructurados (cada request escribe una
 línea JSON con un `request_id`) y una alerta básica: si la tasa de errores 5xx
 pasa cierto umbral en 5 minutos, me llega un mensaje.
 
-**El incidente.** Un sábado, mi pareja agrega tres productos a la lista desde su
+**El incidente.** Un sábado, una usuaria agrega tres productos a la lista desde su
 teléfono. Más tarde, en el supermercado, la lista solo muestra uno: los otros dos
 "desaparecieron". Vuelve sin comprar lo que faltaba. **Impacto humano real**, no
 un gráfico rojo abstracto.
@@ -130,13 +130,13 @@ Ahora pienso en voz alta cómo lo convierto en post-mortem:
 portafolio):
 
 ```markdown
-# Post-mortem: Silent data loss in HomeHub shopping list — 2026-06-13
+# Post-mortem: Silent data loss in HomeBase shopping list — 2026-06-13
 
-**Status:** resolved · **Author:** @donpelusa · **Severity:** low (2 users, no PII)
+**Status:** resolved · **Author:** @tu-usuario · **Severity:** low (2 users, no PII)
 
 ## Summary
 A deploy mid-request crashed an in-flight write. Two shopping-list items were
-lost silently. The user (my partner) found out at the supermarket, not from an
+lost silently. A user found out at the supermarket, not from an
 alert. No data was recoverable.
 
 ## Impact
@@ -167,9 +167,9 @@ What alerted: nothing. What SHOULD have: an alert on write-path 5xx and on the
 ## Action items
 | # | Action | Owner | Due | Status |
 |---|--------|-------|-----|--------|
-| 1 | Add alert on write-path 5xx rate | @donpelusa | 2026-06-15 | done |
-| 2 | Add a regression test that reproduces the lost write | @donpelusa | 2026-06-16 | done |
-| 3 | Define an SLO: 99.5% of writes succeed | @donpelusa | 2026-06-20 | done |
+| 1 | Add alert on write-path 5xx rate | @tu-usuario | 2026-06-15 | done |
+| 2 | Add a regression test that reproduces the lost write | @tu-usuario | 2026-06-16 | done |
+| 3 | Define an SLO: 99.5% of writes succeed | @tu-usuario | 2026-06-20 | done |
 
 ## What we changed so it can't recur silently
 SLO: 99.5% successful writes over 30 days, with an alert at the error-budget

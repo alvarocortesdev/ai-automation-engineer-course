@@ -16,7 +16,7 @@ services:
   api:
     # El backend de tu app. Solo el túnel debe llegarle: por eso 'expose' (red interna de Docker),
     # NO 'ports'. Así desde internet no se alcanza la api directo, solo a través del conector.
-    image: ghcr.io/donpelusa/api-produccion:latest
+    image: ghcr.io/acme/api-produccion:latest
     env_file: .env            # config inyectada (12-factor), nunca horneada en la imagen
     expose:
       - "8000"                # visible SOLO entre contenedores; no se publica al host

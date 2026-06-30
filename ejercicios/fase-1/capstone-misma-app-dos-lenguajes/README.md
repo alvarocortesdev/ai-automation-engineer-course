@@ -1,4 +1,4 @@
-# 1.P — Capstone F1: La misma app, dos lenguajes (despensa HomeHub)
+# 1.P — Capstone F1: La misma app, dos lenguajes (despensa HomeBase)
 
 **Fase:** Fase 1 — Lenguajes núcleo · **Lección:** `1.P` Capstone
 **Ruta:** crítica · **Timebox:** 45 min por sesión (proyecto multi-sesión, ~6–10 h en total)
@@ -15,7 +15,7 @@ write-up de los trade-offs entre ambas versiones.
 
 ## 📋 Contexto
 
-Es la versión mínima del inventario de HomeHub: guarda ítems
+Es la versión mínima del inventario de HomeBase: guarda ítems
 `{ id, name, quantity, unit }` en un archivo JSON y expone 5 rutas HTTP. Sin base
 de datos ni framework web (eso llega en la Fase 3): **solo la librería estándar**
 de cada lenguaje, porque lo que se entrena aquí son **los lenguajes**. Este

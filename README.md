@@ -153,5 +153,5 @@ Conventional Commits y la política de idioma.
 
 ---
 
-> *Construido en abierto por Álvaro Cortés (`donpelusa`). Si te sirve, una estrella ⭐ ayuda a que
+> *Construido en abierto por Alvaro Cortés. Si te sirve, una estrella ⭐ ayuda a que
 > llegue a otra persona que está reconstruyendo su autonomía.*

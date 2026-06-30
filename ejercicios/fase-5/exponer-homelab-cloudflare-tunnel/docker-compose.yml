@@ -12,7 +12,7 @@
 services:
   api:
     # TODO: tu imagen del registry (la que construiste en 5.1 / publicaste en 5.3).
-    image: ghcr.io/donpelusa/api-produccion:latest
+    image: ghcr.io/acme/api-produccion:latest
     # TODO (1): el backend debe ser alcanzable SOLO desde la red interna de Docker
     #           (para que únicamente el túnel le llegue). ¿'expose' o 'ports'? Elige y declara 8000.
     #

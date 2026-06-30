@@ -59,7 +59,7 @@ de mercado muy concretas:
   que necesita responder en menos de 250 ms a veces *no puede* permitirse un round-trip a
   la nube.
 
-> [!tip] GLaDOS dice
+> [!tip] En la práctica
 > Correr tu propio modelo es como tener tu propio reactor en el sótano: nadie te corta la
 > luz, nadie te factura por kilovatio, y eres el único responsable cuando algo se
 > sobrecalienta. La nube es cómoda hasta que la factura llega. El sótano es tuyo hasta que
@@ -150,12 +150,12 @@ concurrencia. → Esto es **local, single-user**. Las dos herramientas naturales
 exprimir el hardware. Ambos sirven a **un** stream a la vez con buena experiencia. Modelo:
 **Qwen2.5-Coder** (SOTA abierto para código, corre cómodo en un Mac de 32–64 GB).
 
-> [!info] Dato real del autor del curso
-> El setup local de @pelu **migró a Qwen2.5-Coder** como modelo de código local, y el
-> `mlx-server` que tenía montado está **desactivado** (el modelo se borró y el LaunchAgent
-> se removió para liberar recursos). Moraleja honesta: montar un server local always-on
-> tiene un costo de mantenimiento real; muchas veces `mlx_lm.generate` puntual o Ollama
-> bajo demanda es suficiente, y el server dedicado solo se justifica con uso constante.
+> [!info] Una nota honesta sobre servers locales
+> Montar un server de inferencia local *always-on* tiene un costo de mantenimiento real:
+> el modelo ocupa disco, el proceso consume recursos aunque no lo uses, y alguien debe
+> mantenerlo. Muchas veces basta con un `mlx_lm.generate` puntual o con Ollama bajo
+> demanda; el server dedicado solo se justifica con uso constante. Empieza on-demand y
+> promociona a server dedicado solo cuando el uso real lo pida.
 
 ### Petición 2 — "Tenemos que servir un chatbot interno a 500 empleados a la vez, on-prem"
 

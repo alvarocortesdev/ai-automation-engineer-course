@@ -1,6 +1,6 @@
 # 1.8 A — Tipar y estrechar un módulo TypeScript
 
-> **Modalidad: código (Primero-Sin-IA).** Un módulo de la despensa de HomeHub está escrito con `any` y sin modelar. Vas a tiparlo entero, modelar sus eventos como **unión discriminada**, estrecharlos con narrowing exhaustivo y derivar tipos con un utility type — sin dejar un solo `any`.
+> **Modalidad: código (Primero-Sin-IA).** Un módulo de la despensa de HomeBase está escrito con `any` y sin modelar. Vas a tiparlo entero, modelar sus eventos como **unión discriminada**, estrecharlos con narrowing exhaustivo y derivar tipos con un utility type — sin dejar un solo `any`.
 
 **Fase:** Fase 1 — Lenguajes núcleo · **Lección:** `1.8` TypeScript desde cero
 **Ruta:** crítica · **Timebox:** 35–45 min

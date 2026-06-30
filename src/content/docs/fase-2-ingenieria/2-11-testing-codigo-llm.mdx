@@ -292,7 +292,7 @@ Antes de los ejercicios sin andamiaje, fija la línea con esta tabla. Es el cora
 | ¿El resumen captura las ideas del documento? | **eval** | LLM-as-judge / rúbrica | en un eval harness (Fase 6) |
 | ¿El modelo filtra el system prompt si el usuario insiste? | **eval / seguridad** | red-team, muestreo repetido | suite de seguridad (Fase 6, OWASP LLM) |
 
-:::tip[GLaDOS dice — la regla mnemotécnica]
+:::tip[En la práctica — la regla mnemotécnica]
 **El unit test prueba tu pegamento; el eval prueba el modelo.** Si la pregunta empieza con "¿mi código…?" es un assert. Si empieza con "¿el modelo…?" es un eval. Mezclarlas es escribir un test que parece probar la IA y en realidad solo prueba el string que *tú* escribiste en el fake.
 :::
 
@@ -387,6 +387,6 @@ Cierra escribiendo, en 3–4 frases, tu respuesta a: **"¿Dónde está, exactame
 - **Gatillo de conexión:** cuando llegues a `6.9 Eval-driven development` en la Fase 6, vuelve a esta lección y comprueba que el eval que ahí construyes es exactamente la columna derecha de la tabla 6.3.
 :::
 
-:::tip[GLaDOS says]
-Probaste tu código contra un LLM falso y todo pasó en verde. Reconfortante, ¿no? Casi tanto como un pastel. La diferencia es que tu suite determinista no es mentira: el día que el modelo devuelva basura envuelta en un *fence* de Markdown, tu parser ya sabrá defenderse. Eso sí es para la ciencia. Y por ciencia, otra vez, me refiero a tu estabilidad en producción.
+:::tip[En la práctica]
+Probaste tu código contra un LLM falso y todo pasó en verde. Reconfortante, ¿no? La diferencia entre esa calma y una falsa: tu suite determinista no miente. El día que el modelo devuelva basura envuelta en un *fence* de Markdown, tu parser ya sabrá defenderse. Eso no es perfeccionismo: es tu estabilidad en producción.
 :::

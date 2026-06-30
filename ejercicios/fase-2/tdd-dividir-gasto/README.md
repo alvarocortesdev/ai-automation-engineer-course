@@ -15,7 +15,7 @@ el diseño cuando un test te muestre que la división entera, sola, no suma el t
 Es la lógica que vive dentro de un Splitwise: divides una cuenta de `$100` entre 3 y no
 da exacto — alguien tiene que asumir el peso que sobra. La función decide eso de forma
 determinista y justa (las partes difieren en a lo más 1 peso y suman *exactamente* el
-total). El módulo Splitwise del capstone HomeHub usa exactamente esta clase de regla.
+total). El módulo Splitwise del capstone HomeBase usa exactamente esta clase de regla.
 
 ## 📏 Primero-Sin-IA
 

@@ -103,11 +103,11 @@ Razono el mapa: *"Mi app FastAPI necesita un lugar donde correr (**compute** →
 
 ```bash
 # Crear un bucket (el nombre es GLOBAL y único en todo AWS; usa un prefijo tuyo)
-aws s3 mb s3://donpelusa-app-uploads-prod
+aws s3 mb s3://acme-app-uploads-prod
 
 # Subir y listar
-aws s3 cp ./factura.pdf s3://donpelusa-app-uploads-prod/facturas/factura.pdf
-aws s3 ls s3://donpelusa-app-uploads-prod/facturas/
+aws s3 cp ./factura.pdf s3://acme-app-uploads-prod/facturas/factura.pdf
+aws s3 ls s3://acme-app-uploads-prod/facturas/
 ```
 
 Razono: *"S3 guarda **objetos** (un blob + metadata) dentro de **buckets**, no archivos en carpetas —el `facturas/` es un prefijo del key, no un directorio real—. ¿Por qué no guardo los uploads en el disco de la EC2? Porque el disco es **efímero y no compartido**: si la instancia muere o escalo a dos, los archivos se pierden o no están en ambas. S3 es **durable** (11 nueves de durabilidad), barato, y accesible desde cualquier compute. La regla de oro: **estado afuera del compute**."* Por defecto un bucket es **privado** —y debe seguir así: los buckets públicos por error son una de las filtraciones de datos más comunes de la historia del cloud.
@@ -118,7 +118,7 @@ Esto es lo único que de verdad tienes que internalizar de AWS. IAM tiene cuatro
 
 | Pieza | Qué es | Ejemplo |
 |---|---|---|
-| **Policy** | Un documento JSON que dice **qué acciones** sobre **qué recursos** se permiten/niegan | "permitir `s3:GetObject` sobre `donpelusa-app-uploads-prod/*`" |
+| **Policy** | Un documento JSON que dice **qué acciones** sobre **qué recursos** se permiten/niegan | "permitir `s3:GetObject` sobre `acme-app-uploads-prod/*`" |
 | **User** | Una identidad de **larga vida** para un humano o app, con contraseña o access keys | (a evitar para apps; ver más abajo) |
 | **Role** | Una identidad **sin credenciales fijas**: quien la *asume* recibe credenciales **temporales** | el rol que asume tu EC2 o tu Lambda |
 | **Instance profile** | El "enchufe" que conecta un **role** a una **EC2** | hace que tu app reciba el rol automáticamente |
@@ -133,7 +133,7 @@ La policy de least privilege para que mi app **lea** (y nada más) ese bucket:
       "Sid": "LeerUploads",
       "Effect": "Allow",
       "Action": ["s3:GetObject"],
-      "Resource": "arn:aws:s3:::donpelusa-app-uploads-prod/*"
+      "Resource": "arn:aws:s3:::acme-app-uploads-prod/*"
     }
   ]
 }
@@ -147,7 +147,7 @@ import boto3
 # NO hay access keys por ningún lado: boto3 resuelve credenciales del
 # instance profile (EC2) o del execution role (Lambda) automáticamente.
 s3 = boto3.client("s3")
-obj = s3.get_object(Bucket="donpelusa-app-uploads-prod", Key="facturas/factura.pdf")
+obj = s3.get_object(Bucket="acme-app-uploads-prod", Key="facturas/factura.pdf")
 contenido = obj["Body"].read()
 ```
 
