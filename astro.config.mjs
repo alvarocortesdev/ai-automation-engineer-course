@@ -5,6 +5,9 @@ import mermaid from "astro-mermaid";
 
 // https://astro.build/config
 export default defineConfig({
+  // GitHub Pages (project site): se sirve bajo /ai-automation-engineer-course/
+  site: "https://alvarocortesdev.github.io",
+  base: "/ai-automation-engineer-course",
   integrations: [
     // astro-mermaid debe ir ANTES de starlight: transforma los bloques
     // ```mermaid en diagramas renderizados client-side (sin browser/playwright).
