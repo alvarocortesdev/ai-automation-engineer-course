@@ -1,6 +1,108 @@
 ---
 title: Referencia
-description: Glosario, cheatsheets, mapa de recursos y diagramas del curso.
+description: "Glosario del curso: términos clave con definición de una línea y enlace a la fase donde se profundiza cada uno."
+sidebar:
+  order: 0
 ---
 
-Glosario, cheatsheets, mapa de recursos y material de apoyo transversal del curso. _(Contenido en construcción.)_
+Esta es la **referencia rápida** del curso: un glosario de los términos que vas a
+encontrar una y otra vez, cada uno con una definición de una línea y un enlace a
+la fase donde se trabaja a fondo. No es para estudiar de corrido — es para
+consultar cuando un término te suene y quieras ubicarlo.
+
+:::tip[Cómo usar esta página]
+Cuando una lección use un término que no recuerdes, búscalo aquí (`Cmd/Ctrl + F`).
+Si la definición de una línea no te basta, sigue el enlace a la fase: ahí está
+explicado con ejemplos y un ejercicio Primero-Sin-IA.
+:::
+
+## Fundamentos y control de versiones
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **CLI** | Interfaz de línea de comandos: operar el computador escribiendo, no haciendo clic. | [Fase 0](/fase-0-fundamentos/0-5-terminal-y-linux/) |
+| **Repositorio (repo)** | Carpeta versionada por git con todo el historial de tu proyecto. | [Fase 0](/fase-0-fundamentos/0-6-git-y-github/) |
+| **Commit** | Una "fotografía" guardada de tu código en un momento, con un mensaje que la describe. | [Fase 0](/fase-0-fundamentos/0-6-git-y-github/) |
+| **Branch (rama)** | Una línea de trabajo paralela donde haces cambios sin tocar la principal. | [Fase 0](/fase-0-fundamentos/0-6-git-y-github/) |
+| **Merge / rebase** | Dos formas de integrar una rama en otra: fusionando, o reaplicando tus commits sobre otra base. | [Fase 0](/fase-0-fundamentos/0-6-git-y-github/) |
+| **Stack trace** | El reporte que imprime un programa al fallar, con la cadena de llamadas hasta el error. | [Fase 0](/fase-0-fundamentos/0-8-spec-first-y-stack-traces/) |
+| **Conventional Commits** | Convención de mensajes de commit (`feat:`, `fix:`, `docs:`) que hace legible el historial. | [Fase 0](/fase-0-fundamentos/0-6-git-y-github/) |
+
+## Lenguajes e ingeniería de software
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **Type hints** | Anotaciones que declaran el tipo de un dato (`int`, `str`) para detectar errores antes de ejecutar. | [Fase 1](/fase-1-lenguajes/) |
+| **async** | Modelo para ejecutar tareas que esperan (red, disco) sin bloquear el resto del programa. | [Fase 1](/fase-1-lenguajes/) |
+| **TDD** | Test-Driven Development: escribir el test antes que el código que lo hace pasar. | [Fase 2](/fase-2-ingenieria/) |
+| **Refactoring** | Mejorar la estructura interna del código sin cambiar lo que hace por fuera. | [Fase 2](/fase-2-ingenieria/) |
+| **SOLID** | Cinco principios de diseño orientado a objetos para código mantenible y desacoplado. | [Fase 2](/fase-2-ingenieria/) |
+| **Idempotencia** | Propiedad de una operación que, repetida con la misma entrada, da el mismo resultado sin efectos extra. | [Fase 2](/fase-2-ingenieria/) · [Fase 7](/fase-7-automatizacion/) |
+
+## Backend, datos y APIs
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **SQL** | Lenguaje para consultar y modificar bases de datos relacionales. | [Fase 3](/fase-3-backend/) |
+| **Endpoint** | Una URL específica de una API que responde a un tipo de petición (`GET /usuarios`). | [Fase 3](/fase-3-backend/) |
+| **API REST** | Estilo de API sobre HTTP donde cada recurso tiene su URL y se opera con verbos (GET, POST…). | [Fase 3](/fase-3-backend/) |
+| **ORM** | Capa que traduce entre objetos de tu código y filas de la base de datos. | [Fase 3](/fase-3-backend/) |
+| **OAuth2** | Protocolo estándar para autorizar acceso sin compartir la contraseña. | [Fase 3](/fase-3-backend/) |
+| **OWASP** | Lista de referencia de los riesgos de seguridad web (y de LLM) más comunes. | [Fase 3](/fase-3-backend/) · [Fase 6](/fase-6-ai-engineering/) |
+
+## Frontend
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **WCAG** | Pautas de accesibilidad web: que tu UI la pueda usar todo el mundo, no solo algunos. | [Fase 4](/fase-4-frontend/) |
+| **Streaming (UI)** | Mostrar la respuesta de un LLM token a token a medida que llega, en vez de esperar al final. | [Fase 4](/fase-4-frontend/) |
+
+## DevOps y observabilidad
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **Contenedor / Docker** | Empaquetar una app con todas sus dependencias para que corra igual en cualquier máquina. | [Fase 5](/fase-5-devops/) |
+| **CI/CD** | Automatizar pruebas e integración (CI) y despliegue (CD) en cada cambio de código. | [Fase 5](/fase-5-devops/) |
+| **12-factor** | Conjunto de buenas prácticas para apps que escalan bien en la nube. | [Fase 5](/fase-5-devops/) |
+| **Observabilidad** | Poder entender qué hace un sistema en producción vía logs, métricas y trazas. | [Fase 5](/fase-5-devops/) |
+
+## AI Engineering
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **LLM** | Large Language Model: el modelo que genera texto a partir de un prompt. | [Fase 6](/fase-6-ai-engineering/) |
+| **Token** | La unidad mínima en que un LLM parte el texto; se mide y se cobra por tokens. | [Fase 6](/fase-6-ai-engineering/) |
+| **Prompt engineering** | Diseñar la instrucción que le das al LLM para obtener la salida que quieres. | [Fase 6](/fase-6-ai-engineering/) |
+| **Context engineering** | Gestionar _qué_ información entra en la ventana de contexto del modelo y cómo. | [Fase 6](/fase-6-ai-engineering/) |
+| **Embedding** | Representación numérica (un vector) de un texto que captura su significado. | [Fase 6](/fase-6-ai-engineering/) |
+| **RAG** | Retrieval-Augmented Generation: recuperar documentos relevantes y dárselos al LLM como contexto. | [Fase 6](/fase-6-ai-engineering/) |
+| **Tool use** | Capacidad de un LLM de invocar funciones/herramientas externas para actuar, no solo responder. | [Fase 6](/fase-6-ai-engineering/) |
+| **MCP** | Model Context Protocol: estándar para conectar modelos con herramientas y datos externos. | [Fase 6](/fase-6-ai-engineering/) |
+| **Agente** | Sistema que usa un LLM para decidir y ejecutar pasos hacia un objetivo, con herramientas. | [Fase 6](/fase-6-ai-engineering/) · [Fase 7](/fase-7-automatizacion/) |
+| **Eval** | Prueba automatizada que mide la calidad de la salida de un sistema de IA (su "test" propio). | [Fase 6](/fase-6-ai-engineering/) |
+| **LLMOps** | Operar sistemas de IA en producción: versionado, evals como gate, costos y monitoreo. | [Fase 6](/fase-6-ai-engineering/) |
+| **Alucinación** | Cuando un LLM genera información falsa con tono seguro; por eso se valida su salida. | [Fase 6](/fase-6-ai-engineering/) |
+
+## Automatización y data engineering
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **n8n** | Plataforma de automatización por flujos (nodos) para conectar servicios sin escribir todo a mano. | [Fase 7](/fase-7-automatizacion/) |
+| **Orquestador** | Sistema que coordina y agenda tareas y flujos de datos, controlando orden y reintentos. | [Fase 7](/fase-7-automatizacion/) |
+| **DLQ** | Dead Letter Queue: cola donde van los mensajes que fallaron repetidamente, para no perderlos ni bloquear. | [Fase 7](/fase-7-automatizacion/) |
+| **ELT / dbt** | Extract-Load-Transform: cargar datos crudos y transformarlos en el destino (dbt es la herramienta). | [Fase 7](/fase-7-automatizacion/) |
+| **Temporal** | Motor de workflows duraderos que sobreviven a fallos y reintentan de forma confiable. | [Fase 7](/fase-7-automatizacion/) |
+
+## System design
+
+| Término | Qué es (en una línea) | Dónde se profundiza |
+|---|---|---|
+| **DDD** | Domain-Driven Design: modelar el software alrededor del dominio del negocio y su lenguaje. | [Fase 8](/fase-8-system-design/) |
+| **System design** | Diseñar la arquitectura de un sistema completo: componentes, datos, escala y trade-offs. | [Fase 8](/fase-8-system-design/) |
+
+---
+
+¿No encuentras un término? Probablemente se define en la lección donde aparece por
+primera vez. Empieza por la fase correspondiente del
+[**roadmap del curso**](/empezar/), o vuelve a [**Empezar aquí**](/empezar/) si
+recién llegas.

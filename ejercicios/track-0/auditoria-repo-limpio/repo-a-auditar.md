@@ -33,7 +33,7 @@ mi-rag-app/
 ## Fragmento de `.env` (sí, está commiteado en el repo)
 
 ```bash
-OPENAI_API_KEY=sk-proj-9aF2b7QxLmN0pRsTuVwXyZ1234567890abcdEFGH
+OPENAI_API_KEY=sk-proj-FAKE-EXAMPLE-KEY-FOR-AUDIT-EXERCISE-not-real
 DATABASE_URL=postgres://admin:admin123@localhost:5432/ragdb
 ```
 
@@ -50,7 +50,7 @@ import os
 from openai import OpenAI
 
 # la key esta en .env, ver el commit "add openai key so it works"
-client = OpenAI(api_key="sk-proj-9aF2b7QxLmN0pRsTuVwXyZ1234567890abcdEFGH")
+client = OpenAI(api_key="sk-proj-FAKE-EXAMPLE-KEY-FOR-AUDIT-EXERCISE-not-real")
 
 def responder(pregunta: str) -> str:
     resp = client.responses.create(model="gpt-4o-mini", input=pregunta)

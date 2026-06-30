@@ -1,0 +1,409 @@
+---
+title: Monta tu entorno
+description: "Guía paso a paso para una máquina limpia: instala Python, uv, Node, pnpm, git y tu editor en macOS, Linux o Windows, y verifica cada uno."
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+Antes de escribir tu primera línea de código necesitas un entorno de trabajo.
+Esta guía asume una **máquina completamente limpia**: no damos nada por
+instalado. Sigue tu sistema operativo, copia los comandos tal cual, y **verifica
+cada paso** antes de avanzar al siguiente. Si un comando falla, no sigas: resuelve
+ese paso primero.
+
+Vas a instalar seis cosas:
+
+| Herramienta | Para qué | Versión mínima |
+|---|---|---|
+| **git** | Control de versiones (guardar y versionar tu trabajo) | cualquiera reciente |
+| **uv** | Gestor de Python ultrarrápido (instala Python y maneja dependencias) | última |
+| **Python** | Lenguaje principal del curso | 3.12 o superior |
+| **Node.js** | Runtime de JavaScript/TypeScript | 22 o superior |
+| **pnpm** | Gestor de paquetes de Node (vía corepack) | última |
+| **VSCode** | Editor de código | última |
+
+:::tip[Por qué uv y no pip]
+`uv` instala y administra **versiones de Python** y dependencias mucho más rápido
+que las herramientas clásicas, y evita el clásico lío de "qué Python estoy usando".
+Lo usarás en todos los ejercicios de Python del curso.
+:::
+
+## Paso 1 — Instala el gestor de tu sistema
+
+Cada sistema operativo tiene una forma estándar de instalar software por
+terminal. Empieza por ahí.
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+En macOS instalamos todo con **Homebrew**, el gestor de paquetes de facto.
+
+<Steps>
+
+1. Abre la app **Terminal** (búscala con Spotlight: `Cmd + Espacio`, escribe
+   "Terminal").
+
+2. Instala Homebrew siguiendo el comando oficial de su sitio,
+   [brew.sh](https://brew.sh). Al terminar, Homebrew te indicará un par de
+   líneas para añadirlo al `PATH`: ejecútalas (las que empiezan con `echo ...`).
+
+3. Verifica que quedó instalado:
+
+   ```bash
+   brew --version
+   ```
+
+   Salida esperada (el número puede variar):
+
+   ```text
+   Homebrew 4.x.x
+   ```
+
+</Steps>
+
+</TabItem>
+<TabItem label="Linux (apt)">
+
+En distribuciones basadas en Debian/Ubuntu usamos **apt**, el gestor del sistema.
+
+<Steps>
+
+1. Abre tu terminal.
+
+2. Actualiza el índice de paquetes e instala las herramientas básicas de
+   compilación y descarga (las necesitarás más adelante):
+
+   ```bash
+   sudo apt update
+   sudo apt install -y build-essential curl git
+   ```
+
+3. Verifica `curl`:
+
+   ```bash
+   curl --version
+   ```
+
+   Salida esperada (primera línea):
+
+   ```text
+   curl 8.x.x ...
+   ```
+
+</Steps>
+
+:::note
+El Python que trae `apt` suele ir una o dos versiones atrás. No te preocupes: en
+el Paso 3 instalaremos la versión exacta con `uv`, sin tocar el Python del sistema.
+:::
+
+</TabItem>
+<TabItem label="Windows (WSL2)">
+
+En Windows **no instalamos las herramientas directamente en Windows**: usamos
+**WSL2** (Windows Subsystem for Linux), que te da un Ubuntu real dentro de
+Windows.
+
+:::tip[Por qué WSL2 y no Windows nativo]
+Casi todo el ecosistema de desarrollo backend, DevOps y de IA está pensado para
+Linux. Trabajar en WSL2 te evita cientos de incompatibilidades de rutas, permisos
+y herramientas, y hace que **todo lo que aprendas sea directamente aplicable** en
+servidores reales (que corren Linux). Es el camino que recomiendan Microsoft y la
+mayoría de equipos profesionales.
+:::
+
+<Steps>
+
+1. Abre **PowerShell como administrador** (clic derecho en el menú Inicio →
+   "Terminal (Administrador)").
+
+2. Instala WSL2 con Ubuntu siguiendo la
+   [guía oficial de Microsoft](https://learn.microsoft.com/windows/wsl/install).
+   El comando base es `wsl --install`. Reinicia cuando te lo pida.
+
+3. Al reiniciar, se abrirá Ubuntu y te pedirá crear un usuario y contraseña de
+   Linux (anótalos). A partir de aquí, **trabajas dentro de Ubuntu**: abre la app
+   "Ubuntu" desde el menú Inicio cada vez.
+
+4. Ya dentro de Ubuntu, sigue **exactamente los pasos de la pestaña "Linux (apt)"**
+   de esta misma guía. WSL2 es Ubuntu de verdad.
+
+</Steps>
+
+</TabItem>
+</Tabs>
+
+## Paso 2 — git (control de versiones)
+
+git es cómo guardas y versionas tu trabajo. En **Linux/WSL2** ya lo instalaste en
+el Paso 1. En **macOS**:
+
+```bash
+brew install git
+```
+
+Verifica en cualquier sistema:
+
+```bash
+git --version
+```
+
+Salida esperada:
+
+```text
+git version 2.4x.x
+```
+
+Configura tu identidad una sola vez (usa tu nombre y correo reales; los verás en
+cada commit):
+
+```bash
+git config --global user.name "Tu Nombre"
+git config --global user.email "tu@correo.com"
+```
+
+## Paso 3 — uv y Python
+
+`uv` instala Python por ti, así que es lo siguiente.
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+```bash
+brew install uv
+```
+
+</TabItem>
+<TabItem label="Linux (apt)">
+
+Instala `uv` con el script oficial (mira el comando exacto en
+[docs.astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/)):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Cierra y vuelve a abrir la terminal para que tome el `PATH`.
+
+</TabItem>
+<TabItem label="Windows (WSL2)">
+
+Igual que en Linux, **dentro de Ubuntu**:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Cierra y reabre la terminal de Ubuntu.
+
+</TabItem>
+</Tabs>
+
+Verifica `uv`:
+
+```bash
+uv --version
+```
+
+Salida esperada:
+
+```text
+uv 0.x.x
+```
+
+Ahora instala Python 3.12 con `uv` (esto **no** rompe ningún otro Python que ya
+tengas):
+
+```bash
+uv python install 3.12
+```
+
+Verifica que Python responde:
+
+```bash
+uv run python --version
+```
+
+Salida esperada:
+
+```text
+Python 3.12.x
+```
+
+:::note[¿`uv run python` en vez de `python`?]
+`uv run` ejecuta Python dentro del entorno que `uv` gestiona, sin que tengas que
+"activar" nada a mano. Es la forma recomendada de correr Python en este curso.
+:::
+
+## Paso 4 — Node.js y pnpm
+
+Node es el runtime de JavaScript/TypeScript. pnpm es su gestor de paquetes, y lo
+activamos con **corepack** (que viene incluido en Node).
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+```bash
+brew install node
+```
+
+</TabItem>
+<TabItem label="Linux (apt)">
+
+Instala Node 22 o superior desde el repositorio oficial de NodeSource (sigue la
+[guía de NodeSource](https://github.com/nodesource/distributions); el patrón es):
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+</TabItem>
+<TabItem label="Windows (WSL2)">
+
+Dentro de Ubuntu, igual que en Linux:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+</TabItem>
+</Tabs>
+
+Verifica Node:
+
+```bash
+node --version
+```
+
+Salida esperada (22 o superior):
+
+```text
+v22.x.x
+```
+
+Ahora activa **pnpm** con corepack (ya viene con Node, no instala nada nuevo):
+
+```bash
+corepack enable
+corepack prepare pnpm@latest --activate
+```
+
+Verifica pnpm:
+
+```bash
+pnpm --version
+```
+
+Salida esperada:
+
+```text
+10.x.x
+```
+
+:::caution[Regla del curso: solo pnpm]
+Para los ejercicios de JavaScript/TypeScript usa **siempre pnpm**, nunca `npm`.
+Mantiene los proyectos consistentes y evita problemas de dependencias.
+:::
+
+## Paso 5 — VSCode y extensiones
+
+Descarga e instala **Visual Studio Code** desde
+[code.visualstudio.com](https://code.visualstudio.com/).
+
+:::tip[Windows con WSL2]
+Instala VSCode en **Windows** (no dentro de Ubuntu) y añade la extensión **WSL**.
+Luego abres tus proyectos con el comando `code .` desde la terminal de Ubuntu:
+VSCode se conecta solo al entorno Linux. Es el flujo recomendado.
+:::
+
+Instala estas extensiones (busca cada nombre en la pestaña de extensiones,
+`Cmd/Ctrl + Shift + X`):
+
+| Extensión | Para qué |
+|---|---|
+| **Python** (Microsoft) | Soporte de Python, depurador, ejecución |
+| **Pylance** | Autocompletado y chequeo de tipos de Python |
+| **Ruff** | Linter y formateador de Python rápido |
+| **ESLint** | Linter de JavaScript/TypeScript |
+| **Prettier** | Formateador de código JS/TS/CSS |
+| **GitLens** | Ver el historial de git dentro del editor |
+| **WSL** (solo Windows) | Conectar VSCode al Ubuntu de WSL2 |
+
+Verifica que el comando `code` funciona desde la terminal:
+
+```bash
+code --version
+```
+
+Salida esperada (tres líneas, la primera es la versión):
+
+```text
+1.9x.x
+...
+```
+
+Si `code` no se reconoce en macOS, abre VSCode, pulsa `Cmd + Shift + P`, escribe
+**"Shell Command: Install 'code' command in PATH"** y ejecútalo.
+
+## Paso 6 — Abre el workspace de ejercicios
+
+Todo tu trabajo del curso vive en la carpeta `ejercicios/` del repositorio. Para
+tenerla en tu máquina:
+
+<Steps>
+
+1. Clona el repositorio del curso (reemplaza la URL por la del repo que estás
+   usando) en una carpeta de tu elección:
+
+   ```bash
+   git clone <url-del-repositorio-del-curso>
+   cd ai-automation-engineer-course
+   ```
+
+2. Ábrelo en VSCode:
+
+   ```bash
+   code .
+   ```
+
+3. En el panel de archivos verás la carpeta **`ejercicios/`**. Ahí, dentro de
+   `fase-0/`, `fase-1/`, etc., está cada ejercicio en su propia subcarpeta. Esa es
+   tu **mesa de trabajo**: cada lección del sitio te dirá qué carpeta de
+   `ejercicios/` abrir.
+
+4. Lee `ejercicios/README.md`: explica cómo se organiza cada ejercicio (enunciado,
+   starter y tests) y el ciclo de trabajo.
+
+</Steps>
+
+:::caution[No abras todavía la carpeta `.ai/`]
+El repositorio tiene una carpeta `.ai/` con **rúbricas y soluciones de
+referencia**. Es para el corrector, no para ti: mirar la solución antes de
+intentar el ejercicio arruina el método. Lo explicamos en la página siguiente.
+:::
+
+## Checklist final
+
+Antes de pasar a estudiar, confirma que **los seis comandos responden** sin error:
+
+```bash
+git --version
+uv --version
+uv run python --version
+node --version
+pnpm --version
+code --version
+```
+
+Si todos imprimen una versión, tu entorno está listo. Si alguno falla, vuelve a
+su paso. **No avances con un entorno a medias**: arrastrar un problema de setup a
+la Fase 0 solo lo hace más difícil de diagnosticar.
+
+Siguiente parada:
+[**Cómo te corrige la IA**](/empezar/como-te-corrige-la-ia/) — el bucle de
+corrección que usarás en cada ejercicio. Después de eso, entras a la
+[**Fase 0**](/fase-0-fundamentos/).
