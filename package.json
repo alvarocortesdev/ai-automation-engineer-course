@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Curso público de cero a AI / Automation Engineer semi-senior.",
+  "packageManager": "pnpm@11.2.2",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
